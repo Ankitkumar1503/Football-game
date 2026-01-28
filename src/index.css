@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#0A0A0A] text-white font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display tracking-tight;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Oswald', sans-serif;
+  }
+
+  .block-glow {
+    box-shadow: 0 0 20px rgba(255, 68, 34, 0.4);
+    border: 1px solid rgba(255, 68, 34, 0.5);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 10px rgba(255, 68, 34, 0.8);
+  }
+
+  /* Print Mode Overrides */
+  .print-mode {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  .print-mode header {
+    background-color: white !important;
+    border-bottom: 2px solid black !important;
+  }
+
+  .print-mode h1, .print-mode h2, .print-mode h3, .print-mode h4, .print-mode h5, .print-mode h6 {
+    color: black !important;
+    text-shadow: none !important;
+  }
+
+  .print-mode p, .print-mode span, .print-mode label, .print-mode div {
+    color: black !important;
+    text-shadow: none !important;
+  }
+
+  .print-mode .bg-\[\#0A0A0A\],
+  .print-mode .bg-\[\#1A1A1A\],
+  .print-mode .bg-black {
+    background-color: white !important;
+    border: 1px solid #ddd !important;
+  }
+  
+  .print-mode .text-white {
+    color: black !important;
+  }
+  
+  .print-mode .text-gray-300, 
+  .print-mode .text-gray-400 {
+    color: #333 !important;
+  }
+
+  .print-mode .border-\[\#FF4422\] {
+    border-color: black !important;
+  }
+
+  .print-mode .bg-\[\#E5E5E5\],
+  .print-mode .bg-\[\#2A2A2A\],
+  .print-mode .bg-\[\#202020\] {
+     background-color: #f5f5f5 !important;
+     border: 1px solid #000 !important;
+  }
+}

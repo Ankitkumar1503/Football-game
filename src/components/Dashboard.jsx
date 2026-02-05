@@ -9,7 +9,6 @@ import { useActiveSession } from "../hooks/useActiveSession";
 import touches from "../assets/touches.png";
 import touches2 from "../assets/touches2.png";
 import { PlayerProfilesByPosition } from "./sections/PlayerProfilesByPosition";
-// import { PlayerAttendanceGrade } from "./sections/PlayerAttendanceGrade";
 import { PlayerAttendanceGrade } from "./sections/PlayerAttendanceGrade";
 import { FootballFormation } from "./sections/Footballformation";
 import { ActionWheelOld } from "./sections/ActionWheelOld";

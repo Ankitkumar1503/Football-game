@@ -1,13 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TOUCHES - Football Game Tracker</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<html lang="en" class="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/touches-favicon-1.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TOUCHES</title>
+</head>
+
+
+<body>
+  <div id="root"></div>
+  <script>
+    window.addEventListener('error', function (e) {
+      if (e.message === 'ResizeObserver loop limit exceeded') return;
+      document.body.innerHTML = '<div style="color:red; padding:20px; font-family:monospace; white-space:pre-wrap; background:white;"><h1>GLOBAL ERROR</h1>' + e.message + ' at ' + e.filename + ':' + e.lineno + '</div>';
+    });
+    window.addEventListener('unhandledrejection', function (e) {
+      const msg = e.reason && (e.reason.message || e.reason);
+      document.body.innerHTML = '<div style="color:red; padding:20px; font-family:monospace; white-space:pre-wrap; background:white;"><h1>PROMISE REJECTION</h1>' + msg + '</div>';
+    });
+  </script>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
 </html>

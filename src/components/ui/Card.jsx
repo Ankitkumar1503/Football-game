@@ -5,7 +5,7 @@ export function Card({ className, children, ...props }) {
     return (
         <div
             className={cn(
-                "bg-[#1A1A1A] text-white rounded-2xl shadow-lg border border-[#FF4422]/20 overflow-hidden backdrop-blur-sm",
+                "bg-[#1A1A1A] text-white shadow-lg border border-[#FF4422]/20 overflow-hidden backdrop-blur-sm",
                 className
             )}
             {...props}

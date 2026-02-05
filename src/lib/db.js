@@ -2,7 +2,7 @@ import Dexie from 'dexie';
 
 export const db = new Dexie('FootballAppDB');
 
-db.version(1).stores({
+db.version(2).stores({
   // Main session metadata (Player Name, Date, Team)
   sessions: '++id, date, time, playerName, age, position, club, team, level, gameNumber, totalYearsPlaying, totalHoursTrained, createdAt',
 
@@ -11,7 +11,7 @@ db.version(1).stores({
 
   // The bottom forms (Ratings and Text)
   // detailedEvaluation and detailedPerformance will be stored as objects (not indexed directly)
-  reflections: '++id, sessionId, technical, physical, tactical, mental, whatWentWell, wellDoneTags, achievedGoal, whatToImprove, whatLearned, whatWouldChange, overallPerformance, detailedPerformance, detailedEvaluation'
+  reflections: '++id, sessionId, technical, physical, tactical, mental, whatWentWell, wellDoneTags, achievedGoal, whatToImprove, whatLearned, whatWouldChange, overallPerformance, detailedPerformance, detailedEvaluation, evaluatedBy, formation, attendance'
 });
 
 // Export database instance

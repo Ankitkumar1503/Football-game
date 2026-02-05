@@ -27,7 +27,7 @@ export function LiveStats() {
 
     return (
         <div className="mb-8">
-            <div className="flex justify-between items-end mb-2 border-b-4 border-black pb-1">
+            <div className="flex justify-between items-end mb-2 border-b-2 border-black/80 dark:border-white/80 pb-1">
                 <h2 className="text-2xl font-black uppercase text-black dark:text-gray-200 tracking-tighter">TOTAL TOUCHES</h2>
             </div>
 
@@ -64,7 +64,7 @@ export function LiveStats() {
                 </button>
             </div>
 
-            <div className="mt-8 space-y-4">
+            {/* <div className="mt-8 space-y-4">
                 <div>
                     <h3 className="font-bold text-sm uppercase mb-1 dark:text-gray-200">FIVE FUNDAMENTAL ACTIONS:</h3>
                     <h4 className="font-black text-lg uppercase mb-2 dark:text-white">Passing, dribbling, shooting, receiving, controlling, tackling.</h4>
@@ -88,7 +88,7 @@ export function LiveStats() {
                         <li>* Penalty Kick: A direct free kick awarded when a defending player commits a foul within their own penalty area.</li>
                     </ul>
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 }

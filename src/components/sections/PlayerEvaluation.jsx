@@ -62,6 +62,20 @@ export function PlayerEvaluation() {
     return "";
   });
 
+  const [playerName, setPlayerName] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("playerEvaluationName") || "";
+    }
+    return "";
+  });
+
+  const [playerAge, setPlayerAge] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("playerEvaluationAge") || "";
+    }
+    return "";
+  });
+
   const [ratings, setRatings] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("playerEvaluation");
@@ -84,6 +98,12 @@ export function PlayerEvaluation() {
       if (reflection.evaluatedBy) {
         setEvaluatedBy(reflection.evaluatedBy);
       }
+      if (reflection.playerEvaluationName) {
+        setPlayerName(reflection.playerEvaluationName);
+      }
+      if (reflection.playerEvaluationAge) {
+        setPlayerAge(reflection.playerEvaluationAge);
+      }
     }
   }, [reflection]);
 
@@ -96,6 +116,14 @@ export function PlayerEvaluation() {
   useEffect(() => {
     localStorage.setItem("playerEvaluationBy", evaluatedBy);
   }, [evaluatedBy]);
+
+  useEffect(() => {
+    localStorage.setItem("playerEvaluationName", playerName);
+  }, [playerName]);
+
+  useEffect(() => {
+    localStorage.setItem("playerEvaluationAge", playerAge);
+  }, [playerAge]);
 
   const handleRatingChange = async (category, skill, rating) => {
     const newRatings = {
@@ -122,6 +150,22 @@ export function PlayerEvaluation() {
     });
   };
 
+  const handleNameChange = async (e) => {
+    const value = e.target.value;
+    setPlayerName(value);
+    await updateReflection({
+      playerEvaluationName: value,
+    });
+  };
+
+  const handleAgeChange = async (e) => {
+    const value = e.target.value;
+    setPlayerAge(value);
+    await updateReflection({
+      playerEvaluationAge: value,
+    });
+  };
+
   return (
     <Card className="mb-[24px] bg-white dark:bg-[#1A1A1A] border-none shadow-none">
       <CardContent className="p-2">
@@ -131,10 +175,43 @@ export function PlayerEvaluation() {
           </h2>
         </div>
 
+        <div className="flex gap-4 mb-4">
+          <div className="flex-1 flex items-center gap-3">
+            <label
+              htmlFor="playerName"
+              className="text-xs font-black uppercase text-gray-800 dark:text-gray-200 whitespace-nowrap"
+            >
+              NAME:
+            </label>
+            <input
+              id="playerName"
+              type="text"
+              value={playerName}
+              onChange={handleNameChange}
+              className="w-full bg-[#E5E5E5] text-black px-3 py-[4px] text-sm font-bold uppercase rounded-sm border-none focus:outline-none focus:ring-1 focus:ring-[#FF4422]"
+            />
+          </div>
+          <div className="w-1/3 flex items-center gap-3">
+            <label
+              htmlFor="playerAge"
+              className="text-xs font-black uppercase text-gray-800 dark:text-gray-200 whitespace-nowrap"
+            >
+              AGE:
+            </label>
+            <input
+              id="playerAge"
+              type="text"
+              value={playerAge}
+              onChange={handleAgeChange}
+              className="w-full bg-[#E5E5E5] text-black px-3 py-[4px] text-sm font-bold uppercase rounded-sm border-none focus:outline-none focus:ring-1 focus:ring-[#FF4422]"
+            />
+          </div>
+        </div>
+
         <div className="py-3 mb-4 flex items-center gap-3">
           <label
             htmlFor="evaluatedBy"
-            className="text-xs font-black uppercase text-white whitespace-nowrap"
+            className="text-xs font-black uppercase text-gray-800 dark:text-gray-200 whitespace-nowrap"
           >
             PLAYER EVALUATION BY:
           </label>

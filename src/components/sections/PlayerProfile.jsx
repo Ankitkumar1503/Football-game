@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Footprints } from "lucide-react";
 import { Card, CardContent } from "../ui/Card";
 import { Input } from "../ui/Input";
 import { useActiveSession } from "../../hooks/useActiveSession";
@@ -61,6 +62,8 @@ export function PlayerProfile() {
       totalGoals: "",
       totalPenalties: "",
       yourPosition: "",
+      rightFooter: "",
+      leftFooter: "",
     };
   });
 
@@ -101,6 +104,8 @@ export function PlayerProfile() {
             totalGoals: session.totalGoals || "",
             totalPenalties: session.totalPenalties || "",
             yourPosition: session.yourPosition || "",
+            rightFooter: session.rightFooter || "",
+            leftFooter: session.leftFooter || "",
           });
         }
         setIsLoaded(true);
@@ -145,23 +150,6 @@ export function PlayerProfile() {
 
   return (
     <div className="mb-8">
-      {/* Level Selector */}
-      <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-8 px-2">
-        {LEVELS.map((level) => (
-          <button
-            key={level}
-            onClick={() => handleLevelSelect(level)}
-            className={`text-xs md:text-sm font-black uppercase tracking-wider transition-colors ${
-              formData.level === level
-                ? "text-[#FF4422] scale-105"
-                : "text-gray-500 hover:text-gray-300"
-            }`}
-          >
-            {level}
-          </button>
-        ))}
-      </div>
-
       <Card className="bg-transparent border-none shadow-none">
         <CardContent className="p-1 space-y-4">
           {/* Date & Time */}
@@ -288,8 +276,48 @@ export function PlayerProfile() {
             </div>
           </div>
 
+          {/* Right/Left Footer */}
+          <div className="grid grid-cols-2 gap-4 pb-4 border-b-2 border-white/10 mb-4">
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="rightFooter"
+                className="text-xs font-black uppercase text-gray-800 dark:text-gray-200"
+              >
+                Right Footer
+              </label>
+              <div className="flex items-center gap-2">
+                <Footprints className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                <input
+                  id="rightFooter"
+                  type="text"
+                  className="w-24 bg-[#E5E5E5] text-black px-2 py-1 text-sm font-bold rounded-sm border-none focus:ring-1 focus:ring-[#FF4422]"
+                  value={formData.rightFooter}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="leftFooter"
+                className="text-xs font-black uppercase text-gray-800 dark:text-gray-200"
+              >
+                Left Footer
+              </label>
+              <div className="flex items-center gap-2">
+                <Footprints className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                <input
+                  id="leftFooter"
+                  type="text"
+                  className="w-24 bg-[#E5E5E5] text-black px-2 py-1 text-sm font-bold rounded-sm border-none focus:ring-1 focus:ring-[#FF4422]"
+                  value={formData.leftFooter}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Player Stats */}
-          <div className="pt-2">
+          <div className="pt-2 scroll-mt-28" id="player-stats">
             <h3 className="text-sm font-black uppercase text-gray-800 dark:text-gray-200 mb-4 border-b-2 border-black/80 dark:border-white/80 pb-1">
               Player Stats
             </h3>

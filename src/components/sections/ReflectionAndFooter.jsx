@@ -17,39 +17,45 @@ import { ShareModal } from "./ShareModal";
 
 const WELL_DONE_TAGS = [
   "ATTACKING",
-  "FREE KICKS",
-  "LEADERSHIP",
   "FINISHING",
-  "MARKING",
-  "DECISIONS",
   "DEFENDING",
-  "SPEED",
-  "SUPPORT",
   "TACKLING",
-  "PENALTIES",
-  "CREATE SPACE",
   "LONG BALLS",
-  "ENDURANCE",
-  "BALL CONTROL",
   "TRAPPING",
-  "CORNERS",
-  "THROW-IN",
   "TRANSITION",
+  "FREE KICKS",
+  "MARKING",
+  "SPEED",
+  "PENALTIES",
+  "ENDURANCE",
+  "CORNERS",
   "PASSING",
+  "LEADERSHIP",
+  "DECISIONS",
+  "SUPPORT",
+  "CREATE SPACE",
+  "BALL CONTROL",
+  "THROW-IN",
   "HEADING",
 ];
 
 const PERFORMANCE_METRICS = [
   "ENDURANCE",
-  "FIRST TOUCH",
   "ENERGY",
-  "PASSING",
   "DECISION MAKING",
-  "RECEIVING",
   "CONFIDENCE",
-  "WILL",
   "MOTIVATION",
+  "ENJOYMENT",
+  "FOCUS",
+  "PERFORMANCE",
+  "FIRST TOUCH",
+  "PASSING",
+  "RECEIVING",
+  "WILL",
   "FITNESS",
+  "FUN",
+  "WILL TO WIN",
+  "TEAM PLAYER",
 ];
 
 // Loading Overlay Component
@@ -99,6 +105,8 @@ export function PlayerReflection() {
     }
     return {
       wellDoneTags: [],
+      playerName: "",
+      playerAge: "",
       achievedGoal: "",
       whatLearned: "",
       whatWouldChange: "",
@@ -116,6 +124,8 @@ export function PlayerReflection() {
     if (reflection) {
       const newData = {
         wellDoneTags: reflection.wellDoneTags || [],
+        playerName: reflection.playerName || "",
+        playerAge: reflection.playerAge || "",
         achievedGoal: reflection.achievedGoal || "",
         whatLearned: reflection.whatLearned || "",
         whatWouldChange: reflection.whatWouldChange || "",
@@ -126,6 +136,8 @@ export function PlayerReflection() {
       // This prevents empty DB from overwriting unsaved local work on reload
       const hasLocalData =
         formData.wellDoneTags.length > 0 ||
+        formData.playerName ||
+        formData.playerAge ||
         formData.achievedGoal ||
         formData.whatLearned ||
         formData.whatWouldChange ||
@@ -133,6 +145,8 @@ export function PlayerReflection() {
 
       const hasDbData =
         newData.wellDoneTags.length > 0 ||
+        newData.playerName ||
+        newData.playerAge ||
         newData.achievedGoal ||
         newData.whatLearned ||
         newData.whatWouldChange ||
@@ -178,6 +192,38 @@ export function PlayerReflection() {
           <h2 className="text-xl font-black uppercase text-black dark:text-white">
             PLAYER REFLECTION
           </h2>
+          <div className="flex gap-4 mb-1 mt-2">
+            <div className="flex-1 flex items-center gap-3">
+              <label
+                htmlFor="playerName"
+                className="text-xs font-black uppercase text-black dark:text-white whitespace-nowrap"
+              >
+                NAME:
+              </label>
+              <input
+                id="playerName"
+                type="text"
+                value={formData.playerName}
+                onChange={handleTextChange}
+                className="w-full bg-white text-black px-3 py-[4px] text-sm font-bold uppercase border-none focus:outline-none focus:ring-1 focus:ring-white"
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <label
+                htmlFor="playerAge"
+                className="text-xs font-black uppercase text-black dark:text-white whitespace-nowrap"
+              >
+                AGE:
+              </label>
+              <input
+                id="playerAge"
+                type="text"
+                value={formData.playerAge}
+                onChange={handleTextChange}
+                className="w-20 bg-white text-black px-3 py-[4px] text-sm font-bold uppercase border-none focus:outline-none focus:ring-1 focus:ring-white"
+              />
+            </div>
+          </div>
         </div>
 
         {/* What did you do well? */}
@@ -185,21 +231,21 @@ export function PlayerReflection() {
           <h3 className="text-sm font-black uppercase mb-3 text-black dark:text-white">
             WHAT DID YOU DO WELL:
           </h3>
-          <div className="grid grid-cols-3 gap-x-4 gap-y-2.5">
+          <div className="grid grid-cols-3 gap-x-1 gap-y-2">
             {WELL_DONE_TAGS.map((tag) => (
               <label
                 key={tag}
                 className="flex items-center gap-2 cursor-pointer group"
               >
                 <div
-                  className={`w-4 h-4 border-2 flex items-center justify-center transition-all ${
+                  className={`w-4 h-4 border-2 flex items-center justify-center transition-all bg-white border-white ${
                     formData.wellDoneTags.includes(tag)
-                      ? "bg-[#FF4422] border-[#FF4422]"
-                      : "border-gray-400 bg-transparent group-hover:border-gray-600"
+                      ? "bg-white"
+                      : "bg-white"
                   }`}
                 >
                   {formData.wellDoneTags.includes(tag) && (
-                    <span className="text-white font-bold text-[10px]">✓</span>
+                    <span className="text-black font-bold text-[12px]">✓</span>
                   )}
                 </div>
                 <input
@@ -208,7 +254,7 @@ export function PlayerReflection() {
                   checked={formData.wellDoneTags.includes(tag)}
                   onChange={() => handleTagToggle(tag)}
                 />
-                <span className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-300 leading-tight">
+                <span className="text-[10px] font-bold uppercase text-white leading-tight whitespace-nowrap">
                   {tag}
                 </span>
               </label>
@@ -217,11 +263,11 @@ export function PlayerReflection() {
         </div>
 
         {/* Text Inputs */}
-        <div className="space-y-5 mb-8">
+        <div className="space-y-4 mb-8">
           <div>
             <label
               htmlFor="achievedGoal"
-              className="block text-sm font-black uppercase mb-2 text-black dark:text-white"
+              className="block text-sm font-black uppercase mb-1 text-black dark:text-white"
             >
               DID YOU ACHIEVE YOUR GOAL?
             </label>
@@ -230,13 +276,13 @@ export function PlayerReflection() {
               type="text"
               value={formData.achievedGoal}
               onChange={handleTextChange}
-              className="w-full bg-[#E5E5E5] dark:bg-[#2A2A2A] dark:text-white border border-[#ff442266] px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#FF4422] rounded-sm"
+              className="w-full bg-white text-black border-none px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-white h-8"
             />
           </div>
           <div>
             <label
               htmlFor="whatLearned"
-              className="block text-sm font-black uppercase mb-2 text-black dark:text-white"
+              className="block text-sm font-black uppercase mb-1 text-black dark:text-white"
             >
               WHAT DID YOU LEARN?
             </label>
@@ -245,13 +291,13 @@ export function PlayerReflection() {
               type="text"
               value={formData.whatLearned}
               onChange={handleTextChange}
-              className="w-full bg-[#E5E5E5] dark:bg-[#2A2A2A] dark:text-white border border-[#ff442266] px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#FF4422] rounded-sm"
+              className="w-full bg-white text-black border-none px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-white h-8"
             />
           </div>
           <div>
             <label
               htmlFor="whatWouldChange"
-              className="block text-sm font-black uppercase mb-2 text-black dark:text-white"
+              className="block text-sm font-black uppercase mb-1 text-black dark:text-white"
             >
               WHAT WOULD YOU CHANGE?
             </label>
@@ -260,38 +306,30 @@ export function PlayerReflection() {
               type="text"
               value={formData.whatWouldChange}
               onChange={handleTextChange}
-              className="w-full bg-[#E5E5E5] dark:bg-[#2A2A2A] dark:text-white border border-[#ff442266] px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#FF4422] rounded-sm"
+              className="w-full bg-white text-black border-none px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-white h-8"
             />
           </div>
         </div>
 
         {/* Performance Metrics */}
         <div>
-          <h3 className="text-sm font-black uppercase mb-4 text-black dark:text-white border-b-2 border-black dark:border-white pb-2">
+          <h3 className="text-sm font-black uppercase mb-4 text-black dark:text-white">
             REFLECT ON YOUR GAME PERFORMANCE: 1-10
           </h3>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-3.5">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-2">
             {PERFORMANCE_METRICS.map((metric) => (
-              <div key={metric} className="flex items-center gap-3">
-                <span className="text-[11px] font-bold uppercase text-gray-700 dark:text-gray-300 w-28 flex-shrink-0">
+              <div key={metric} className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={formData.detailedPerformance[metric] || ""}
+                  onChange={(e) => handleMetricChange(metric, e.target.value)}
+                  className="w-12 h-6 bg-white text-black text-center font-bold text-xs border-none focus:outline-none focus:ring-1 focus:ring-white"
+                />
+                <span className="text-[10px] font-bold uppercase text-white">
                   {metric}
                 </span>
-                <div className="flex-1 flex items-center gap-2">
-                  <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    value={formData.detailedPerformance[metric] || 5}
-                    onChange={(e) => handleMetricChange(metric, e.target.value)}
-                    className="w-full h-1.5 bg-gray-300 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-[#FF4422]"
-                    style={{
-                      background: `linear-gradient(to right, #FF4422 0%, #FF4422 ${((formData.detailedPerformance[metric] || 5) - 1) * 11.11}%, #d1d5db ${((formData.detailedPerformance[metric] || 5) - 1) * 11.11}%, #d1d5db 100%)`,
-                    }}
-                  />
-                  <span className="text-sm font-black text-[#FF4422] w-6 text-center">
-                    {formData.detailedPerformance[metric] || 5}
-                  </span>
-                </div>
               </div>
             ))}
           </div>
@@ -581,13 +619,13 @@ export function BottomBar() {
 
       <div
         id="bottom-bar-container"
-        className="fixed bottom-0 left-0 right-0 p-4 bg-[#0A0A0A]/95 backdrop-blur-lg border-t border-[#FF4422]/20 z-[100]"
+        className="fixed bottom-0 left-0 right-0 p-4 bg-[#0A0A0A]/95 backdrop-blur-lg z-[100]"
       >
         <div className="max-w-md mx-auto grid grid-cols-4 gap-2">
           <Button
             variant="secondary"
             size="sm"
-            className="flex-col gap-1 py-3 h-auto bg-[#1A1A1A] hover:bg-[#2A2A2A] text-gray-300 border-[#FF4422]/20 hover:border-[#FF4422]/40 transition-all"
+            className="flex-col gap-1 py-3 h-auto bg-[#1A1A1A] hover:bg-[#2A2A2A] text-gray-300 border-gray-300 hover:border-gray-300 transition-all"
             onClick={handleReset}
             disabled={isGenerating}
           >
@@ -598,7 +636,7 @@ export function BottomBar() {
             <Button
               variant="secondary"
               size="sm"
-              className="flex-col gap-1 py-3 h-auto bg-[#1A1A1A] hover:bg-[#2A2A2A] text-gray-300 border-[#FF4422]/20 hover:border-[#FF4422]/40 transition-all"
+              className="flex-col gap-1 py-3 h-auto bg-[#1A1A1A] hover:bg-[#2A2A2A] text-gray-300 border-gray-300 hover:border-gray-300 transition-all"
               onClick={handleNativeShare}
               disabled={isGenerating}
             >
@@ -619,7 +657,7 @@ export function BottomBar() {
           <Button
             variant="secondary"
             size="sm"
-            className="flex-col gap-1 py-3 h-auto bg-[#1A1A1A] hover:bg-[#2A2A2A] text-gray-300 border-[#FF4422]/20 hover:border-[#FF4422]/40 transition-all"
+            className="flex-col gap-1 py-3 h-auto bg-[#1A1A1A] hover:bg-[#2A2A2A] text-gray-300 border-gray-300 hover:border-gray-300 transition-all"
             onClick={handleDownloadPDF}
             disabled={isGenerating}
           >

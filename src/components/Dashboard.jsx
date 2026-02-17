@@ -12,6 +12,7 @@ import { PlayerProfilesByPosition } from "./sections/PlayerProfilesByPosition";
 import { PlayerAttendanceGrade } from "./sections/PlayerAttendanceGrade";
 import { FootballFormation } from "./sections/Footballformation";
 import { ActionWheelOld } from "./sections/ActionWheelOld";
+import { Navigation } from "./Navigation";
 
 export function Dashboard() {
   // Initialize the active session hook - this will create/load a session automatically
@@ -23,32 +24,59 @@ export function Dashboard() {
       className="min-h-screen pb-20 bg-[#0A0A0A] text-white font-sans selection:bg-[#FF4422] selection:text-white"
     >
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-[#0A0A0A]/95 backdrop-blur-md border-b-2 border-[#FF4422]/40 shadow-[0_4px_20px_rgba(255,68,34,0.3)]">
+      <Navigation />
+      <header className="sticky top-0 z-40 bg-[#0A0A0A]/95 backdrop-blur-md border-b-2 border-gary-300">
         <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-center gap-3">
           <img
             src={touches}
             alt="Football"
-            className="w-56 h-20 object-contain drop-shadow-[0_0_15px_rgba(255,68,34,0.8)] flex-shrink-0"
+            className="w-56 h-20 object-contain flex-shrink-0"
           />
           <img
             src={touches2}
             alt="Football"
-            className="w-16 h-20 object-contain drop-shadow-[0_0_15px_rgba(255,68,34,0.8)] flex-shrink-0"
+            className="w-16 h-20 object-contain flex-shrink-0"
           />
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-md mx-auto px-4 py-6">
-        <PlayerProfile />
+        <div id="register" className="scroll-mt-28">
+          <PlayerProfile />
+        </div>
         <ActionWheel />
         {/* <ActionWheelOld /> */}
-        <LiveStats />
-        <PlayerEvaluation />
-        <PlayerReflection />
-        <PlayerProfilesByPosition />
-        <PlayerAttendanceGrade />
-        <FootballFormation />
+        <div id="touch-counter" className="scroll-mt-28">
+          <LiveStats />
+        </div>
+        <div id="player-evaluation" className="scroll-mt-28">
+          <PlayerEvaluation />
+        </div>
+        <div id="player-reflection" className="scroll-mt-28">
+          <PlayerReflection />
+        </div>
+        {/* <PlayerProfilesByPosition /> */}
+        <div id="player-grade" className="scroll-mt-28">
+          <PlayerAttendanceGrade />
+        </div>
+        <div id="starting-lineup" className="scroll-mt-28">
+          <FootballFormation />
+        </div>
+
+        {/* Usage Policy Placeholder */}
+        <div
+          id="usage-policy"
+          className="mt-8 mb-4 p-4 border-2 border-zinc-800 rounded-lg scroll-mt-28"
+        >
+          <h2 className="text-xl font-black uppercase text-white mb-2">
+            USAGE POLICY
+          </h2>
+          <p className="text-sm text-gray-400">
+            This application is designed for tracking football performance
+            stats. Data is stored locally on your device.
+          </p>
+        </div>
       </main>
 
       {/* Sticky Bottom Bar */}

@@ -1,0 +1,16 @@
+import React from 'react';
+import { ScrollView } from 'react-native';
+import { Layout } from '../components/Layout';
+import { PlayerReflection } from '../components/sections/PlayerReflection';
+import { BottomBar } from '../components/sections/BottomBar';
+
+export function ReflectionScreen() {
+    return (
+        <Layout>
+            <ScrollView className="flex-1 px-4 py-6 mb-16">
+                <PlayerReflection />
+            </ScrollView>
+            <BottomBar />
+        </Layout>
+    );
+}

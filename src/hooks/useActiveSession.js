@@ -131,6 +131,24 @@ export function useActiveSession() {
     }
   };
 
+  // Undo last touch function — deletes the most recent touch for this session
+  const undoLastTouch = async () => {
+    if (!sessionId) return;
+    try {
+      const lastTouch = await db.touches
+        .where('sessionId')
+        .equals(sessionId)
+        .reverse()
+        .sortBy('timestamp')
+        .then(arr => arr[0]);
+      if (lastTouch) {
+        await db.touches.delete(lastTouch.id);
+      }
+    } catch (error) {
+      console.error('Error undoing last touch:', error);
+    }
+  };
+
   // Update reflection function
   const updateReflection = async (updates) => {
     if (!sessionId) return;
@@ -158,6 +176,7 @@ export function useActiveSession() {
     stats: stats || { total: 0, good: 0, bad: 0 },
     updateSession,
     addTouch,
+    undoLastTouch,
     updateReflection
   };
 }

@@ -1,13 +1,53 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Default Dark Theme (Orange - Outline Style) */
+    --bg-primary: #0A0A0A;
+    --bg-card: #1A1A1A;
+    --bg-input: #2A2A2A;
+    --text-primary: #FFFFFF;
+    --text-secondary: #A0A0A0;
+    --color-accent: #FF4422; /* Orange-Red */
+    --color-accent-hover: #FF6B35;
+    --border-color: #2A2A2A;
+    
+    /* Ball Specifics - Dark Mode */
+    --ball-fill: transparent;
+    --ball-stroke: #FF4422;
+    --ball-stroke-width: 10;
+    --ball-text: #FFFFFF;
+    --category-header-bg: var(--text-primary);
+    --category-header-text: var(--bg-primary);
+  }
+
+  .theme-light {
+    /* Light Theme (Cyan - Solid Style) */
+    --bg-primary: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --bg-input: #F1F5F9;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --color-accent: #06B6D4; /* Cyan 500 */
+    --color-accent-hover: #06B6D4; /* Cyan 500 */
+    --border-color: #E2E8F0;
+
+    /* Ball Specifics - Light Mode */
+    --ball-fill: transparent;
+    --ball-stroke: #06B6D4;
+    --ball-stroke-width: 10;
+    --ball-text: #06B6D4;
+    --category-header-bg: #06B6D4;   /* blue color from your image */
+    --category-header-text: #ffffff;
+  }
+
   html,
   body {
-    @apply bg-[#0A0A0A] text-white font-sans antialiased;
+    @apply bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans antialiased transition-colors duration-300;
     overflow-y: auto;
     scroll-behavior: smooth;
   }
@@ -18,77 +58,53 @@
   h4,
   h5,
   h6 {
-    @apply font-display tracking-tight;
+    @apply font-display tracking-tight box-border;
   }
+
+
 }
 
 @layer utilities {
-  .font-display {
-    font-family: "Oswald", sans-serif;
-  }
-
-  .block-glow {
-    box-shadow: 0 0 20px rgba(255, 68, 34, 0.4);
-    border: 1px solid rgba(255, 68, 34, 0.5);
-  }
 
   .text-glow {
-    text-shadow: 0 0 10px rgba(255, 68, 34, 0.8);
+    text-shadow: 0 0 10px rgba(255, 68, 34, 0.5);
+  }
+  
+  .theme-light .text-glow {
+    text-shadow: none;
   }
 
-  /* Print Mode Overrides */
-  .print-mode {
-    background-color: white !important;
-    color: black !important;
+   .ball-segment {
+    fill: transparent;
+    transition: fill 0.2s;
   }
 
-  .print-mode header {
-    background-color: white !important;
-    border-bottom: 2px solid black !important;
+  .ball-segment:hover {
+    fill: color-mix(in srgb, var(--ball-stroke) 15%, transparent);
   }
 
-  .print-mode h1,
-  .print-mode h2,
-  .print-mode h3,
-  .print-mode h4,
-  .print-mode h5,
-  .print-mode h6 {
-    color: black !important;
-    text-shadow: none !important;
-  }
+  /* Range slider - theme aware */
+.slider-thumb::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  cursor: pointer;
+  box-shadow: 0 0 4px var(--color-accent);
+}
 
-  .print-mode p,
-  .print-mode span,
-  .print-mode label,
-  .print-mode div {
-    color: black !important;
-    text-shadow: none !important;
-  }
+.slider-thumb::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-accent);
+  cursor: pointer;
+  box-shadow: 0 0 4px var(--color-accent);
+}
 
-  .print-mode .bg-\[\#0A0A0A\],
-  .print-mode .bg-\[\#1A1A1A\],
-  .print-mode .bg-black {
-    background-color: white !important;
-    border: 1px solid #ddd !important;
-  }
-
-  .print-mode .text-white {
-    color: black !important;
-  }
-
-  .print-mode .text-gray-300,
-  .print-mode .text-gray-400 {
-    color: #333 !important;
-  }
-
-  .print-mode .border-\[\#FF4422\] {
-    border-color: black !important;
-  }
-
-  .print-mode .bg-\[\#E5E5E5\],
-  .print-mode .bg-\[\#2A2A2A\],
-  .print-mode .bg-\[\#202020\] {
-    background-color: #f5f5f5 !important;
-    border: 1px solid #000 !important;
-  }
+.slider-thumb:focus {
+  outline: none;
+}
 }

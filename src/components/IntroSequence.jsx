@@ -1,156 +1,239 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import clsx from "clsx";
 import touches from "../assets/touches.png";
 import touches2 from "../assets/touches2.png";
-import footballImg from "../assets/football-3.png"; // Assuming standard football image is available
+import touchesLight from "../assets/touches-intro.png";
 
+const bgColor = "#E8470A";
+
+// const PulsingIcon = ({ src, alt, onClick, tapLabel }) => (
+//   <div className="flex flex-col items-center gap-5">
+//     <motion.button
+//       onClick={onClick}
+//       initial={{ scale: 0, opacity: 0 }}
+//       animate={{ scale: 1, opacity: 1 }}
+//       transition={{ delay: 0.3, type: "spring", stiffness: 180, damping: 14 }}
+//       whileTap={{ scale: 0.88 }}
+//       whileHover={{ scale: 1.06 }}
+//       className="focus:outline-none relative flex items-center justify-center"
+//     >
+//       <motion.div
+//         className="absolute rounded-full"
+//         style={{
+//           width: 160,
+//           height: 160,
+//           backgroundColor: "rgba(255,255,255,0.12)",
+//         }}
+//         animate={{ scale: [1, 1.22, 1], opacity: [0.5, 0, 0.5] }}
+//         transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+//       />
+//       <motion.div
+//         className="absolute rounded-full"
+//         style={{
+//           width: 130,
+//           height: 130,
+//           backgroundColor: "rgba(255,255,255,0.1)",
+//         }}
+//         animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0, 0.4] }}
+//         transition={{
+//           duration: 2.8,
+//           repeat: Infinity,
+//           ease: "easeInOut",
+//           delay: 0.5,
+//         }}
+//       />
+//       <img
+//         src={src}
+//         alt={alt}
+//         className="w-52 h-52 object-contain relative z-10 brightness-0 invert"
+//       />
+//     </motion.button>
+
+//     <motion.p
+//       initial={{ opacity: 0, y: 8 }}
+//       animate={{ opacity: 0.65, y: 0 }}
+//       transition={{ delay: 1.0, duration: 0.6 }}
+//       className="text-white text-[10px] tracking-[0.3em] uppercase"
+//     >
+//       {tapLabel}
+//     </motion.p>
+//   </div>
+// );
+
+const PulsingIcon = ({ src, alt, onClick, tapLabel }) => (
+  <div className="flex flex-col items-center gap-5">
+    <motion.button
+      onClick={onClick}
+      initial={{ scale: 0, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ delay: 0.3, type: "spring", stiffness: 180, damping: 14 }}
+      whileTap={{ scale: 0.88 }}
+      whileHover={{ scale: 1.06 }}
+      className="focus:outline-none relative flex items-center justify-center"
+    >
+      <motion.div
+        className="absolute rounded-full"
+        style={{
+          width: 260,
+          height: 260,
+          backgroundColor: "rgba(255,255,255,0.12)",
+        }}
+        animate={{ scale: [1, 1.22, 1], opacity: [0.5, 0, 0.5] }}
+        transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute rounded-full"
+        style={{
+          width: 230,
+          height: 230,
+          backgroundColor: "rgba(255,255,255,0.1)",
+        }}
+        animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0, 0.4] }}
+        transition={{
+          duration: 2.8,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 0.5,
+        }}
+      />
+      <img
+        src={src}
+        alt={alt}
+        className="w-52 h-52 object-contain relative z-10 brightness-0 invert"
+      />
+    </motion.button>
+
+    <motion.p
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 0.65, y: 0 }}
+      transition={{ delay: 1.0, duration: 0.6 }}
+      className="text-white text-[10px] tracking-[0.3em] uppercase"
+    >
+      {tapLabel}
+    </motion.p>
+  </div>
+);
 export function IntroSequence({ onComplete }) {
-  const [step, setStep] = useState(0); // 0: Animation, 1: Welcome Screen
+  const [step, setStep] = useState(0);
 
   useEffect(() => {
-    // Sequence Timeline
-    // 0s-2s: Ball rolls in
-    // 2s-4s: Stay & Pulse
-    // 4s: Transition to Step 1 (Welcome)
-    const timer1 = setTimeout(() => {
-      setStep(1);
-    }, 4000);
+    const timer = setTimeout(() => {
+      if (step === 0) setStep(1);
+      else onComplete();
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [step, onComplete]);
 
-    // 7s: End Intro
-    const timer2 = setTimeout(() => {
-      onComplete();
-    }, 7500);
-
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-    };
-  }, [onComplete]);
+  const handleTap = () => {
+    if (step === 0) setStep(1);
+    else onComplete();
+  };
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-[#0A0A0A] flex items-center justify-center overflow-hidden">
-      <div className="w-full max-w-md h-full relative shadow-2xl overflow-hidden bg-[#0A0A0A]">
+    // Same fixed overlay as before, but now matches your app's max-w-md container
+    <div
+      className="fixed inset-0 z-[9999] flex justify-center"
+      style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+    >
+      {/* Matches your app's max-w-md mobile container exactly */}
+      <div
+        className="relative w-full max-w-md overflow-hidden"
+        style={{ backgroundColor: bgColor }}
+      >
+        {/* Subtle top shine */}
+        <div
+          className="absolute top-0 left-0 right-0 h-40 z-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(255,255,255,0.07), transparent)",
+          }}
+        />
+
         <AnimatePresence mode="wait">
+          {/* ── SCREEN 1: TOUCHES ── */}
           {step === 0 && (
             <motion.div
-              key="screen-1"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-              className="w-full h-full relative bg-[#00B4FF] flex flex-col items-center justify-center"
+              key="screen-footballer"
+              initial={{ opacity: 0, scale: 0.82 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.15 }}
+              transition={{ duration: 0.55, ease: [0.34, 1.2, 0.64, 1] }}
+              className="absolute inset-0 flex flex-col items-center justify-between px-8 py-20"
             >
-              {/* Pitch Layout */}
-              <div className="absolute inset-0 z-0">
-                <div className="absolute bottom-0 w-full h-[30%] bg-[#39B54A]" />
-                <div className="absolute bottom-[30%] w-full h-2 bg-white" />
-                <div className="absolute bottom-[30%] left-1/2 -translate-x-1/2 w-[60%] h-32 border-x-4 border-t-4 border-white" />
-              </div>
+              <div />
 
-              {/* Rolling Football Animation */}
-              <div className="absolute inset-0 z-10 flex items-center justify-center">
-                <div className="relative w-full h-full">
-                  {/* Ball Container - Positioned to roll on the 'grass' line */}
-                  <motion.div
-                    className="absolute bottom-[20%] left-1/2 w-48 h-48 -ml-24 -mb-1" // Centered horizontally, sitting on line
-                    initial={{ x: "-100vw", y: -500, rotate: -720 }}
-                    animate={{
-                      x: 0,
-                      y: [-400, 0, -200, 0, -80, 0, -20, 0], // Bounce keyframes
-                      rotate: 0,
-                    }}
-                    transition={{
-                      x: { duration: 3, ease: "circOut" },
-                      y: {
-                        duration: 3,
-                        times: [0, 0.3, 0.5, 0.7, 0.8, 0.9, 0.95, 1],
-                        ease: "linear",
-                      },
-                      rotate: { duration: 3, ease: "circOut" },
-                    }}
-                  >
-                    <img
-                      src={footballImg}
-                      alt="Football"
-                      className="w-[50%] h-[50%] object-contain drop-shadow-2xl"
-                    />
-                  </motion.div>
+              {/*
+                Replace touches2 with footballer icon when available:
+                import footballerIcon from "../assets/footballer-icon.png"
+                src={footballerIcon}
+              */}
+              <PulsingIcon
+                src={touchesLight}
+                alt="Footballer Athletics Icon"
+                onClick={handleTap}
+                tapLabel="tap to continue"
+                className="w-48 h-48"
+              />
 
-                  {/* Text appearing after ball arrives */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 2, duration: 0.8 }}
-                    className="absolute top-[20%] w-full text-center"
-                  >
-                    <img
-                      src={touches}
-                      alt="TOUCHES"
-                      className="h-16 mx-auto brightness-0 invert"
-                    />
-                    <p className="text-white font-black tracking-widest mt-2 text-xl drop-shadow-md">
-                      FOOTBALLER ATHLETICS
-                    </p>
-                  </motion.div>
-                </div>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.7, ease: "easeOut" }}
+                className="flex flex-col items-center gap-2"
+              >
+                <motion.p
+                  initial={{ opacity: 0, letterSpacing: "0.05em" }}
+                  animate={{ opacity: 1, letterSpacing: "0.18em" }}
+                  transition={{ delay: 0.9, duration: 0.8 }}
+                  className="text-white text-lg uppercase"
+                >
+                  <span className="font-black">FOOTBALLER</span>{" "}
+                  <span className="font-light">ATHLETICS</span>
+                </motion.p>
+              </motion.div>
             </motion.div>
           )}
 
+          {/* ── SCREEN 2: FOOTBALLER ATHLETICS ── */}
           {step === 1 && (
             <motion.div
-              key="screen-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1 }}
-              className="w-full h-full relative bg-[#00B4FF] flex flex-col items-center justify-center p-8"
+              key="screen-touches"
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.18 }}
+              transition={{ duration: 0.55, ease: [0.34, 1.2, 0.64, 1] }}
+              className="absolute inset-0 flex flex-col items-center justify-between px-8 py-20"
             >
-              {/* Background elements simpler for screen 2 or same? Keeping consistent */}
-              <div className="absolute inset-0 z-0">
-                <div className="absolute bottom-0 w-full h-[30%] bg-[#39B54A]" />
-                <div className="absolute bottom-[30%] w-full h-2 bg-white" />
-              </div>
+              <div />
 
-              <div className="z-10 text-center space-y-8">
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  <h2 className="text-white text-3xl font-light">Welcome to</h2>
-                  <h1 className="text-white text-5xl font-black uppercase mt-2 drop-shadow-lg">
-                    Footballer Athletics
-                  </h1>
-                </motion.div>
+              <PulsingIcon
+                src={touches2}
+                alt="Touches Icon"
+                onClick={handleTap}
+                tapLabel="tap to enter"
+                className="w-48 h-48"
+              />
 
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 1, type: "spring" }}
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.7, ease: "easeOut" }}
+                className="flex flex-col items-center gap-2"
+              >
+                <img
+                  src={touches}
+                  alt="TOUCHES"
+                  className="h-10 w-auto object-contain brightness-0 invert"
+                />
+                <motion.p
+                  initial={{ opacity: 0, letterSpacing: "0.1em" }}
+                  animate={{ opacity: 1, letterSpacing: "0.35em" }}
+                  transition={{ delay: 0.9, duration: 0.8 }}
+                  className="text-white font-black text-[11px] uppercase"
                 >
-                  <img
-                    src={touches2}
-                    alt="Logo"
-                    className="w-32 h-32 mx-auto"
-                  />
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 2 }}
-                  className="absolute bottom-12 left-0 right-0 text-center"
-                >
-                  <h3 className="text-white text-2xl italic font-serif">
-                    "For the players"
-                  </h3>
-                  <p className="text-white/80 text-xs mt-4">
-                    © 2026 Clem Murdock
-                  </p>
-                </motion.div>
-              </div>
+                  FOR THE PLAYERS
+                </motion.p>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>

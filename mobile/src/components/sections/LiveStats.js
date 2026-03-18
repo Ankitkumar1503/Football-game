@@ -75,7 +75,7 @@ export function LiveStats() {
                     onPress={handleReset}
                     className="flex-row items-center gap-1"
                 >
-                    <Text className="text-black dark:text-gray-300 font-black uppercase text-xl tracking-tighter">
+                    <Text className="text-football-text dark:text-gray-300 font-black uppercase text-xl tracking-tighter">
                         RESET
                     </Text>
                 </TouchableOpacity>

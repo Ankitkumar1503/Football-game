@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "../ui/Card";
-import { Trophy } from "lucide-react";
 import { useActiveSession } from "../../hooks/useActiveSession";
 
 const EVALUATION_CATEGORIES = {
   TECHNIQUE: [
     "Ability to play with both feet",
     "Passing",
-    "Controlling and releasing the ball",
+    "Controlling and releasing",
     "Feinting and dribbling",
-    "Shooting at goal finishing technique",
+    "Shooting finishing",
     "Heading",
     "Tackling",
     "Playing without the ball",
@@ -21,10 +20,10 @@ const EVALUATION_CATEGORIES = {
     "Suppleness (Mobility)",
     "Core Muscles",
   ],
-  "TACTICAL AWARENESS / COGNITIVE SKILLS": [
+  "TACTICAL AWARENESS SKILLS": [
     "Reading the game",
-    "Attacking play attacking one-on-one",
-    "Defensive play defending one-on-one",
+    "Attacking one-on-one",
+    "Defending one-on-one",
     "Technique under pressure",
   ],
   "CO-ORDINATION": [
@@ -44,17 +43,19 @@ const EVALUATION_CATEGORIES = {
     "Creativity",
     "Aggression",
   ],
-  "SOCIAL SKILLS AND ATTRIBUTES": [
+  "SOCIAL SKILLS": [
     "Communication",
     "Behavior positive attitude",
     "Charisma / Personality",
+    "Conscientiousness",
+    "Team Player",
   ],
+  "PHYSICAL STATE": ["General state of health"],
 };
 
-export function PlayerEvaluation() {
+export function PlayerEvaluation({ isPdf, pdfPart }) {
   const { reflection, updateReflection } = useActiveSession();
 
-  // Local state for ratings
   const [evaluatedBy, setEvaluatedBy] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("playerEvaluationBy") || "";
@@ -76,6 +77,13 @@ export function PlayerEvaluation() {
     return "";
   });
 
+  const [evaluationDate, setEvaluationDate] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("playerEvaluationDate") || "";
+    }
+    return "";
+  });
+
   const [ratings, setRatings] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("playerEvaluation");
@@ -92,209 +100,241 @@ export function PlayerEvaluation() {
 
   useEffect(() => {
     if (reflection) {
-      if (reflection.detailedEvaluation) {
+      if (reflection.detailedEvaluation)
         setRatings(reflection.detailedEvaluation);
-      }
-      if (reflection.evaluatedBy) {
-        setEvaluatedBy(reflection.evaluatedBy);
-      }
-      if (reflection.playerEvaluationName) {
+      if (reflection.evaluatedBy) setEvaluatedBy(reflection.evaluatedBy);
+      if (reflection.playerEvaluationName)
         setPlayerName(reflection.playerEvaluationName);
-      }
-      if (reflection.playerEvaluationAge) {
+      if (reflection.playerEvaluationAge)
         setPlayerAge(reflection.playerEvaluationAge);
-      }
+      if (reflection.playerEvaluationDate)
+        setEvaluationDate(reflection.playerEvaluationDate);
     }
   }, [reflection]);
 
-  // Save ratings to localStorage
   useEffect(() => {
     localStorage.setItem("playerEvaluation", JSON.stringify(ratings));
   }, [ratings]);
-
-  // Save evaluatedBy to localStorage
   useEffect(() => {
     localStorage.setItem("playerEvaluationBy", evaluatedBy);
   }, [evaluatedBy]);
-
   useEffect(() => {
     localStorage.setItem("playerEvaluationName", playerName);
   }, [playerName]);
-
   useEffect(() => {
     localStorage.setItem("playerEvaluationAge", playerAge);
   }, [playerAge]);
+  useEffect(() => {
+    localStorage.setItem("playerEvaluationDate", evaluationDate);
+  }, [evaluationDate]);
 
   const handleRatingChange = async (category, skill, rating) => {
     const newRatings = {
       ...ratings,
-      [category]: {
-        ...(ratings[category] || {}),
-        [skill]: rating,
-      },
+      [category]: { ...(ratings[category] || {}), [skill]: rating },
     };
     setRatings(newRatings);
-
-    // Save to database
-    await updateReflection({
-      detailedEvaluation: newRatings,
-    });
+    await updateReflection({ detailedEvaluation: newRatings });
   };
 
   const handleEvaluatedByChange = async (e) => {
-    const value = e.target.value;
-    setEvaluatedBy(value);
-    // We might want to debounce this, but for now simple update
-    await updateReflection({
-      evaluatedBy: value,
-    });
+    setEvaluatedBy(e.target.value);
+    await updateReflection({ evaluatedBy: e.target.value });
   };
 
   const handleNameChange = async (e) => {
-    const value = e.target.value;
-    setPlayerName(value);
-    await updateReflection({
-      playerEvaluationName: value,
-    });
+    setPlayerName(e.target.value);
+    await updateReflection({ playerEvaluationName: e.target.value });
   };
 
   const handleAgeChange = async (e) => {
-    const value = e.target.value;
-    setPlayerAge(value);
-    await updateReflection({
-      playerEvaluationAge: value,
-    });
+    setPlayerAge(e.target.value);
+    await updateReflection({ playerEvaluationAge: e.target.value });
   };
 
+  const handleDateChange = async (e) => {
+    setEvaluationDate(e.target.value);
+    await updateReflection({ playerEvaluationDate: e.target.value });
+  };
+
+  // Shared input style — theme-aware
+  const inputClass =
+    "w-full bg-[var(--bg-input)] text-[var(--text-primary)] px-2 py-1 text-xs font-bold uppercase border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
+
+  let categoriesToRender = Object.entries(EVALUATION_CATEGORIES);
+  if (isPdf) {
+    if (pdfPart === 1) categoriesToRender = categoriesToRender.slice(0, 1); // Technique
+    else if (pdfPart === 2) categoriesToRender = categoriesToRender.slice(1, 3); // Physical Attr, Tactical
+    else if (pdfPart === 3) categoriesToRender = categoriesToRender.slice(3, 4); // Co-ordination
+    else if (pdfPart === 4) categoriesToRender = categoriesToRender.slice(4, 5); // Mental Strengths
+    else if (pdfPart === 5) categoriesToRender = categoriesToRender.slice(5, 7); // Social, Physical State
+  }
+
   return (
-    <Card className="mb-[24px] bg-white dark:bg-[#1A1A1A] border-none shadow-none">
-      <CardContent className="p-2">
-        <div className="flex items-center gap-2 mb-4 border-b-2 border-black dark:border-white pb-2">
-          <h2 className="text-2xl font-black uppercase text-black dark:text-white">
-            PLAYER EVALUATIONS
-          </h2>
-        </div>
+    <div className={!isPdf ? "mb-6" : ""}>
+      {(!isPdf || pdfPart === 1) && (
+        <>
+          {/* ── Header ── */}
+          <div className="text-center mb-4 border-b-2 border-[var(--text-primary)] pb-2">
+            <h2 className="text-2xl font-black uppercase text-[var(--text-primary)] tracking-widest">
+              PLAYER EVALUATION
+            </h2>
+          </div>
 
-        <div className="flex gap-4 mb-4">
-          <div className="flex-1 flex items-center gap-3">
-            <label
-              htmlFor="playerName"
-              className="text-xs font-black uppercase text-gray-800 dark:text-gray-200 whitespace-nowrap"
-            >
-              NAME:
-            </label>
-            <input
-              id="playerName"
-              type="text"
-              value={playerName}
-              onChange={handleNameChange}
-              className="w-full bg-[#E5E5E5] text-black px-3 py-[4px] text-sm font-bold uppercase rounded-sm border-none focus:outline-none focus:ring-1 focus:ring-[#FF4422]"
-            />
-          </div>
-          <div className="w-1/3 flex items-center gap-3">
-            <label
-              htmlFor="playerAge"
-              className="text-xs font-black uppercase text-gray-800 dark:text-gray-200 whitespace-nowrap"
-            >
-              AGE:
-            </label>
-            <input
-              id="playerAge"
-              type="text"
-              value={playerAge}
-              onChange={handleAgeChange}
-              className="w-full bg-[#E5E5E5] text-black px-3 py-[4px] text-sm font-bold uppercase rounded-sm border-none focus:outline-none focus:ring-1 focus:ring-[#FF4422]"
-            />
-          </div>
-        </div>
-
-        <div className="py-3 mb-4 flex items-center gap-3">
-          <label
-            htmlFor="evaluatedBy"
-            className="text-xs font-black uppercase text-gray-800 dark:text-gray-200 whitespace-nowrap"
-          >
-            PLAYER EVALUATION BY:
-          </label>
-          <input
-            id="evaluatedBy"
-            type="text"
-            value={evaluatedBy}
-            onChange={handleEvaluatedByChange}
-            className="flex-1 bg-[#E5E5E5] text-black px-3 py-[4px] text-sm font-bold uppercase rounded-sm border-none focus:outline-none focus:ring-1 focus:ring-[#FF4422]"
-            placeholder=""
-          />
-        </div>
-
-        <div className="flex justify-between items-center text-[10px] sm:text-xs font-black uppercase mb-2 px-1">
-          <span>EVALUATION:</span>
-          <div className="flex gap-2">
-            <span>1 : VERY GOOD</span>
-            <span>2 : GOOD</span>
-            <span>3 : AVERAGE</span>
-            <span>4 : POOR</span>
-          </div>
-        </div>
-
-        {/* Header Row for Grid */}
-        <div className="grid grid-cols-[1fr_repeat(4,30px)] gap-1 mb-2 px-1">
-          <div></div>
-          <div className="text-center font-bold text-xs border border-black/20">
-            1
-          </div>
-          <div className="text-center font-bold text-xs border border-black/20">
-            2
-          </div>
-          <div className="text-center font-bold text-xs border border-black/20">
-            3
-          </div>
-          <div className="text-center font-bold text-xs border border-black/20">
-            4
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          {Object.entries(EVALUATION_CATEGORIES).map(([category, skills]) => (
-            <div key={category}>
-              <h3 className="text-sm font-black uppercase mb-1 px-1 border-b-[1px] border-gray-200 dark:text-gray-200">
-                {category}
-              </h3>
-              <div className="space-y-[1px]">
-                {skills.map((skill) => {
-                  const currentRating = ratings[category]?.[skill];
-                  return (
-                    <div
-                      key={skill}
-                      className="grid grid-cols-[1fr_repeat(4,30px)] gap-1 items-center bg-white dark:bg-[#202020] p-1"
-                    >
-                      <span className="text-[10px] md:text-xs font-bold uppercase text-gray-800 dark:text-gray-300 leading-tight pr-2">
-                        {skill}
-                      </span>
-                      {[1, 2, 3, 4].map((rating) => (
-                        <label
-                          key={rating}
-                          className="flex justify-center cursor-pointer h-full"
-                        >
-                          <input
-                            type="radio"
-                            name={`${category}-${skill}`}
-                            value={rating}
-                            checked={currentRating === rating}
-                            onChange={() =>
-                              handleRatingChange(category, skill, rating)
-                            }
-                            className="peer sr-only"
-                          />
-                          <div className="w-5 h-5 rounded-sm border border-gray-300 peer-checked:bg-[#FF4422] peer-checked:border-[#FF4422] transistion-colors"></div>
-                        </label>
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
+          {/* ── Name / Age row ── */}
+          <div className="grid grid-cols-[1fr_auto] gap-3 mb-2">
+            <div>
+              <label className="block text-[9px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest">
+                NAME
+              </label>
+              <input
+                type="text"
+                value={playerName}
+                onChange={handleNameChange}
+                className={inputClass}
+              />
             </div>
-          ))}
+            <div className="w-16">
+              <label className="block text-[9px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest">
+                AGE
+              </label>
+              <input
+                type="text"
+                value={playerAge}
+                onChange={handleAgeChange}
+                className={inputClass}
+              />
+            </div>
+          </div>
+
+          {/* ── Evaluation By / Date row ── */}
+          <div className="grid grid-cols-[1fr_auto] gap-3 mb-4">
+            <div>
+              <label className="block text-[9px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest">
+                EVALUATION BY
+              </label>
+              <input
+                type="text"
+                value={evaluatedBy}
+                onChange={handleEvaluatedByChange}
+                className={inputClass}
+              />
+            </div>
+            <div className="w-24">
+              <label className="block text-[9px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest">
+                DATE
+              </label>
+              <input
+                type="date"
+                value={evaluationDate}
+                onChange={handleDateChange}
+                className={inputClass}
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── Legend ── */}
+      <div className="flex flex-wrap justify-between items-center mb-2 py-1 border-t border-b border-[var(--border-color)]">
+        <span className="text-[9px] font-black uppercase text-[var(--text-primary)] tracking-wider">
+          EVALUATION:
+        </span>
+        <div className="flex gap-3">
+          {["1 : VERY GOOD", "2 : GOOD", "3 : AVERAGE", "4 : POOR"].map(
+            (label) => (
+              <span
+                key={label}
+                className="text-[8px] font-bold uppercase text-[var(--text-primary)]"
+              >
+                {label}
+              </span>
+            ),
+          )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* ── Column Headers ── */}
+      <div className="grid grid-cols-[1fr_28px_28px_28px_28px] gap-[2px] mb-[2px]">
+        <div />
+        {[1, 2, 3, 4].map((n) => (
+          <div
+            key={n}
+            className="text-center text-[10px] font-black text-[var(--text-primary)] bg-[var(--bg-input)] py-1"
+          >
+            {n}
+          </div>
+        ))}
+      </div>
+
+      {/* ── Categories & Skills ── */}
+      <div className="space-y-[2px]">
+        {categoriesToRender.map(([category, skills]) => (
+          <div key={category}>
+            {/* Category header — solid accent background */}
+            <div
+              className="bg-[var(--text-primary)] dark:bg-[var(--text-primary)] px-2 py-[3px]"
+              style={{ backgroundColor: "var(--category-header-bg)" }}
+            >
+              <span
+                className="text-[10px] font-black uppercase tracking-wider"
+                style={{ color: "var(--category-header-text)" }}
+              >
+                {category}
+              </span>
+            </div>
+
+            {/* Skill rows */}
+            {skills.map((skill, idx) => {
+              const currentRating = ratings[category]?.[skill];
+              return (
+                <div
+                  key={skill}
+                  className="grid grid-cols-[1fr_28px_28px_28px_28px] gap-[2px] items-center"
+                  style={{
+                    backgroundColor:
+                      idx % 2 === 0 ? "var(--bg-card)" : "var(--bg-input)",
+                  }}
+                >
+                  <span className="text-[9px] font-bold uppercase text-[var(--text-primary)] px-2 py-[3px] leading-tight">
+                    {skill}
+                  </span>
+                  {[1, 2, 3, 4].map((rating) => (
+                    <label
+                      key={rating}
+                      className="flex justify-center items-center cursor-pointer py-[3px]"
+                    >
+                      <input
+                        type="radio"
+                        name={`${category}-${skill}`}
+                        value={rating}
+                        checked={currentRating === rating}
+                        onChange={() =>
+                          handleRatingChange(category, skill, rating)
+                        }
+                        className="peer sr-only"
+                      />
+                      <div
+                        className="w-4 h-4 border transition-colors"
+                        style={{
+                          backgroundColor:
+                            currentRating === rating
+                              ? "var(--color-accent)"
+                              : "transparent",
+                          borderColor:
+                            currentRating === rating
+                              ? "var(--color-accent)"
+                              : "var(--text-secondary)",
+                        }}
+                      />
+                    </label>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

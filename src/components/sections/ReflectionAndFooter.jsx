@@ -14,6 +14,7 @@ import { db } from "../../lib/db";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { ShareModal } from "./ShareModal";
+import { useNavigate } from "react-router-dom";
 
 const WELL_DONE_TAGS = [
   "ATTACKING",
@@ -62,11 +63,11 @@ const PERFORMANCE_METRICS = [
 function LoadingOverlay({ progress }) {
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <div className="bg-white dark:bg-[#1A1A1A] rounded-lg p-8 max-w-sm w-full mx-4 shadow-2xl">
+      <div className="bg-football-card rounded-lg p-8 max-w-sm w-full mx-4 shadow-2xl">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-12 h-12 text-[#FF4422] animate-spin" />
+          <Loader2 className="w-12 h-12 text-[var(--color-accent)] animate-spin" />
           <div className="text-center">
-            <h3 className="text-lg font-black uppercase text-black dark:text-white mb-2">
+            <h3 className="text-lg font-black uppercase text-football-text mb-2">
               Generating PDF Report
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -75,7 +76,7 @@ function LoadingOverlay({ progress }) {
           </div>
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
             <div
-              className="bg-[#FF4422] h-full transition-all duration-300 ease-out"
+              className="bg-[var(--color-accent)] h-full transition-all duration-300 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -88,7 +89,7 @@ function LoadingOverlay({ progress }) {
   );
 }
 
-export function PlayerReflection() {
+export function PlayerReflection({ isPdf, pdfPart }) {
   const { sessionId, reflection, updateReflection } = useActiveSession();
 
   // Local state with localStorage initialization
@@ -184,156 +185,189 @@ export function PlayerReflection() {
     await updateReflection({ detailedPerformance: newMetrics });
   };
 
+  let metricsToRender = PERFORMANCE_METRICS;
+  if (isPdf) {
+    if (pdfPart === 2) metricsToRender = metricsToRender.slice(0, 8);
+    else if (pdfPart === 3) metricsToRender = metricsToRender.slice(8);
+  }
+
   return (
-    <Card className="mb-[24px] bg-white dark:bg-[#1A1A1A] border-none shadow-none">
+    <Card className="mb-[24px] bg-football-card border-none shadow-none">
       <CardContent className="p-2">
-        {/* Header */}
-        <div className="mb-6 border-b-2 border-black dark:border-white pb-2">
-          <h2 className="text-xl font-black uppercase text-black dark:text-white">
-            PLAYER REFLECTION
-          </h2>
-          <div className="flex gap-4 mb-1 mt-2">
-            <div className="flex-1 flex items-center gap-3">
-              <label
-                htmlFor="playerName"
-                className="text-xs font-black uppercase text-black dark:text-white whitespace-nowrap"
-              >
-                NAME:
-              </label>
-              <input
-                id="playerName"
-                type="text"
-                value={formData.playerName}
-                onChange={handleTextChange}
-                className="w-full bg-white text-black px-3 py-[4px] text-sm font-bold uppercase border-none focus:outline-none focus:ring-1 focus:ring-white"
-              />
-            </div>
-            <div className="flex items-center gap-3">
-              <label
-                htmlFor="playerAge"
-                className="text-xs font-black uppercase text-black dark:text-white whitespace-nowrap"
-              >
-                AGE:
-              </label>
-              <input
-                id="playerAge"
-                type="text"
-                value={formData.playerAge}
-                onChange={handleTextChange}
-                className="w-20 bg-white text-black px-3 py-[4px] text-sm font-bold uppercase border-none focus:outline-none focus:ring-1 focus:ring-white"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* What did you do well? */}
-        <div className="mb-8">
-          <h3 className="text-sm font-black uppercase mb-3 text-black dark:text-white">
-            WHAT DID YOU DO WELL:
-          </h3>
-          <div className="grid grid-cols-3 gap-x-1 gap-y-2">
-            {WELL_DONE_TAGS.map((tag) => (
-              <label
-                key={tag}
-                className="flex items-center gap-2 cursor-pointer group"
-              >
-                <div
-                  className={`w-4 h-4 border-2 flex items-center justify-center transition-all bg-white border-white ${
-                    formData.wellDoneTags.includes(tag)
-                      ? "bg-white"
-                      : "bg-white"
-                  }`}
-                >
-                  {formData.wellDoneTags.includes(tag) && (
-                    <span className="text-black font-bold text-[12px]">✓</span>
-                  )}
+        {(!isPdf || pdfPart === 1) && (
+          <>
+            {/* Header */}
+            <div className="mb-6 border-b-2 border-black dark:border-white pb-2">
+              <h2 className="text-xl font-black uppercase text-football-text">
+                PLAYER REFLECTION
+              </h2>
+              <div className="flex gap-4 mb-1 mt-2">
+                <div className="flex-1 flex items-center gap-3">
+                  <label
+                    htmlFor="playerName"
+                    className="text-xs font-black uppercase text-football-text whitespace-nowrap"
+                  >
+                    NAME:
+                  </label>
+                  <input
+                    id="playerName"
+                    type="text"
+                    value={formData.playerName}
+                    onChange={handleTextChange}
+                    className="w-full bg-football-input text-football-text px-3 py-[4px] text-sm font-bold uppercase border-none focus:outline-none focus:ring-1 focus:ring-football-accent"
+                  />
                 </div>
-                <input
-                  type="checkbox"
-                  className="hidden"
-                  checked={formData.wellDoneTags.includes(tag)}
-                  onChange={() => handleTagToggle(tag)}
-                />
-                <span className="text-[10px] font-bold uppercase text-white leading-tight whitespace-nowrap">
-                  {tag}
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
+                <div className="flex items-center gap-3">
+                  <label
+                    htmlFor="playerAge"
+                    className="text-xs font-black uppercase text-football-text whitespace-nowrap"
+                  >
+                    AGE:
+                  </label>
+                  <input
+                    id="playerAge"
+                    type="text"
+                    value={formData.playerAge}
+                    onChange={handleTextChange}
+                    className="w-20 bg-football-input text-football-text px-3 py-[4px] text-sm font-bold uppercase border-none focus:outline-none focus:ring-1 focus:ring-football-accent"
+                  />
+                </div>
+              </div>
+            </div>
 
-        {/* Text Inputs */}
-        <div className="space-y-4 mb-8">
-          <div>
-            <label
-              htmlFor="achievedGoal"
-              className="block text-sm font-black uppercase mb-1 text-black dark:text-white"
-            >
-              DID YOU ACHIEVE YOUR GOAL?
-            </label>
-            <input
-              id="achievedGoal"
-              type="text"
-              value={formData.achievedGoal}
-              onChange={handleTextChange}
-              className="w-full bg-white text-black border-none px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-white h-8"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="whatLearned"
-              className="block text-sm font-black uppercase mb-1 text-black dark:text-white"
-            >
-              WHAT DID YOU LEARN?
-            </label>
-            <input
-              id="whatLearned"
-              type="text"
-              value={formData.whatLearned}
-              onChange={handleTextChange}
-              className="w-full bg-white text-black border-none px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-white h-8"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="whatWouldChange"
-              className="block text-sm font-black uppercase mb-1 text-black dark:text-white"
-            >
-              WHAT WOULD YOU CHANGE?
-            </label>
-            <input
-              id="whatWouldChange"
-              type="text"
-              value={formData.whatWouldChange}
-              onChange={handleTextChange}
-              className="w-full bg-white text-black border-none px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-white h-8"
-            />
-          </div>
-        </div>
+            {/* What did you do well? */}
+            <div className="mb-8">
+              <h3 className="text-sm font-black uppercase mb-3 text-football-text">
+                WHAT DID YOU DO WELL:
+              </h3>
+              <div className="grid grid-cols-3 gap-x-1 gap-y-2">
+                {WELL_DONE_TAGS.map((tag) => (
+                  <label
+                    key={tag}
+                    className="flex items-center gap-2 cursor-pointer group"
+                  >
+                    <div
+                      className={`w-4 h-4 border-2 flex items-center justify-center transition-all bg-football-card border-football-subtle ${
+                        formData.wellDoneTags.includes(tag)
+                          ? "bg-football-card"
+                          : "bg-football-card"
+                      }`}
+                    >
+                      {formData.wellDoneTags.includes(tag) && (
+                        <span className="text-football-text font-bold text-[12px]">
+                          ✓
+                        </span>
+                      )}
+                    </div>
+                    <input
+                      type="checkbox"
+                      className="hidden"
+                      checked={formData.wellDoneTags.includes(tag)}
+                      onChange={() => handleTagToggle(tag)}
+                    />
+                    <span className="text-[10px] font-bold uppercase text-football-text leading-tight whitespace-nowrap">
+                      {tag}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Text Inputs */}
+            <div className="space-y-4 mb-8">
+              <div>
+                <label
+                  htmlFor="achievedGoal"
+                  className="block text-sm font-black uppercase mb-1 text-football-text"
+                >
+                  DID YOU ACHIEVE YOUR GOAL?
+                </label>
+                <input
+                  id="achievedGoal"
+                  type="text"
+                  value={formData.achievedGoal}
+                  onChange={handleTextChange}
+                  className="w-full bg-football-input text-football-text border-none px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-football-accent h-8"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="whatLearned"
+                  className="block text-sm font-black uppercase mb-1 text-football-text"
+                >
+                  WHAT DID YOU LEARN?
+                </label>
+                <input
+                  id="whatLearned"
+                  type="text"
+                  value={formData.whatLearned}
+                  onChange={handleTextChange}
+                  className="w-full bg-football-input text-football-text border-none px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-football-accent h-8"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="whatWouldChange"
+                  className="block text-sm font-black uppercase mb-1 text-football-text"
+                >
+                  WHAT WOULD YOU CHANGE?
+                </label>
+                <input
+                  id="whatWouldChange"
+                  type="text"
+                  value={formData.whatWouldChange}
+                  onChange={handleTextChange}
+                  className="w-full bg-football-input text-football-text border-none px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-football-accent h-8"
+                />
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Performance Metrics */}
-        <div>
-          <h3 className="text-sm font-black uppercase mb-4 text-black dark:text-white">
-            REFLECT ON YOUR GAME PERFORMANCE: 1-10
-          </h3>
-          <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-            {PERFORMANCE_METRICS.map((metric) => (
-              <div key={metric} className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={formData.detailedPerformance[metric] || ""}
-                  onChange={(e) => handleMetricChange(metric, e.target.value)}
-                  className="w-12 h-6 bg-white text-black text-center font-bold text-xs border-none focus:outline-none focus:ring-1 focus:ring-white"
-                />
-                <span className="text-[10px] font-bold uppercase text-white">
-                  {metric}
-                </span>
-              </div>
-            ))}
+        {(!isPdf || pdfPart === 2 || pdfPart === 3) && (
+          <div>
+            {(!isPdf || pdfPart === 2) && (
+              <h3 className="text-sm font-black uppercase mb-4 text-football-text">
+                REFLECT ON YOUR GAME PERFORMANCE: 1-10
+              </h3>
+            )}
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+              {metricsToRender.map((metric) => {
+                const value = Number(formData.detailedPerformance[metric] || 5);
+                const percent = ((value - 1) / 9) * 100;
+                return (
+                  <div key={metric} className="flex items-center gap-2">
+                    {/* Label - fixed width */}
+                    <span className="text-[9px] font-bold uppercase text-football-text tracking-wider w-20 shrink-0 leading-tight">
+                      {metric}
+                    </span>
+                    {/* Slider - grows to fill */}
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      value={value}
+                      onChange={(e) => handleMetricChange(metric, e.target.value)}
+                      className="slider-thumb flex-1 h-1.5 rounded-full appearance-none cursor-pointer min-w-0"
+                      style={{
+                        background: `linear-gradient(to right,
+                  var(--color-accent) 0%,
+                  var(--color-accent) ${percent}%,
+                  var(--bg-input) ${percent}%,
+                  var(--bg-input) 100%)`,
+                      }}
+                    />
+                    {/* Value - fixed width */}
+                    <span className="text-[9px] font-bold text-football-accent w-3 text-right shrink-0">
+                      {value}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -344,6 +378,7 @@ export function BottomBar() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [progress, setProgress] = useState(0);
+  const navigate = useNavigate();
 
   const handleReset = async () => {
     if (
@@ -369,6 +404,7 @@ export function BottomBar() {
         localStorage.removeItem("playerAttendance");
         localStorage.removeItem("playerEvaluation");
         localStorage.removeItem("playerEvaluationBy");
+        localStorage.removeItem("noteToCoach");
 
         // Small delay to ensure DB ops are committed and UI has resolved
         setTimeout(() => {
@@ -484,25 +520,8 @@ export function BottomBar() {
     }
   };
 
-  const handleDownloadPDF = async () => {
-    setIsGenerating(true);
-    try {
-      const blob = await generatePDFBlob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `player-report-${new Date().toISOString().split("T")[0]}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Download error:", error);
-      alert("Failed to generate PDF. Please try again.");
-    } finally {
-      setIsGenerating(false);
-      setProgress(0);
-    }
+  const handleDownloadPDF = () => {
+    navigate("/pdf-report");
   };
 
   const handleSave = async () => {
@@ -619,13 +638,13 @@ export function BottomBar() {
 
       <div
         id="bottom-bar-container"
-        className="fixed bottom-0 left-0 right-0 p-4 bg-[#0A0A0A]/95 backdrop-blur-lg z-[100]"
+        className="fixed bottom-0 left-0 right-0 p-4 bg-black/95 backdrop-blur-lg z-[100]"
       >
         <div className="max-w-md mx-auto grid grid-cols-4 gap-2">
           <Button
             variant="secondary"
             size="sm"
-            className="flex-col gap-1 py-3 h-auto bg-[#1A1A1A] hover:bg-[#2A2A2A] text-gray-300 border-gray-300 hover:border-gray-300 transition-all"
+            className="flex-col gap-1 py-3 h-auto bg-black text-white border border-white/20 hover:bg-white/10 transition-all"
             onClick={handleReset}
             disabled={isGenerating}
           >
@@ -636,7 +655,7 @@ export function BottomBar() {
             <Button
               variant="secondary"
               size="sm"
-              className="flex-col gap-1 py-3 h-auto bg-[#1A1A1A] hover:bg-[#2A2A2A] text-gray-300 border-gray-300 hover:border-gray-300 transition-all"
+              className="flex-col gap-1 py-3 h-auto bg-black text-white border border-white/20 hover:bg-white/10 transition-all"
               onClick={handleNativeShare}
               disabled={isGenerating}
             >
@@ -657,7 +676,7 @@ export function BottomBar() {
           <Button
             variant="secondary"
             size="sm"
-            className="flex-col gap-1 py-3 h-auto bg-[#1A1A1A] hover:bg-[#2A2A2A] text-gray-300 border-gray-300 hover:border-gray-300 transition-all"
+            className="flex-col gap-1 py-3 h-auto bg-black text-white border border-white/20 hover:bg-white/10 transition-all"
             onClick={handleDownloadPDF}
             disabled={isGenerating}
           >
@@ -666,7 +685,7 @@ export function BottomBar() {
           </Button>
           <Button
             variant="primary"
-            className="flex-col gap-1 py-3 h-auto shadow-lg shadow-[#FF4422]/40 bg-[#FF4422] hover:bg-[#FF6B35] border-none text-white transition-all"
+            className="flex-col gap-1 py-3 h-auto shadow-lg shadow-[var(--color-accent)]/60 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] border-none text-white transition-all"
             onClick={handleSave}
             disabled={isGenerating}
           >

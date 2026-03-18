@@ -1,3 +1,4 @@
+// UPDATED: Full theme-aware version
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "../ui/Card";
 import { useActiveSession } from "../../hooks/useActiveSession";
@@ -11,29 +12,26 @@ function useDebounce(value, delay) {
   return debouncedValue;
 }
 
-export function PlayerAttendanceGrade() {
+export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
   const { reflection, updateReflection } = useActiveSession();
   const [hydrated, setHydrated] = useState(false);
 
-  // Local state with localStorage initialization
   const [fullData, setFullData] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("playerAttendance");
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          // Check if it's the old array format or new object format
           if (Array.isArray(parsed)) {
             return {
               metadata: {
-                date: parsed.metadata?.date ?? "",
-                game: parsed.metadata?.game ?? "",
-                training: parsed.metadata?.training ?? "",
-                tryout: parsed.metadata?.tryout ?? "",
-                evaluation: parsed.metadata?.evaluation ?? "",
-                team: parsed.metadata?.team ?? "",
+                date: "",
+                time: "",
+                team: "",
+                age: "",
+                sessionType: "",
               },
-              records: parsed.records ?? [],
+              records: parsed,
             };
           }
           return parsed;
@@ -45,65 +43,36 @@ export function PlayerAttendanceGrade() {
     return {
       metadata: {
         date: "",
-        game: "",
-        training: "",
-        tryout: "",
-        evaluation: "",
+        time: "",
         team: "",
-        sessionType: "", // Added for radio selection persistence
+        age: "",
+        sessionType: "",
       },
       records: Array.from({ length: 25 }, (_, i) => ({
         id: i + 1,
-        lastName: "",
-        firstName: "",
+        name: "",
         age: "",
         position: "",
-        grades: {
-          A: false,
-          B: false,
-          C: false,
-        },
+        grades: { A: false, B: false, C: false },
       })),
     };
   });
-
-  // console.log("fulldata", fullData);
-
-  useEffect(() => {
-    console.log("fulldata changed", fullData);
-  }, [fullData]);
-
-  // Sync with DB
-  // useEffect(() => {
-  //     if (reflection && reflection.attendance) {
-  //         setFullData(prev => {
-  //             if (JSON.stringify(prev) !== JSON.stringify(reflection.attendance)) {
-  //                 // Handle migration from old array format if DB has old data
-  //                 if (Array.isArray(reflection.attendance)) {
-  //                     return {
-  //                         metadata: prev.metadata, // Keep local metadata if exists
-  //                         records: reflection.attendance
-  //                     };
-  //                 }
-  //                 return reflection.attendance;
-  //             }
-  //             return prev;
-  //         });
-  //     }
-  // }, [reflection]);
 
   useEffect(() => {
     if (!hydrated && reflection?.attendance) {
       setFullData({
         metadata: {
           date: reflection.attendance.metadata?.date ?? "",
-          game: reflection.attendance.metadata?.game ?? "",
-          training: reflection.attendance.metadata?.training ?? "",
-          tryout: reflection.attendance.metadata?.tryout ?? "",
-          evaluation: reflection.attendance.metadata?.evaluation ?? "",
+          time: reflection.attendance.metadata?.time ?? "",
           team: reflection.attendance.metadata?.team ?? "",
+          age: reflection.attendance.metadata?.age ?? "",
+          sessionType: reflection.attendance.metadata?.sessionType ?? "",
         },
-        records: reflection.attendance.records ?? [],
+        records: (reflection.attendance.records ?? []).map((r) => ({
+          ...r,
+          // support old data that had firstName/lastName
+          name: r.name ?? `${r.firstName ?? ""} ${r.lastName ?? ""}`.trim(),
+        })),
       });
       setHydrated(true);
     }
@@ -111,12 +80,10 @@ export function PlayerAttendanceGrade() {
 
   const debouncedData = useDebounce(fullData, 1000);
 
-  // Save to localStorage
   useEffect(() => {
     localStorage.setItem("playerAttendance", JSON.stringify(fullData));
   }, [fullData]);
 
-  // Save to DB
   useEffect(() => {
     if (debouncedData) {
       updateReflection({ attendance: debouncedData });
@@ -126,10 +93,7 @@ export function PlayerAttendanceGrade() {
   const handleMetadataChange = (field, value) => {
     setFullData((prev) => ({
       ...prev,
-      metadata: {
-        ...prev.metadata,
-        [field]: value,
-      },
+      metadata: { ...prev.metadata, [field]: value },
     }));
   };
 
@@ -161,176 +125,222 @@ export function PlayerAttendanceGrade() {
     }));
   };
 
-  return (
-    <Card className="mb-6 bg-white dark:bg-[#1A1A1A] border-none shadow-none">
-      <CardContent className="p-2">
-        <div className="flex flex-col mb-4">
-          <h1 className="text-3xl font-black uppercase text-center text-white mb-6">
-            PLAYER GRADE
-          </h1>
+  // Shared input style
+  const inputClass =
+    "w-full bg-[var(--bg-input)] text-[var(--text-primary)] px-2 py-1 text-xs font-bold border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
-          <div className="flex justify-between items-end mb-2">
-            <h2 className="text-sm font-bold uppercase text-white">
-              PLAYER ATTENDANCE RECORD/GRADE
+  const labelClass =
+    "block text-[9px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest";
+
+  let recordsToRender = fullData.records;
+  if (isPdf) {
+    if (pdfPart === 1) recordsToRender = recordsToRender.slice(0, 7);
+    else if (pdfPart === 2) recordsToRender = recordsToRender.slice(7, 14);
+    else if (pdfPart === 3) recordsToRender = recordsToRender.slice(14, 20);
+    else if (pdfPart === 4) recordsToRender = recordsToRender.slice(20, 25);
+  }
+
+  return (
+    <div className={!isPdf ? "mb-6" : ""}>
+      {(!isPdf || pdfPart === 1) && (
+        <>
+          {/* ── Header ── */}
+          <div className="text-center mb-4 border-b-2 border-[var(--text-primary)] pb-2">
+            <h2 className="text-2xl font-black uppercase text-[var(--text-primary)] tracking-widest">
+              GRADE
             </h2>
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-bold uppercase text-white">
-                DATE
-              </label>
+          </div>
+
+          {/* ── DATE / TIME ── */}
+          <div className="grid grid-cols-2 gap-3 mb-2">
+            <div>
+              <label className={labelClass}>DATE</label>
               <input
-                name="date"
                 type="date"
-                value={fullData.metadata?.date}
+                value={fullData.metadata?.date ?? ""}
                 onChange={(e) => handleMetadataChange("date", e.target.value)}
-                className="bg-[#E5E5E5] text-black px-2 py-1 text-sm font-bold border-none w-40"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>TIME</label>
+              <input
+                type="time"
+                value={fullData.metadata?.time ?? ""}
+                onChange={(e) => handleMetadataChange("time", e.target.value)}
+                className={inputClass}
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-6 mb-4">
-            <div className="flex items-center gap-4">
-              {["GAME", "TRAINING", "TRYOUT", "EVALUATION"].map((type) => (
-                <label
-                  key={type}
-                  className="flex items-center gap-2 cursor-pointer"
-                >
-                  <span className="text-xs font-bold uppercase text-white">
-                    {type}
-                  </span>
-                  <div
-                    onClick={() => handleMetadataChange("sessionType", type)}
-                    className={`w-5 h-5 rounded-full border-2 border-white flex items-center justify-center ${
-                      fullData.metadata?.sessionType === type
-                        ? "bg-white"
-                        : "bg-transparent"
-                    }`}
-                  ></div>
-                </label>
-              ))}
-            </div>
-            <div className="flex items-center gap-2 flex-1">
-              <label className="text-xs font-bold uppercase text-white whitespace-nowrap">
-                TEAM
-              </label>
+          {/* ── TEAM / AGE ── */}
+          <div className="grid grid-cols-[1fr_80px] gap-3 mb-4">
+            <div>
+              <label className={labelClass}>TEAM</label>
               <input
-                name="team"
                 type="text"
                 value={fullData.metadata?.team ?? ""}
                 onChange={(e) => handleMetadataChange("team", e.target.value)}
-                className="w-full bg-[#E5E5E5] text-black px-2 py-1 text-sm font-bold border-none"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>AGE</label>
+              <input
+                type="text"
+                value={fullData.metadata?.age ?? ""}
+                onChange={(e) => handleMetadataChange("age", e.target.value)}
+                className={inputClass}
               />
             </div>
           </div>
-        </div>
 
-        {/* Attendance Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-transparent text-white">
-                <th className="p-1 text-[10px] font-bold uppercase text-left w-[30px]"></th>
-                <th className="p-1 text-[10px] font-bold uppercase text-left">
-                  LAST NAME
-                </th>
-                <th className="p-1 text-[10px] font-bold uppercase text-left">
-                  FIRST NAME
-                </th>
-                <th className="p-1 text-[10px] font-bold uppercase text-center w-[60px]">
-                  AGE
-                </th>
-                <th className="p-1 text-[10px] font-bold uppercase text-center w-[80px]">
-                  POSITION
-                </th>
-                <th className="p-1 text-[10px] font-bold uppercase text-center w-[40px]">
-                  A
-                </th>
-                <th className="p-1 text-[10px] font-bold uppercase text-center w-[40px]">
-                  B
-                </th>
-                <th className="p-1 text-[10px] font-bold uppercase text-center w-[40px]">
-                  C
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {fullData.records.map((row) => (
-                <tr
-                  key={row.id}
-                  className="bg-transparent border-b border-gray-700/50"
+          {/* ── Session Type Radio Buttons ── */}
+          <div className="flex items-center justify-between mb-4 border-t border-b border-[var(--border-color)] py-2">
+            {["GAME", "TRAINING", "TRYOUT", "EVALUATION"].map((type) => (
+              <label
+                key={type}
+                className="flex items-center gap-1.5 cursor-pointer"
+                onClick={() => handleMetadataChange("sessionType", type)}
+              >
+                {/* Radio circle */}
+                <div
+                  className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
+                  style={{
+                    borderColor: "var(--text-primary)",
+                    backgroundColor:
+                      fullData.metadata?.sessionType === type
+                        ? "var(--color-accent)"
+                        : "transparent",
+                  }}
                 >
-                  {/* Row Number */}
-                  <td className="p-1 text-center text-xs font-bold text-gray-400">
-                    {row.id}
-                  </td>
+                  {fullData.metadata?.sessionType === type && (
+                    <div className="w-2 h-2 rounded-full bg-white" />
+                  )}
+                </div>
+                <span className="text-[9px] font-black uppercase text-[var(--text-primary)] tracking-wider">
+                  {type}
+                </span>
+              </label>
+            ))}
+          </div>
+        </>
+      )}
 
-                  {/* Last Name */}
-                  <td className="p-1">
-                    <input
-                      type="text"
-                      value={row.lastName}
-                      onChange={(e) =>
-                        handleRecordChange(row.id, "lastName", e.target.value)
-                      }
-                      className="w-full bg-[#E5E5E5] text-black px-2 py-1 text-xs font-bold border-none"
-                    />
-                  </td>
-
-                  {/* First Name */}
-                  <td className="p-1">
-                    <input
-                      type="text"
-                      value={row.firstName}
-                      onChange={(e) =>
-                        handleRecordChange(row.id, "firstName", e.target.value)
-                      }
-                      className="w-full bg-[#E5E5E5] text-black px-2 py-1 text-xs font-bold border-none"
-                    />
-                  </td>
-
-                  {/* Age */}
-                  <td className="p-1">
-                    <input
-                      type="text"
-                      value={row.age || ""}
-                      onChange={(e) =>
-                        handleRecordChange(row.id, "age", e.target.value)
-                      }
-                      className="w-full bg-[#E5E5E5] text-black px-2 py-1 text-xs font-bold border-none text-center"
-                    />
-                  </td>
-
-                  {/* Position */}
-                  <td className="p-1">
-                    <input
-                      type="text"
-                      value={row.position}
-                      onChange={(e) =>
-                        handleRecordChange(row.id, "position", e.target.value)
-                      }
-                      className="w-full bg-[#E5E5E5] text-black px-2 py-1 text-xs font-bold border-none text-center"
-                    />
-                  </td>
-
-                  {/* Grade Checkboxes */}
-                  {["A", "B", "C"].map((grade) => (
-                    <td key={grade} className="p-1 text-center align-middle">
-                      <label className="flex justify-center items-center cursor-pointer h-full w-full">
-                        <input
-                          type="checkbox"
-                          checked={row.grades[grade]}
-                          onChange={() => handleGradeToggle(row.id, grade)}
-                          className="peer sr-only"
-                        />
-                        <div className="w-6 h-6 rounded-full bg-[#E5E5E5] peer-checked:bg-[#FF4422] transition-colors"></div>
-                      </label>
-                    </td>
-                  ))}
-                </tr>
+      {/* ── Attendance Table ── */}
+      <div className="overflow-x-auto">
+        <table
+          className="w-full"
+          style={{ borderCollapse: "separate", borderSpacing: "4px 2px" }}
+        >
+          <thead>
+            <tr>
+              {/* Row # */}
+              <th className="p-1 text-[9px] font-black uppercase text-[var(--text-primary)] text-left w-[24px]" />
+              <th className="p-1 pr-3 text-[9px] font-black uppercase text-[var(--text-primary)] text-left min-w-[120px]">
+                NAME
+              </th>
+              <th className="px-2 py-1 text-[9px] font-black uppercase text-[var(--text-primary)] text-center w-[50px]">
+                AGE
+              </th>
+              <th className="px-2 py-1 text-[9px] font-black uppercase text-[var(--text-primary)] text-center w-[65px]">
+                POSITION
+              </th>
+              {["A", "B", "C"].map((g) => (
+                <th
+                  key={g}
+                  className="p-1 text-[9px] font-black uppercase text-[var(--text-primary)] text-center w-[30px]"
+                >
+                  {g}
+                </th>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
+            </tr>
+          </thead>
+          <tbody>
+            {recordsToRender.map((row, idx) => (
+              <tr key={row.id}>
+                {/* Row number */}
+                <td
+                  className="p-1 text-center text-[9px] font-bold"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  {row.id}
+                </td>
+
+                {/* Name */}
+                <td
+                  className="p-1"
+                  style={{ backgroundColor: "var(--bg-input)" }}
+                >
+                  <input
+                    type="text"
+                    value={row.name || ""}
+                    onChange={(e) =>
+                      handleRecordChange(row.id, "name", e.target.value)
+                    }
+                    className="w-full bg-transparent text-[var(--text-primary)] px-1 py-[2px] text-[9px] font-bold border-b border-[var(--border-color)] focus:outline-none focus:border-[var(--color-accent)]"
+                  />
+                </td>
+
+                {/* Age */}
+                <td
+                  className="px-2 py-1"
+                  style={{ backgroundColor: "var(--bg-input)" }}
+                >
+                  <input
+                    type="text"
+                    value={row.age || ""}
+                    onChange={(e) =>
+                      handleRecordChange(row.id, "age", e.target.value)
+                    }
+                    className="w-full bg-transparent text-[var(--text-primary)] px-1 py-[2px] text-[9px] font-bold border-b border-[var(--border-color)] text-center focus:outline-none focus:border-[var(--color-accent)]"
+                  />
+                </td>
+
+                {/* Position */}
+                <td
+                  className="px-2 py-1"
+                  style={{ backgroundColor: "var(--bg-input)" }}
+                >
+                  <input
+                    type="text"
+                    value={row.position || ""}
+                    onChange={(e) =>
+                      handleRecordChange(row.id, "position", e.target.value)
+                    }
+                    className="w-full bg-transparent text-[var(--text-primary)] px-1 py-[2px] text-[9px] font-bold border-b border-[var(--border-color)] text-center focus:outline-none focus:border-[var(--color-accent)]"
+                  />
+                </td>
+
+                {/* Grade circles A / B / C */}
+                {["A", "B", "C"].map((grade) => (
+                  <td key={grade} className="p-1 text-center">
+                    <label className="flex justify-center items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={row.grades[grade]}
+                        onChange={() => handleGradeToggle(row.id, grade)}
+                        className="sr-only peer"
+                      />
+                      <div
+                        className="w-5 h-5 rounded-full border-2 transition-colors"
+                        style={{
+                          borderColor: row.grades[grade]
+                            ? "var(--color-accent)"
+                            : "var(--text-secondary)",
+                          backgroundColor: row.grades[grade]
+                            ? "var(--color-accent)"
+                            : "transparent",
+                        }}
+                      />
+                    </label>
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }

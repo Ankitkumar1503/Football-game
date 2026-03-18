@@ -2,7 +2,7 @@ import React from "react";
 
 export function UsagePolicy() {
   return (
-    <div className="pb-24 px-4 pt-4 bg-[#0A0A0A] min-h-screen">
+    <div className="pb-24 px-4 pt-4 bg-football-primary min-h-screen text-football-text transition-colors duration-300">
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-xl font-bold uppercase tracking-wider text-white">

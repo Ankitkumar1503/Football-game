@@ -1,45 +1,34 @@
-import React from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { Outlet } from "react-router-dom";
+import { Header } from "./Header";
 import { Navigation } from "./Navigation";
 import { BottomBar } from "./sections/ReflectionAndFooter";
-import touches from "../assets/touches.png";
-import touches2 from "../assets/touches2.png";
+import { useTheme } from "../contexts/ThemeContext";
 
 export function Layout({ defaultMenuOpen = false }) {
-  const location = useLocation();
-  // We can determine if we want to show the header/bottom bar based on route if needed
-  // For now, consistent layout
+  const { theme } = useTheme();
+  const [isMenuOpen, setIsMenuOpen] = useState(defaultMenuOpen);
 
   return (
     <div
       id="printable-dashboard"
-      className="min-h-screen pb-20 bg-[#0A0A0A] text-white font-sans selection:bg-[#FF4422] selection:text-white"
+      className="min-h-screen pb-20 font-sans transition-colors duration-300"
+      style={{
+        backgroundColor: "var(--bg-primary)",
+        color: "var(--text-primary)",
+      }}
     >
-      {/* Navigation Overlay */}
-      <Navigation defaultOpen={defaultMenuOpen} />
+      <Navigation
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+      />
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-[#0A0A0A]/95 backdrop-blur-md border-b-2 border-gray-800">
-        <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-center gap-3">
-          <img
-            src={touches}
-            alt="Football"
-            className="w-56 h-20 object-contain flex-shrink-0"
-          />
-          <img
-            src={touches2}
-            alt="Football"
-            className="w-16 h-20 object-contain flex-shrink-0"
-          />
-        </div>
-      </header>
+      <Header isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
 
-      {/* Main Content */}
-      <main className="max-w-md mx-auto px-4 py-6 text-white">
+      <main className="max-w-md mx-auto px-4 py-6">
         <Outlet />
       </main>
 
-      {/* Sticky Bottom Bar */}
       <BottomBar />
     </div>
   );

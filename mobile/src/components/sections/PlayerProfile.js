@@ -4,6 +4,7 @@ import { Footprints } from "lucide-react-native";
 import { Card, CardContent } from "../ui/Card";
 import { Input } from "../ui/Input";
 import { useActiveSession } from "../../hooks/useActiveSession";
+import { useCumulativeStats } from "../../hooks/useCumulativeStats";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { styled } from "nativewind";
 
@@ -21,6 +22,7 @@ function useDebounce(value, delay) {
 
 export function PlayerProfile() {
   const { session, updateSession } = useActiveSession();
+  const cumulativeStats = useCumulativeStats();
 
   const [formData, setFormData] = useState({
       level: "",
@@ -244,32 +246,72 @@ export function PlayerProfile() {
 
           {/* Player Stats */}
           <View className="pt-2">
-            <StyledText className="text-sm font-black uppercase text-gray-800 dark:text-gray-200 mb-4 border-b-2 border-black/80 dark:border-white/80 pb-1">
+            <StyledText className="text-sm font-black uppercase text-gray-800 dark:text-gray-200 mb-1 border-b-2 border-black/80 dark:border-white/80 pb-1">
               Player Stats
+            </StyledText>
+            <StyledText className="text-[8px] uppercase tracking-widest text-center text-gray-500 dark:text-gray-400 mb-3 font-bold">
+              ⚡ These stats accumulate across all sessions
             </StyledText>
 
             <View className="gap-y-2">
+              {/* Editable: Years Playing */}
+              <View className="flex-row items-center justify-between">
+                <StyledText className="text-xs font-bold uppercase text-gray-600 dark:text-gray-400 flex-1">
+                  Years Playing
+                </StyledText>
+                <Input
+                  value={formData.totalYearsPlaying}
+                  onChangeText={(text) => handleChange('totalYearsPlaying', text)}
+                  keyboardType="numeric"
+                  className="w-20 bg-[#E5E5E5] text-black text-xs font-bold text-center border-none h-8 py-1"
+                />
+              </View>
+
+              {/* Editable: Hours Trained (this session) */}
+              <View className="flex-row items-center justify-between">
+                <StyledText className="text-xs font-bold uppercase text-gray-600 dark:text-gray-400 flex-1">
+                  Hours Trained (this session)
+                </StyledText>
+                <Input
+                  value={formData.totalHoursTrained}
+                  onChangeText={(text) => handleChange('totalHoursTrained', text)}
+                  keyboardType="numeric"
+                  className="w-20 bg-[#E5E5E5] text-black text-xs font-bold text-center border-none h-8 py-1"
+                />
+              </View>
+
+              {/* Auto-computed stats */}
               {[
-                  { label: "Total Years Playing", key: "totalYearsPlaying" },
-                  { label: "Total Hours Trained", key: "totalHoursTrained" },
-                  { label: "Total Number of Sessions", key: "totalSessions" },
-                  { label: "Total Number of Games", key: "totalGames" },
-                  { label: "Total Goals Scored", key: "totalGoals" },
-                  { label: "Total Penalties Taken", key: "totalPenalties" },
-                  { label: "Your Position", key: "yourPosition", type: "text" },
+                { label: "Total Hours Trained", value: cumulativeStats.totalHoursTrained },
+                { label: "Number of Sessions", value: cumulativeStats.totalSessions },
+                { label: "Number of Games", value: cumulativeStats.totalGames },
+                { label: "Goals Scored", value: cumulativeStats.totalGoals },
+                { label: "Penalties Taken", value: cumulativeStats.totalPenalties },
+                { label: "Total Touches", value: cumulativeStats.totalTouches },
               ].map((item) => (
-                  <View key={item.key} className="flex-row items-center justify-between">
-                    <StyledText className="text-xs font-bold uppercase text-gray-600 dark:text-gray-400 flex-1">
-                      {item.label}
+                <View key={item.label} className="flex-row items-center justify-between">
+                  <StyledText className="text-xs font-bold uppercase text-gray-600 dark:text-gray-400 flex-1">
+                    {item.label}
+                  </StyledText>
+                  <View className="w-20 items-center border-b-2 border-[#FF4422] py-1">
+                    <StyledText className="text-xs font-black text-[#FF4422] text-center">
+                      {item.value}
                     </StyledText>
-                    <Input
-                      value={formData[item.key]}
-                      onChangeText={(text) => handleChange(item.key, text)}
-                      keyboardType={item.type === 'text' ? 'default' : 'numeric'}
-                      className="w-20 bg-[#E5E5E5] text-black text-xs font-bold text-center border-none h-8 py-1"
-                    />
                   </View>
+                </View>
               ))}
+
+              {/* Editable: Your Position */}
+              <View className="flex-row items-center justify-between">
+                <StyledText className="text-xs font-bold uppercase text-gray-600 dark:text-gray-400 flex-1">
+                  Your Position
+                </StyledText>
+                <Input
+                  value={formData.yourPosition}
+                  onChangeText={(text) => handleChange('yourPosition', text)}
+                  className="w-20 bg-[#E5E5E5] text-black text-xs font-bold text-center border-none h-8 py-1"
+                />
+              </View>
             </View>
           </View>
         </CardContent>

@@ -417,108 +417,7 @@ export function BottomBar() {
     }
   };
 
-  const generatePDFBlob = async () => {
-    setProgress(0);
 
-    // Hide bottom bar
-    const bottomBar = document.getElementById("bottom-bar-container");
-    const originalDisplay = bottomBar?.style.display;
-    if (bottomBar) bottomBar.style.display = "none";
-
-    // Find the main content - it will try multiple selectors
-    const element =
-      document.querySelector("main") ||
-      document.querySelector(".dashboard") ||
-      document.querySelector('[class*="dashboard"]') ||
-      document.body.children[0];
-
-    if (!element) {
-      if (bottomBar) bottomBar.style.display = originalDisplay;
-      throw new Error("Content not found");
-    }
-
-    try {
-      setProgress(20);
-
-      // Capture with settings optimized for readability
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: "#000000",
-        logging: false,
-        width: element.scrollWidth,
-        height: element.scrollHeight,
-        x: 0,
-        y: 0,
-      });
-
-      setProgress(60);
-
-      // Show bottom bar again
-      if (bottomBar) bottomBar.style.display = originalDisplay;
-
-      // Convert to image
-      const imgData = canvas.toDataURL("image/jpeg", 0.85);
-
-      // Create PDF
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "px",
-        format: "a4",
-        compress: true,
-      });
-
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-
-      // Scale to fit page width
-      const ratio = pageWidth / imgWidth;
-      const scaledHeight = imgHeight * ratio;
-
-      // Add pages as needed
-      let position = 0;
-      let page = 0;
-
-      while (position < scaledHeight) {
-        if (page > 0) {
-          pdf.addPage();
-        }
-
-        // Add image portion
-        pdf.addImage(
-          imgData,
-          "JPEG",
-          0,
-          -position,
-          pageWidth,
-          scaledHeight,
-          undefined,
-          "FAST",
-        );
-
-        position += pageHeight;
-        page++;
-
-        setProgress(60 + page * 5);
-
-        // Safety limit
-        if (page > 50) break;
-      }
-
-      setProgress(100);
-      await new Promise((resolve) => setTimeout(resolve, 200));
-
-      return pdf.output("blob");
-    } catch (error) {
-      if (bottomBar) bottomBar.style.display = originalDisplay;
-      console.error("PDF Error:", error);
-      throw error;
-    }
-  };
 
   const handleDownloadPDF = () => {
     navigate("/pdf-report");
@@ -580,54 +479,10 @@ export function BottomBar() {
 
   const handleNativeShare = async () => {
     if (navigator.share) {
-      setIsGenerating(true);
-
-      try {
-        const pdfBlob = await generatePDFBlob();
-
-        const fileName = `player-report-${new Date().toISOString().split("T")[0]}.pdf`;
-        console.log("File name:", fileName);
-
-        const pdfFile = new File([pdfBlob], fileName, {
-          type: "application/pdf",
-          lastModified: new Date().getTime(),
-        });
-
-        // Check if files can be shared
-        console.log("Checking if can share files...");
-        if (navigator.canShare) {
-          const canShareFiles = navigator.canShare({ files: [pdfFile] });
-          console.log("Can share files:", canShareFiles);
-        }
-
-        const shareData = {
-          files: [pdfFile],
-          title: shareTitle,
-          text: shareText,
-        };
-
-        console.log("Attempting to share with:", shareData);
-
-        await navigator.share(shareData);
-
-        console.log("Share successful!");
-      } catch (error) {
-        console.error("Share error occurred:", error);
-        console.error("Error name:", error.name);
-        console.error("Error message:", error.message);
-        console.error("Error stack:", error.stack);
-
-        if (error.name !== "AbortError") {
-          console.error("Non-abort error sharing:", error);
-        } else {
-          console.log("User cancelled the share");
-        }
-      } finally {
-        setIsGenerating(false);
-        setProgress(0);
-      }
+      navigate("/pdf-report?action=share");
     } else {
       console.warn("navigator.share not available on this device/browser");
+      alert("Sharing is not supported on this device/browser.");
     }
   };
 

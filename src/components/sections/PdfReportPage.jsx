@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Loader2 } from "lucide-react";
@@ -332,9 +332,14 @@ function trimCanvasBottom(canvas, threshold = 245) {
 
 export function PdfReportPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const containerRef = useRef(null);
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState("Preparing report…");
+  const [shareFile, setShareFile] = useState(null);
+
+  const searchParams = new URLSearchParams(location.search);
+  const action = searchParams.get("action");
 
   const SECTIONS = [
     { id: "pdf-section-profile", label: "Register" },
@@ -437,18 +442,32 @@ export function PdfReportPage() {
         setProgress(Math.round(((i + 1) / SECTIONS.length) * 90));
       }
 
-      setStatus("Downloading PDF…");
+      setStatus("Finalizing PDF…");
       setProgress(100);
 
       const blob = pdf.output("blob");
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `player-report-${new Date().toISOString().split("T")[0]}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+
+      if (action === "share" && navigator.share) {
+        setStatus("Report Ready!");
+        const fileName = `player-report-${new Date().toISOString().split("T")[0]}.pdf`;
+        const pdfFile = new File([blob], fileName, {
+          type: "application/pdf",
+          lastModified: new Date().getTime(),
+        });
+        
+        setShareFile(pdfFile);
+        return; // Wait for user to click the share button manually
+      } else {
+        setStatus("Downloading PDF…");
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `player-report-${new Date().toISOString().split("T")[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
 
       await new Promise((r) => setTimeout(r, 800));
       navigate(-1);
@@ -491,20 +510,51 @@ export function PdfReportPage() {
       <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/85 backdrop-blur-sm">
         <div className="bg-[#111] rounded-lg p-8 max-w-sm w-full mx-4 shadow-2xl border border-white/10">
           <div className="flex flex-col items-center gap-4">
-            <Loader2 className="w-12 h-12 text-[var(--color-accent)] animate-spin" />
+            <Loader2 className={`w-12 h-12 text-[var(--color-accent)] ${!shareFile ? 'animate-spin' : ''}`} />
             <div className="text-center">
               <h3 className="text-lg font-black uppercase text-white mb-2">
-                Generating PDF Report
+                {shareFile ? "Ready to Share" : "Generating PDF Report"}
               </h3>
               <p className="text-sm text-gray-400">{status}</p>
             </div>
-            <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
-              <div
-                className="bg-[var(--color-accent)] h-full transition-all duration-300 ease-out"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <p className="text-xs text-gray-500">{progress}% complete</p>
+            
+            {shareFile ? (
+              <div className="w-full flex flex-col gap-2 mt-2">
+                <button
+                  onClick={async () => {
+                    try {
+                      await navigator.share({
+                        title: "Check out my football performance report!",
+                        text: "I just completed my football training session. Check out my performance metrics and reflections!",
+                        files: [shareFile]
+                      });
+                    } catch(e) {
+                      if (e.name !== 'AbortError') console.error(e);
+                    }
+                    navigate(-1);
+                  }}
+                  className="w-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-black uppercase py-3 rounded tracking-wider transition-colors"
+                >
+                  Share PDF Now
+                </button>
+                <button
+                  onClick={() => navigate(-1)}
+                  className="w-full bg-transparent hover:bg-white/10 text-white font-bold uppercase py-2 rounded tracking-wider transition-colors text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-[var(--color-accent)] h-full transition-all duration-300 ease-out"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <p className="text-xs text-gray-500">{progress}% complete</p>
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -194,7 +194,7 @@ export function PlayerReflection({ isPdf, pdfPart }) {
   return (
     <Card className="mb-[24px] bg-football-card border-none shadow-none">
       <CardContent className="p-2">
-        {(!isPdf || pdfPart === 1) && (
+        {(!isPdf || !pdfPart || pdfPart === 1) && (
           <>
             {/* Header */}
             <div className="mb-6 border-b-2 border-black dark:border-white pb-2">
@@ -325,9 +325,9 @@ export function PlayerReflection({ isPdf, pdfPart }) {
         )}
 
         {/* Performance Metrics */}
-        {(!isPdf || pdfPart === 2 || pdfPart === 3) && (
+        {(!isPdf || !pdfPart || pdfPart === 2 || pdfPart === 3) && (
           <div>
-            {(!isPdf || pdfPart === 2) && (
+            {(!isPdf || !pdfPart || pdfPart === 2) && (
               <h3 className="text-sm font-black uppercase mb-4 text-football-text">
                 REFLECT ON YOUR GAME PERFORMANCE: 1-10
               </h3>

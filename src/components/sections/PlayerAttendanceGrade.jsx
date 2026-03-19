@@ -142,7 +142,7 @@ export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
 
   return (
     <div className={!isPdf ? "mb-6" : ""}>
-      {(!isPdf || pdfPart === 1) && (
+      {(!isPdf || !pdfPart || pdfPart === 1) && (
         <>
           {/* ── Header ── */}
           <div className="text-center mb-4 border-b-2 border-[var(--text-primary)] pb-2">

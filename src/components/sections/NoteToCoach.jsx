@@ -115,7 +115,7 @@ export function NoteToCoach({ isPdf, pdfPart }) {
   return (
     <div className={!isPdf ? "mb-6" : ""}>
       {/* ── Header ── */}
-      {(!isPdf || pdfPart === 1) && (
+      {(!isPdf || !pdfPart || pdfPart === 1) && (
         <>
           <div className="text-center mb-4 border-b-2 border-[var(--text-primary)] pb-2">
             <h2 className="text-2xl font-black uppercase text-[var(--text-primary)] tracking-widest">
@@ -182,7 +182,7 @@ export function NoteToCoach({ isPdf, pdfPart }) {
         </>
       )}
 
-      {(!isPdf || pdfPart === 2) && (
+      {(!isPdf || !pdfPart || pdfPart === 2) && (
         <>
           {/* ── WHAT I WOULD CHANGE ── */}
           <div className="mb-4">
@@ -208,7 +208,7 @@ export function NoteToCoach({ isPdf, pdfPart }) {
         </>
       )}
 
-      {(!isPdf || pdfPart === 3) && (
+      {(!isPdf || !pdfPart || pdfPart === 3) && (
         <>
           {/* ── TEACH ME HOW TO ── */}
           <div className="mb-6">

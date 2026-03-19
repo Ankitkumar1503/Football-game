@@ -10,17 +10,17 @@ import { PlayerReflection } from "./ReflectionAndFooter";
 import { PlayerAttendanceGrade } from "./PlayerAttendanceGrade";
 import { FootballFormation } from "./Footballformation";
 import { NoteToCoach } from "./NoteToCoach";
+import { PlayerStats } from "./PlayerStats";
 
 /**
- * Before html2canvas capture, replace every <input>, <textarea>, and <select>
- * with a styled <div> clone so the VALUE is visible in the captured image.
- * html2canvas can't reliably render native input values.
+ * Replace every <input>, <textarea>, <select> with a styled <div>
+ * so html2canvas can capture the typed values.
+ * Uses flexbox centering so values align perfectly — just like a real input.
  */
 function prepareInputsForCapture(container) {
   const replacements = [];
 
   container.querySelectorAll("input, textarea, select").forEach((el) => {
-    // Skip checkboxes, radios, ranges, hidden — they render fine or aren't text
     if (
       ["checkbox", "radio", "range", "hidden", "file", "color"].includes(
         el.type,
@@ -35,22 +35,16 @@ function prepareInputsForCapture(container) {
     if (el.tagName === "SELECT") {
       displayValue = el.options[el.selectedIndex]?.text || el.value || "";
     } else {
-      displayValue = el.value || el.placeholder || "";
+      displayValue = el.value || "";
     }
 
     const div = document.createElement("div");
 
-    // Copy all essential computed styles
+    // Copy layout & font styles — but NOT padding (we set it manually below)
     const stylesToCopy = [
       "width",
-      "height",
-      "minHeight",
-      "maxHeight",
-      "padding",
-      "paddingTop",
-      "paddingRight",
-      "paddingBottom",
-      "paddingLeft",
+      "minWidth",
+      "maxWidth",
       "margin",
       "marginTop",
       "marginRight",
@@ -84,38 +78,52 @@ function prepareInputsForCapture(container) {
       }
     });
 
-    // Force visibility
-    div.style.display = el.tagName === "TEXTAREA" ? "block" : "flex";
-    div.style.alignItems = "center";
-    div.style.overflow = "hidden";
-    div.style.whiteSpace = el.tagName === "TEXTAREA" ? "pre-wrap" : "nowrap";
-    div.style.textOverflow = "ellipsis";
-    div.style.minHeight = div.style.minHeight || `${rect.height}px`;
+    // ── Set height explicitly from the real element's bounding rect ──
+    div.style.height = `${rect.height}px`;
+    div.style.minHeight = `${rect.height}px`;
 
-    // Force dark text if the color is too light (white text on white bg)
+    if (el.tagName === "TEXTAREA") {
+      // Textarea: block layout, preserve whitespace, keep original padding
+      div.style.display = "block";
+      div.style.whiteSpace = "pre-wrap";
+      div.style.overflow = "hidden";
+      div.style.paddingTop = computed.paddingTop;
+      div.style.paddingRight = computed.paddingRight;
+      div.style.paddingBottom = computed.paddingBottom;
+      div.style.paddingLeft = computed.paddingLeft;
+    } else {
+      // Input / Select: flexbox centers value vertically — matches native input
+      div.style.display = "flex";
+      div.style.alignItems = "center";
+      div.style.whiteSpace = "nowrap";
+      div.style.overflow = "hidden";
+      div.style.textOverflow = "ellipsis";
+      // Keep left/right padding, zero top/bottom (flex centering handles it)
+      div.style.paddingTop = "0";
+      div.style.paddingBottom = "0";
+      div.style.paddingLeft = computed.paddingLeft || "12px";
+      div.style.paddingRight = computed.paddingRight || "12px";
+    }
+
+    // ── Force readable text color (fix white-on-white) ──
     const colorRGB = computed.color;
     if (colorRGB) {
       const match = colorRGB.match(/\d+/g);
       if (match) {
         const [r, g, b] = match.map(Number);
         const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-        if (brightness > 200) {
-          // Text is very light — force it dark for white background PDF
-          div.style.color = "#111111";
-        }
+        if (brightness > 200) div.style.color = "#111111";
       }
     }
 
-    // If bg is too dark, force it light
+    // ── Force readable background (fix black-on-black) ──
     const bgRGB = computed.backgroundColor;
     if (bgRGB && bgRGB !== "rgba(0, 0, 0, 0)" && bgRGB !== "transparent") {
       const match = bgRGB.match(/\d+/g);
       if (match) {
         const [r, g, b] = match.map(Number);
         const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-        if (brightness < 50) {
-          div.style.backgroundColor = "#f0f0f0";
-        }
+        if (brightness < 50) div.style.backgroundColor = "#f0f0f0";
       }
     }
 
@@ -125,7 +133,6 @@ function prepareInputsForCapture(container) {
 
     el.parentNode.insertBefore(div, el);
     el.style.display = "none";
-
     replacements.push({ original: el, replacement: div });
   });
 
@@ -139,64 +146,205 @@ function prepareInputsForCapture(container) {
 }
 
 /**
- * Slice a tall canvas into page-sized chunks.
- * Returns an array of canvas objects, each fitting within maxHeight.
+ * Smart canvas slicer — finds white/empty rows to cut between,
+ * so page breaks never slice through content.
  */
-function sliceCanvas(sourceCanvas, maxHeightPx) {
+function smartSliceCanvas(sourceCanvas, maxSliceHeightPx, searchRangePx = 80) {
   const slices = [];
   const totalHeight = sourceCanvas.height;
   const width = sourceCanvas.width;
+  const ctx = sourceCanvas.getContext("2d");
   let y = 0;
 
   while (y < totalHeight) {
-    const sliceHeight = Math.min(maxHeightPx, totalHeight - y);
-    const sliceCanvas = document.createElement("canvas");
-    sliceCanvas.width = width;
-    sliceCanvas.height = sliceHeight;
-    const ctx = sliceCanvas.getContext("2d");
-    ctx.drawImage(
-      sourceCanvas,
-      0,
-      y,
-      width,
-      sliceHeight,
-      0,
-      0,
-      width,
-      sliceHeight,
-    );
-    slices.push(sliceCanvas);
-    y += sliceHeight;
+    let sliceEnd = Math.min(y + maxSliceHeightPx, totalHeight);
+
+    if (sliceEnd < totalHeight) {
+      const searchStart = Math.max(y, sliceEnd - searchRangePx);
+      let bestCut = sliceEnd;
+      let bestScore = -1;
+      let consecutiveWhite = 0;
+
+      for (let row = sliceEnd; row >= searchStart; row--) {
+        const imageData = ctx.getImageData(0, row, width, 1);
+        const pixels = imageData.data;
+        let whiteness = 0;
+        for (let i = 0; i < pixels.length; i += 4) {
+          whiteness += (pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3;
+        }
+        const avg = whiteness / (pixels.length / 4);
+
+        if (avg > 250) {
+          consecutiveWhite++;
+          if (consecutiveWhite >= 10) {
+            bestCut = row + 5;
+            break;
+          }
+        } else {
+          consecutiveWhite = 0;
+        }
+
+        if (avg > bestScore) {
+          bestScore = avg;
+          bestCut = row;
+        }
+      }
+      sliceEnd = bestCut;
+    }
+
+    const sliceHeight = sliceEnd - y;
+    if (sliceHeight <= 0) break;
+
+    const slice = document.createElement("canvas");
+    slice.width = width;
+    slice.height = sliceHeight;
+    slice
+      .getContext("2d")
+      .drawImage(
+        sourceCanvas,
+        0,
+        y,
+        width,
+        sliceHeight,
+        0,
+        0,
+        width,
+        sliceHeight,
+      );
+    slices.push(slice);
+    y = sliceEnd;
   }
 
   return slices;
 }
 
+/**
+ * Add a canvas to the PDF — handles:
+ * - Fits on current page → place it
+ * - Needs new page but fits on one → new page
+ * - Too tall for one page → smart slice
+ */
+function addCanvasToPdf(pdf, canvas, currentY, margin, pageW, pageH, contentW) {
+  const imgHeightMM = (canvas.height * contentW) / canvas.width;
+  const contentH = pageH - margin * 2;
+
+  // Case 1: fits on current page without a new page
+  if (currentY + imgHeightMM <= pageH - margin) {
+    pdf.addImage(
+      canvas.toDataURL("image/jpeg", 0.92),
+      "JPEG",
+      margin,
+      currentY,
+      contentW,
+      imgHeightMM,
+    );
+    return currentY + imgHeightMM;
+  }
+
+  // Case 2: fits on a single page, just needs a new page
+  if (imgHeightMM <= contentH) {
+    pdf.addPage();
+    pdf.addImage(
+      canvas.toDataURL("image/jpeg", 0.92),
+      "JPEG",
+      margin,
+      margin,
+      contentW,
+      imgHeightMM,
+    );
+    return margin + imgHeightMM;
+  }
+
+  // Case 3: too tall for one page — smart slice
+  const pxPerMM = canvas.width / contentW;
+  const maxSlicePx = contentH * pxPerMM;
+  const searchPx = 80 * pxPerMM;
+  const slices = smartSliceCanvas(canvas, maxSlicePx, searchPx);
+
+  for (let i = 0; i < slices.length; i++) {
+    const sliceH = (slices[i].height * contentW) / slices[i].width;
+
+    if (i === 0 && currentY + sliceH <= pageH - margin) {
+      // First slice fits on current page
+      pdf.addImage(
+        slices[i].toDataURL("image/jpeg", 0.92),
+        "JPEG",
+        margin,
+        currentY,
+        contentW,
+        sliceH,
+      );
+      currentY += sliceH;
+    } else {
+      pdf.addPage();
+      pdf.addImage(
+        slices[i].toDataURL("image/jpeg", 0.92),
+        "JPEG",
+        margin,
+        margin,
+        contentW,
+        sliceH,
+      );
+      currentY = margin + sliceH;
+    }
+  }
+
+  return currentY;
+}
+
+/**
+ * Trim trailing white rows from the bottom of a canvas.
+ * Removes the large blank gaps caused by component padding.
+ */
+function trimCanvasBottom(canvas, threshold = 245) {
+  const ctx = canvas.getContext("2d");
+  const width = canvas.width;
+  let lastContentRow = canvas.height - 1;
+
+  for (let row = canvas.height - 1; row >= 0; row--) {
+    const pixels = ctx.getImageData(0, row, width, 1).data;
+    let isBlank = true;
+    for (let i = 0; i < pixels.length; i += 4) {
+      if ((pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3 < threshold) {
+        isBlank = false;
+        break;
+      }
+    }
+    if (!isBlank) {
+      lastContentRow = row;
+      break;
+    }
+  }
+
+  const trimmedHeight = Math.min(lastContentRow + 24, canvas.height);
+  if (trimmedHeight >= canvas.height) return canvas;
+
+  const trimmed = document.createElement("canvas");
+  trimmed.width = width;
+  trimmed.height = trimmedHeight;
+  trimmed
+    .getContext("2d")
+    .drawImage(canvas, 0, 0, width, trimmedHeight, 0, 0, width, trimmedHeight);
+  return trimmed;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function PdfReportPage() {
   const navigate = useNavigate();
   const containerRef = useRef(null);
   const [progress, setProgress] = useState(0);
-  const [status, setStatus] = useState("Preparing sections…");
+  const [status, setStatus] = useState("Preparing report…");
 
   const SECTIONS = [
-    { id: "pdf-section-profile", label: "Player Profile" },
+    { id: "pdf-section-profile", label: "Register" },
+    { id: "pdf-section-stats", label: "Player Stats" },
     { id: "pdf-section-touches", label: "Total Touches" },
-    { id: "pdf-section-evaluation-1", label: "Player Evaluation (Part 1)" },
-    { id: "pdf-section-evaluation-2", label: "Player Evaluation (Part 2)" },
-    { id: "pdf-section-evaluation-3", label: "Player Evaluation (Part 3)" },
-    { id: "pdf-section-evaluation-4", label: "Player Evaluation (Part 4)" },
-    { id: "pdf-section-evaluation-5", label: "Player Evaluation (Part 5)" },
-    { id: "pdf-section-reflection-1", label: "Player Reflection (Part 1)" },
-    { id: "pdf-section-reflection-2", label: "Player Reflection (Part 2)" },
-    { id: "pdf-section-reflection-3", label: "Player Reflection (Part 3)" },
-    { id: "pdf-section-grade-1", label: "Player Grade (Part 1)" },
-    { id: "pdf-section-grade-2", label: "Player Grade (Part 2)" },
-    { id: "pdf-section-grade-3", label: "Player Grade (Part 3)" },
-    { id: "pdf-section-grade-4", label: "Player Grade (Part 4)" },
+    { id: "pdf-section-evaluation", label: "Player Evaluation" },
+    { id: "pdf-section-reflection", label: "Player Reflection" },
+    { id: "pdf-section-grade", label: "Player Grade" },
     { id: "pdf-section-formation", label: "Starting Lineup" },
-    { id: "pdf-section-note-1", label: "Note to Coach (Part 1)" },
-    { id: "pdf-section-note-2", label: "Note to Coach (Part 2)" },
-    { id: "pdf-section-note-3", label: "Note to Coach (Part 3)" }
+    { id: "pdf-section-note", label: "Note to Coach" },
   ];
 
   useEffect(() => {
@@ -205,16 +353,43 @@ export function PdfReportPage() {
   }, []);
 
   const generatePDF = async () => {
+    // ── 1. Force light theme before any capture ──────────────────────────────
+    const root = document.documentElement;
+    const prevClass = root.className;
+    root.classList.remove("theme-dark");
+    root.classList.add("theme-light");
+
+    const styleOverride = document.createElement("style");
+    styleOverride.id = "pdf-theme-override";
+    styleOverride.textContent = `
+      :root {
+        --bg-primary: #ffffff !important;
+        --bg-secondary: #f5f5f5 !important;
+        --bg-card: #f9f9f9 !important;
+        --bg-input: #eeeeee !important;
+        --text-primary: #111111 !important;
+        --text-secondary: #444444 !important;
+        --border-color: #cccccc !important;
+        --color-accent: #E63422 !important;
+        --color-accent-hover: #cc2d1d !important;
+        --category-header-bg: #222222 !important;
+        --category-header-text: #ffffff !important;
+        --ball-fill: #E63422 !important;
+        --ball-stroke: #111111 !important;
+        --ball-stroke-width: 3 !important;
+      }
+    `;
+    document.head.appendChild(styleOverride);
+
+    // Small delay so styles apply before capture
+    await new Promise((r) => setTimeout(r, 400));
+
     try {
       const pdf = new jsPDF("p", "mm", "a4");
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
       const margin = 8;
       const contentW = pageW - margin * 2;
-      const contentH = pageH - margin * 2;
-
-      // Pixels-per-mm ratio at scale=2
-      const scale = 2;
 
       let currentY = margin;
 
@@ -225,13 +400,15 @@ export function PdfReportPage() {
         setStatus(`Capturing ${label}…`);
         setProgress(Math.round(((i + 0.5) / SECTIONS.length) * 90));
 
-        if (!sectionEl) continue;
+        if (!sectionEl) {
+          console.warn(`Section #${id} not found, skipping`);
+          continue;
+        }
 
-        // Prepare inputs → text divs
         const cleanup = prepareInputsForCapture(sectionEl);
 
         const canvas = await html2canvas(sectionEl, {
-          scale,
+          scale: 2,
           useCORS: true,
           backgroundColor: "#ffffff",
           logging: false,
@@ -240,55 +417,26 @@ export function PdfReportPage() {
 
         cleanup();
 
-        const imgWidthMM = contentW;
-        const imgHeightMM = (canvas.height * imgWidthMM) / canvas.width;
+        const trimmed = trimCanvasBottom(canvas);
 
-        // Check if fits on current page. If not, add a new page.
-        // We add a tiny buffer (2mm) to prevent extreme tight fits.
-        if (currentY + imgHeightMM > pageH - margin && currentY > margin) {
-          // Doesn't fit on this page, push to next
-          pdf.addPage();
-          currentY = margin;
-        }
+        currentY = addCanvasToPdf(
+          pdf,
+          trimmed,
+          currentY,
+          margin,
+          pageW,
+          pageH,
+          contentW,
+        );
 
-        if (imgHeightMM <= contentH) {
-          // Fits on a single page, draw at currentY
-          pdf.addImage(
-            canvas.toDataURL("image/jpeg", 0.92),
-            "JPEG",
-            margin,
-            currentY,
-            imgWidthMM,
-            imgHeightMM,
-          );
-          currentY += imgHeightMM + 4; // Add a 4mm gap between sections
-        } else {
-          // Fallback slice mode (should not happen with aggressive splitting)
-          const maxSliceHeightPx = (contentH / imgWidthMM) * canvas.width;
-          const slices = sliceCanvas(canvas, maxSliceHeightPx);
-
-          for (let s = 0; s < slices.length; s++) {
-            if (s > 0 || currentY > margin) {
-              pdf.addPage();
-              currentY = margin;
-            }
-            const sliceImgH = (slices[s].height * imgWidthMM) / slices[s].width;
-            pdf.addImage(
-              slices[s].toDataURL("image/jpeg", 0.92),
-              "JPEG",
-              margin,
-              currentY,
-              imgWidthMM,
-              sliceImgH,
-            );
-            currentY += sliceImgH + 4;
-          }
+        // Small gap between sections if still on the same page
+        if (currentY + 4 < pageH - margin) {
+          currentY += 4;
         }
 
         setProgress(Math.round(((i + 1) / SECTIONS.length) * 90));
       }
 
-      // Download
       setStatus("Downloading PDF…");
       setProgress(100);
 
@@ -309,7 +457,32 @@ export function PdfReportPage() {
       setStatus("Error — going back…");
       await new Promise((r) => setTimeout(r, 2000));
       navigate(-1);
+    } finally {
+      // ── Always restore original theme ─────────────────────────────────────
+      root.className = prevClass;
+      document.getElementById("pdf-theme-override")?.remove();
     }
+  };
+
+  // ── Light-theme CSS variable overrides applied inline so every child
+  //    component inherits white backgrounds regardless of :root defaults ──
+  const lightThemeVars = {
+    backgroundColor: "#ffffff",
+    color: "#111111",
+    "--bg-primary": "#ffffff",
+    "--bg-secondary": "#f5f5f5",
+    "--bg-card": "#f9f9f9",
+    "--bg-input": "#eeeeee",
+    "--text-primary": "#111111",
+    "--text-secondary": "#444444",
+    "--border-color": "#cccccc",
+    "--color-accent": "#E63422",
+    "--color-accent-hover": "#cc2d1d",
+    "--category-header-bg": "#222222",
+    "--category-header-text": "#ffffff",
+    "--ball-fill": "#E63422",
+    "--ball-stroke": "#111111",
+    "--ball-stroke-width": "3",
   };
 
   return (
@@ -336,154 +509,74 @@ export function PdfReportPage() {
         </div>
       </div>
 
-      {/* ── Sections rendered with FORCED LIGHT theme for readable PDF ── */}
+      {/* ── Hidden render container with forced light theme ── */}
       <div
         ref={containerRef}
         className="max-w-md mx-auto px-4 py-6"
-        style={{
-          backgroundColor: "#ffffff",
-          color: "#111111",
-          "--bg-primary": "#ffffff",
-          "--bg-secondary": "#f5f5f5",
-          "--bg-card": "#f9f9f9",
-          "--bg-input": "#f0f0f0",
-          "--text-primary": "#111111",
-          "--text-secondary": "#444444",
-          "--border-color": "#cccccc",
-          "--color-accent": "#E63422",
-          "--color-accent-hover": "#cc2d1d",
-          "--category-header-bg": "#222222",
-          "--category-header-text": "#ffffff",
-          "--ball-fill": "#E63422",
-          "--ball-stroke": "#111111",
-          "--ball-stroke-width": "3",
-        }}
+        style={lightThemeVars}
       >
+        {/* REGISTER */}
         <div
           id="pdf-section-profile"
-          className="mb-6 p-4 rounded-lg"
-          style={{ background: "#fff" }}
+          style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
         >
           <PlayerProfile />
         </div>
+
+        {/* PLAYER STATS */}
+        <div
+          id="pdf-section-stats"
+          style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
+        >
+          <PlayerStats />
+        </div>
+
+        {/* TOTAL TOUCHES */}
         <div
           id="pdf-section-touches"
-          className="mb-6 p-4 rounded-lg"
-          style={{ background: "#fff" }}
+          style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
         >
-          <LiveStats />
+          <LiveStats isPdf={true} />
         </div>
+
+        {/* PLAYER EVALUATION */}
         <div
-          id="pdf-section-evaluation-1"
-          className="mb-6 p-4 rounded-lg"
-          style={{ background: "#fff" }}
+          id="pdf-section-evaluation"
+          style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
         >
-          <PlayerEvaluation isPdf={true} pdfPart={1} />
+          <PlayerEvaluation isPdf={true} />
         </div>
+
+        {/* PLAYER REFLECTION */}
         <div
-          id="pdf-section-evaluation-2"
-          className="mb-6 p-4 rounded-lg"
-          style={{ background: "#fff" }}
+          id="pdf-section-reflection"
+          style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
         >
-          <PlayerEvaluation isPdf={true} pdfPart={2} />
+          <PlayerReflection isPdf={true} />
         </div>
+
+        {/* PLAYER GRADE */}
         <div
-          id="pdf-section-evaluation-3"
-          className="mb-6 p-4 rounded-lg"
-          style={{ background: "#fff" }}
+          id="pdf-section-grade"
+          style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
         >
-          <PlayerEvaluation isPdf={true} pdfPart={3} />
+          <PlayerAttendanceGrade isPdf={true} />
         </div>
-        <div
-          id="pdf-section-evaluation-4"
-          className="mb-6 p-4 rounded-lg"
-          style={{ background: "#fff" }}
-        >
-          <PlayerEvaluation isPdf={true} pdfPart={4} />
-        </div>
-        <div
-          id="pdf-section-evaluation-5"
-          className="mb-6 p-4 rounded-lg"
-          style={{ background: "#fff" }}
-        >
-          <PlayerEvaluation isPdf={true} pdfPart={5} />
-        </div>
-        <div
-          id="pdf-section-reflection-1"
-          className="mb-6 p-4 rounded-lg"
-          style={{ background: "#fff" }}
-        >
-          <PlayerReflection isPdf={true} pdfPart={1} />
-        </div>
-        <div
-          id="pdf-section-reflection-2"
-          className="mb-6 p-4 rounded-lg"
-          style={{ background: "#fff" }}
-        >
-          <PlayerReflection isPdf={true} pdfPart={2} />
-        </div>
-        <div
-          id="pdf-section-reflection-3"
-          className="mb-6 p-4 rounded-lg"
-          style={{ background: "#fff" }}
-        >
-          <PlayerReflection isPdf={true} pdfPart={3} />
-        </div>
-        <div
-          id="pdf-section-grade-1"
-          className="mb-6 p-4 rounded-lg"
-          style={{ background: "#fff" }}
-        >
-          <PlayerAttendanceGrade isPdf={true} pdfPart={1} />
-        </div>
-        <div
-          id="pdf-section-grade-2"
-          className="mb-6 p-4 rounded-lg"
-          style={{ background: "#fff" }}
-        >
-          <PlayerAttendanceGrade isPdf={true} pdfPart={2} />
-        </div>
-        <div
-          id="pdf-section-grade-3"
-          className="mb-6 p-4 rounded-lg"
-          style={{ background: "#fff" }}
-        >
-          <PlayerAttendanceGrade isPdf={true} pdfPart={3} />
-        </div>
-        <div
-          id="pdf-section-grade-4"
-          className="mb-6 p-4 rounded-lg"
-          style={{ background: "#fff" }}
-        >
-          <PlayerAttendanceGrade isPdf={true} pdfPart={4} />
-        </div>
+
+        {/* STARTING LINEUP */}
         <div
           id="pdf-section-formation"
-          className="mb-6 p-4 rounded-lg"
-          style={{ background: "#fff" }}
+          style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
         >
           <FootballFormation />
         </div>
+
+        {/* NOTE TO COACH */}
         <div
-          id="pdf-section-note-1"
-          className="mb-6 p-4 rounded-lg"
-          style={{ background: "#fff" }}
+          id="pdf-section-note"
+          style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
         >
-          <NoteToCoach isPdf={true} pdfPart={1} />
-        </div>
-        <div
-          id="pdf-section-note-2"
-          className="mb-6 p-4 rounded-lg"
-          style={{ background: "#fff" }}
-        >
-          <NoteToCoach isPdf={true} pdfPart={2} />
-        </div>
-        <div
-          id="pdf-section-note-3"
-          className="mb-6 p-4 rounded-lg"
-          style={{ background: "#fff" }}
-        >
-          <NoteToCoach isPdf={true} pdfPart={3} />
+          <NoteToCoach isPdf={true} />
         </div>
       </div>
     </>

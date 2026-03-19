@@ -4,7 +4,7 @@ import { useActiveSession } from "../../hooks/useActiveSession";
 import { RotateCcw } from "lucide-react";
 import { db } from "../../lib/db";
 
-export function LiveStats() {
+export function LiveStats({ isPdf }) {
   const { stats, sessionId } = useActiveSession();
 
   const handleReset = async () => {
@@ -21,11 +21,15 @@ export function LiveStats() {
   };
 
   const StatRow = ({ label, value }) => (
-    <div className="flex items-center justify-between bg-[var(--color-accent)] text-white p-2 border-b border-football-subtle last:border-0">
-      <span className="font-black uppercase tracking-wider text-sm md:text-base">
+    <div className={`flex items-center justify-between border-b last:border-0 ${
+      isPdf 
+        ? "p-1.5 bg-[var(--bg-input)] text-[var(--text-primary)] border-[var(--border-color)]" 
+        : "p-2 bg-[var(--color-accent)] text-white border-football-subtle"
+    }`}>
+      <span className={`font-black uppercase tracking-wider ${isPdf ? "text-[10px] leading-tight" : "text-sm md:text-base"}`}>
         {label}
       </span>
-      <span className="font-black text-lg md:text-xl">{value}</span>
+      <span className={`font-black ${isPdf ? "text-sm" : "text-lg md:text-xl"}`}>{value}</span>
     </div>
   );
 
@@ -39,7 +43,7 @@ export function LiveStats() {
 
       <div className="grid grid-cols-2 gap-x-2">
         {/* Left Column */}
-        <div className="flex flex-col border-4 border-[var(--color-accent)]">
+        <div className={`flex flex-col ${isPdf ? "border-2 border-[var(--text-primary)]" : "border-4 border-[var(--color-accent)]"}`}>
           <StatRow label="PASS" value={stats.Pass} />
           <StatRow label="DRIBBLE" value={stats.Dribble} />
           <StatRow label="CORNER KICK" value={stats["Corner Kick"]} />
@@ -50,7 +54,7 @@ export function LiveStats() {
         </div>
 
         {/* Right Column */}
-        <div className="flex flex-col border-4 border-[var(--color-accent)]">
+        <div className={`flex flex-col ${isPdf ? "border-2 border-[var(--text-primary)]" : "border-4 border-[var(--color-accent)]"}`}>
           <StatRow label="FREE KICK" value={stats["Free Kick"]} />
           <StatRow label="PENALTY KICK" value={stats["Penalty Kick"]} />
           <StatRow label="CROSS" value={stats.Cross} />

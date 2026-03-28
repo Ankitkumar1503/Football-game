@@ -104,13 +104,13 @@ export function NoteToCoach({ isPdf, pdfPart }) {
 
   // Shared styles
   const inputClass =
-    "w-full bg-[var(--bg-input)] text-[var(--text-primary)] px-3 py-1.5 text-sm font-bold border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
+    "w-full bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-1.5 text-sm font-bold border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
   const labelClass =
     "block text-[10px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest";
 
   const textareaClass =
-    "w-full bg-[var(--bg-input)] text-[var(--text-primary)] px-3 py-2 text-sm font-medium border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)] resize-none";
+    "w-full bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-2 text-sm font-medium border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)] resize-none";
 
   return (
     <div className={!isPdf ? "mb-6" : ""}>
@@ -226,12 +226,17 @@ export function NoteToCoach({ isPdf, pdfPart }) {
                     style={{
                       borderColor: "var(--text-primary)",
                       backgroundColor: formData.teachMeTags.includes(tag)
-                        ? "var(--color-accent)"
+                        ? "var(--checkbox-checked-bg)"
                         : "transparent",
                     }}
                   >
                     {formData.teachMeTags.includes(tag) && (
-                      <span className="text-white font-bold text-[10px]">✓</span>
+                      <span
+                        className="font-bold text-[10px]"
+                        style={{ color: "var(--checkbox-check-color)" }}
+                      >
+                        ✓
+                      </span>
                     )}
                   </div>
                   <input
@@ -264,16 +269,16 @@ export function NoteToCoach({ isPdf, pdfPart }) {
                     max="10"
                     value={value}
                     onChange={(e) => handleGradeChange(key, e.target.value)}
-                    className="slider-thumb flex-1 h-1.5 rounded-full appearance-none cursor-pointer min-w-0"
+                    className="slider-thumb flex-1 h-2 rounded-full appearance-none cursor-pointer min-w-0"
                     style={{
                       background: `linear-gradient(to right,
-                        var(--color-accent) 0%,
-                        var(--color-accent) ${percent}%,
-                        var(--bg-input) ${percent}%,
-                        var(--bg-input) 100%)`,
+                        var(--slider-filled) 0%,
+                        var(--slider-filled) ${percent}%,
+                        var(--slider-unfilled) ${percent}%,
+                        var(--slider-unfilled) 100%)`,
                     }}
                   />
-                  <span className="text-xs font-bold text-[var(--color-accent)] w-5 text-right shrink-0">
+                  <span className="text-xs font-bold text-white w-5 text-right shrink-0">
                     {value}
                   </span>
                 </div>

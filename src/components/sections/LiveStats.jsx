@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "../ui/Card";
 import { useActiveSession } from "../../hooks/useActiveSession";
 import { RotateCcw } from "lucide-react";
@@ -6,6 +6,23 @@ import { db } from "../../lib/db";
 
 export function LiveStats({ isPdf }) {
   const { stats, sessionId } = useActiveSession();
+
+  const [isLightTheme, setIsLightTheme] = useState(
+    document.documentElement.classList.contains("theme-light"),
+  );
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsLightTheme(
+        document.documentElement.classList.contains("theme-light"),
+      );
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
 
   const handleReset = async () => {
     if (!sessionId) return;
@@ -20,49 +37,82 @@ export function LiveStats({ isPdf }) {
     }
   };
 
-  const StatRow = ({ label, value }) => (
-    <div className={`flex items-center justify-between border-b last:border-0 ${
-      isPdf 
-        ? "p-1.5 bg-[var(--bg-input)] text-[var(--text-primary)] border-[var(--border-color)]" 
-        : "p-2 bg-[var(--color-accent)] text-white border-football-subtle"
-    }`}>
-      <span className={`font-black uppercase tracking-wider ${isPdf ? "text-[10px] leading-tight" : "text-sm md:text-base"}`}>
-        {label}
-      </span>
-      <span className={`font-black ${isPdf ? "text-sm" : "text-lg md:text-xl"}`}>{value}</span>
-    </div>
-  );
+  const StatRow = ({ label, value }) => {
+    if (isPdf) {
+      // PDF: Clean white rows with black text and thin borders
+      return (
+        <div className="flex mb-0">
+          <div className="flex-1 bg-white text-black px-3 py-2 flex items-center" style={{ border: "1px solid #000" }}>
+            <span className="font-black uppercase tracking-wider text-xs leading-tight">
+              {label}
+            </span>
+          </div>
+          <div className="w-[60px] bg-white text-black px-3 py-2 flex items-center justify-center" style={{ border: "1px solid #000", borderLeft: "none" }}>
+            <span className="font-black text-base">{value}</span>
+          </div>
+        </div>
+      );
+    }
+
+    // App: Dynamic styles based on theme
+    const bgColor = isLightTheme
+      ? "bg-white"
+      : "bg-[var(--color-accent)]";
+
+    const textColor = isLightTheme ? "text-[#0F172A]" : "text-white";
+
+    return (
+      <div className="flex gap-[2px] mb-[2px] last:mb-0">
+        <div
+          className={`flex-1 ${bgColor} ${textColor} px-3 py-2 flex items-center`}
+        >
+          <span className="font-black uppercase tracking-wider text-xs md:text-sm leading-tight">
+            {label}
+          </span>
+        </div>
+        <div
+          className={`w-[60px] md:w-[80px] ${bgColor} ${textColor} px-3 py-2 flex items-center justify-center`}
+        >
+          <span className="font-black text-base md:text-lg">{value}</span>
+        </div>
+      </div>
+    );
+  };
+
+  // Header styling
+  const headerBg = isPdf ? "bg-white" : isLightTheme ? "bg-white" : "bg-[var(--color-accent)]";
+  const headerText = isPdf ? "text-black" : isLightTheme ? "text-[#0F172A]" : "text-white";
+  const headerBorder = isPdf ? { borderBottom: "2px solid #000" } : {};
 
   return (
     <div className="mb-8">
-      <div className="flex justify-between items-end mb-2 border-b-2 border-black/80 dark:border-white/80 pb-1">
-        <h2 className="text-2xl font-black uppercase text-football-text tracking-tighter">
+      <div
+        className={`${headerBg} py-2 text-center mb-[2px]`}
+        style={headerBorder}
+      >
+        <h2
+          className={`text-sm md:text-base font-black uppercase ${headerText} tracking-widest px-4`}
+        >
           TOTAL TOUCHES
         </h2>
       </div>
 
-      <div className="grid grid-cols-2 gap-x-2">
-        {/* Left Column */}
-        <div className={`flex flex-col ${isPdf ? "border-2 border-[var(--text-primary)]" : "border-4 border-[var(--color-accent)]"}`}>
-          <StatRow label="PASS" value={stats.Pass} />
-          <StatRow label="DRIBBLE" value={stats.Dribble} />
-          <StatRow label="CORNER KICK" value={stats["Corner Kick"]} />
-          <StatRow label="HEADER" value={stats.Header} />
-          <StatRow label="TACKLE" value={stats.Tackle} />
-          <StatRow label="GOAL" value={stats.Goal} />
-          <StatRow label="SHOT" value={stats.Shot} />
-        </div>
-
-        {/* Right Column */}
-        <div className={`flex flex-col ${isPdf ? "border-2 border-[var(--text-primary)]" : "border-4 border-[var(--color-accent)]"}`}>
-          <StatRow label="FREE KICK" value={stats["Free Kick"]} />
-          <StatRow label="PENALTY KICK" value={stats["Penalty Kick"]} />
-          <StatRow label="CROSS" value={stats.Cross} />
-          <StatRow label="POSITIVE TOUCH" value={stats.good} />
-          <StatRow label="NEGATIVE TOUCH" value={stats.bad} />
-          <StatRow label="YELLOW CARDS" value={stats["Yellow Card"]} />
-          <StatRow label="RED CARDS" value={stats["Red Card"]} />
-        </div>
+      <div className="flex flex-col">
+        <StatRow label="PASS" value={stats.Pass} />
+        <StatRow label="DRIBBLE" value={stats.Dribble} />
+        <StatRow label="SHOT" value={stats.Shot} />
+        <StatRow label="CROSS" value={stats.Cross} />
+        <StatRow label="GOAL" value={stats.Goal} />
+        <StatRow label="HEADER" value={stats.Header} />
+        <StatRow label="TACKLE" value={stats.Tackle} />
+        <StatRow label="THROW-IN" value={stats["Throw-In"]} />
+        <StatRow label="CORNER KICK" value={stats["Corner Kick"]} />
+        <StatRow label="FREE KICK" value={stats["Free Kick"]} />
+        <StatRow label="PENALTY KICK" value={stats["Penalty Kick"]} />
+        <StatRow label="POSITIVE TOUCH" value={stats.good} />
+        <StatRow label="NEGATIVE TOUCH" value={stats.bad} />
+        <StatRow label="YELLOW CARD" value={stats["Yellow Card"]} />
+        <StatRow label="RED CARD" value={stats["Red Card"]} />
       </div>
 
       {/* <div className="flex justify-end mt-2">

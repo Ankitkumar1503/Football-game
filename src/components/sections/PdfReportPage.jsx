@@ -340,8 +340,21 @@ export function PdfReportPage() {
 
   const searchParams = new URLSearchParams(location.search);
   const action = searchParams.get("action");
+  const sectionParam = searchParams.get("section"); // e.g. "lineup", "stats"
 
-  const SECTIONS = [
+  // Map route keys to section IDs
+  const ROUTE_TO_SECTION = {
+    "register": "pdf-section-profile",
+    "stats": "pdf-section-stats",
+    "touch-counter": "pdf-section-touches",
+    "reflection": "pdf-section-reflection",
+    "evaluation": "pdf-section-evaluation",
+    "roster": "pdf-section-grade",
+    "lineup": "pdf-section-formation",
+    "note-to-coach": "pdf-section-note",
+  };
+
+  const ALL_SECTIONS = [
     { id: "pdf-section-profile", label: "Register" },
     { id: "pdf-section-stats", label: "Player Stats" },
     { id: "pdf-section-touches", label: "Total Touches" },
@@ -351,6 +364,15 @@ export function PdfReportPage() {
     { id: "pdf-section-formation", label: "Starting Lineup" },
     { id: "pdf-section-note", label: "Note to Coach" },
   ];
+
+  // If sectionParam is set, only include that single section
+  const SECTIONS = sectionParam && ROUTE_TO_SECTION[sectionParam]
+    ? ALL_SECTIONS.filter(s => s.id === ROUTE_TO_SECTION[sectionParam])
+    : ALL_SECTIONS;
+
+  // Determine which section components to render
+  const renderAll = !sectionParam;
+  const targetSectionId = sectionParam ? ROUTE_TO_SECTION[sectionParam] : null;
 
   useEffect(() => {
     const timer = setTimeout(() => generatePDF(), 2500);
@@ -367,21 +389,43 @@ export function PdfReportPage() {
     const styleOverride = document.createElement("style");
     styleOverride.id = "pdf-theme-override";
     styleOverride.textContent = `
-      :root {
+      :root, .theme-light {
         --bg-primary: #ffffff !important;
         --bg-secondary: #f5f5f5 !important;
-        --bg-card: #f9f9f9 !important;
-        --bg-input: #eeeeee !important;
-        --text-primary: #111111 !important;
-        --text-secondary: #444444 !important;
-        --border-color: #cccccc !important;
-        --color-accent: #E63422 !important;
-        --color-accent-hover: #cc2d1d !important;
-        --category-header-bg: #222222 !important;
+        --bg-card: #ffffff !important;
+        --bg-input: #f0f0f0 !important;
+        --text-primary: #000000 !important;
+        --text-secondary: #333333 !important;
+        --text-input: #000000 !important;
+        --border-color: #000000 !important;
+        --color-accent: #000000 !important;
+        --color-accent-new: #000000 !important;
+        --color-accent-hover: #333333 !important;
+        --category-header-bg: #000000 !important;
         --category-header-text: #ffffff !important;
-        --ball-fill: #E63422 !important;
-        --ball-stroke: #111111 !important;
+        --ball-fill: #000000 !important;
+        --ball-stroke: #000000 !important;
         --ball-stroke-width: 3 !important;
+        --field-bg: #ffffff !important;
+        --field-line: #000000 !important;
+        --slider-filled: #000000 !important;
+        --slider-unfilled: #cccccc !important;
+        --slider-thumb: #000000 !important;
+        --checkbox-checked-bg: #000000 !important;
+        --checkbox-check-color: #ffffff !important;
+      }
+      /* Force field-specific elements for html2canvas */
+      .football-field {
+        background-color: #ffffff !important;
+        border-color: #000000 !important;
+      }
+      .football-field div {
+        border-color: #000000 !important;
+      }
+      .football-field input {
+        border: 1px solid #000000 !important;
+        background-color: #ffffff !important;
+        color: #000000 !important;
       }
     `;
     document.head.appendChild(styleOverride);
@@ -454,7 +498,7 @@ export function PdfReportPage() {
           type: "application/pdf",
           lastModified: new Date().getTime(),
         });
-        
+
         setShareFile(pdfFile);
         return; // Wait for user to click the share button manually
       } else {
@@ -487,21 +531,30 @@ export function PdfReportPage() {
   //    component inherits white backgrounds regardless of :root defaults ──
   const lightThemeVars = {
     backgroundColor: "#ffffff",
-    color: "#111111",
+    color: "#000000",
     "--bg-primary": "#ffffff",
     "--bg-secondary": "#f5f5f5",
-    "--bg-card": "#f9f9f9",
-    "--bg-input": "#eeeeee",
-    "--text-primary": "#111111",
-    "--text-secondary": "#444444",
-    "--border-color": "#cccccc",
-    "--color-accent": "#E63422",
-    "--color-accent-hover": "#cc2d1d",
-    "--category-header-bg": "#222222",
+    "--bg-card": "#ffffff",
+    "--bg-input": "#f0f0f0",
+    "--text-primary": "#000000",
+    "--text-secondary": "#333333",
+    "--text-input": "#000000",
+    "--border-color": "#000000",
+    "--color-accent": "#000000",
+    "--color-accent-new": "#000000",
+    "--color-accent-hover": "#333333",
+    "--category-header-bg": "#000000",
     "--category-header-text": "#ffffff",
-    "--ball-fill": "#E63422",
-    "--ball-stroke": "#111111",
+    "--ball-fill": "#000000",
+    "--ball-stroke": "#000000",
     "--ball-stroke-width": "3",
+    "--field-bg": "#ffffff",
+    "--field-line": "#000000",
+    "--slider-filled": "#000000",
+    "--slider-unfilled": "#cccccc",
+    "--slider-thumb": "#000000",
+    "--checkbox-checked-bg": "#000000",
+    "--checkbox-check-color": "#ffffff",
   };
 
   return (
@@ -510,14 +563,16 @@ export function PdfReportPage() {
       <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/85 backdrop-blur-sm">
         <div className="bg-[#111] rounded-lg p-8 max-w-sm w-full mx-4 shadow-2xl border border-white/10">
           <div className="flex flex-col items-center gap-4">
-            <Loader2 className={`w-12 h-12 text-[var(--color-accent)] ${!shareFile ? 'animate-spin' : ''}`} />
+            <Loader2
+              className={`w-12 h-12 text-[var(--color-accent)] ${!shareFile ? "animate-spin" : ""}`}
+            />
             <div className="text-center">
               <h3 className="text-lg font-black uppercase text-white mb-2">
                 {shareFile ? "Ready to Share" : "Generating PDF Report"}
               </h3>
               <p className="text-sm text-gray-400">{status}</p>
             </div>
-            
+
             {shareFile ? (
               <div className="w-full flex flex-col gap-2 mt-2">
                 <button
@@ -526,10 +581,10 @@ export function PdfReportPage() {
                       await navigator.share({
                         title: "Check out my football performance report!",
                         text: "I just completed my football training session. Check out my performance metrics and reflections!",
-                        files: [shareFile]
+                        files: [shareFile],
                       });
-                    } catch(e) {
-                      if (e.name !== 'AbortError') console.error(e);
+                    } catch (e) {
+                      if (e.name !== "AbortError") console.error(e);
                     }
                     navigate(-1);
                   }}
@@ -562,72 +617,88 @@ export function PdfReportPage() {
       {/* ── Hidden render container with forced light theme ── */}
       <div
         ref={containerRef}
-        className="max-w-md mx-auto px-4 py-6"
+        className="max-w-md mx-auto"
         style={lightThemeVars}
       >
         {/* REGISTER */}
-        <div
-          id="pdf-section-profile"
-          style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
-        >
-          <PlayerProfile />
-        </div>
+        {(renderAll || targetSectionId === "pdf-section-profile") && (
+          <div
+            id="pdf-section-profile"
+            style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
+          >
+            <PlayerProfile />
+          </div>
+        )}
 
         {/* PLAYER STATS */}
-        <div
-          id="pdf-section-stats"
-          style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
-        >
-          <PlayerStats />
-        </div>
+        {(renderAll || targetSectionId === "pdf-section-stats") && (
+          <div
+            id="pdf-section-stats"
+            style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
+          >
+            <PlayerStats />
+          </div>
+        )}
 
         {/* TOTAL TOUCHES */}
-        <div
-          id="pdf-section-touches"
-          style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
-        >
-          <LiveStats isPdf={true} />
-        </div>
+        {(renderAll || targetSectionId === "pdf-section-touches") && (
+          <div
+            id="pdf-section-touches"
+            style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
+          >
+            <LiveStats isPdf={true} />
+          </div>
+        )}
 
         {/* PLAYER EVALUATION */}
-        <div
-          id="pdf-section-evaluation"
-          style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
-        >
-          <PlayerEvaluation isPdf={true} />
-        </div>
+        {(renderAll || targetSectionId === "pdf-section-evaluation") && (
+          <div
+            id="pdf-section-evaluation"
+            style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
+          >
+            <PlayerEvaluation isPdf={true} />
+          </div>
+        )}
 
         {/* PLAYER REFLECTION */}
-        <div
-          id="pdf-section-reflection"
-          style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
-        >
-          <PlayerReflection isPdf={true} />
-        </div>
+        {(renderAll || targetSectionId === "pdf-section-reflection") && (
+          <div
+            id="pdf-section-reflection"
+            style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
+          >
+            <PlayerReflection isPdf={true} />
+          </div>
+        )}
 
         {/* PLAYER GRADE */}
-        <div
-          id="pdf-section-grade"
-          style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
-        >
-          <PlayerAttendanceGrade isPdf={true} />
-        </div>
+        {(renderAll || targetSectionId === "pdf-section-grade") && (
+          <div
+            id="pdf-section-grade"
+            style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
+          >
+            <PlayerAttendanceGrade isPdf={true} />
+          </div>
+        )}
 
         {/* STARTING LINEUP */}
-        <div
-          id="pdf-section-formation"
-          style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
-        >
-          <FootballFormation />
-        </div>
+        {(renderAll || targetSectionId === "pdf-section-formation") && (
+          <div
+            id="pdf-section-formation"
+            style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
+          >
+            <FootballFormation />
+          </div>
+        )}
 
         {/* NOTE TO COACH */}
-        <div
-          id="pdf-section-note"
-          style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
-        >
-          <NoteToCoach isPdf={true} />
-        </div>
+        {(renderAll || targetSectionId === "pdf-section-note") && (
+          <div
+            id="pdf-section-note"
+            style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
+          >
+            <NoteToCoach isPdf={true} />
+          </div>
+        )}
       </div>
     </>
   );

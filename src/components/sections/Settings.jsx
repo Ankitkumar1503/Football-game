@@ -26,13 +26,22 @@ import {
 
 // ── Shared label style matching PlayerProfile ──
 const sectionHeaderClass =
-  "text-[9px] font-black uppercase tracking-widest text-[var(--color-accent)] mb-2 mt-6 first:mt-0";
+  "text-[9px] font-black uppercase tracking-widest text-football-text/60 mb-2 mt-6 first:mt-0";
 
-const itemTitleClass = "text-xs font-black uppercase tracking-wide text-[var(--text-primary)]";
-const itemDescClass = "text-[10px] text-[var(--text-secondary)] mt-0.5 leading-relaxed";
+const itemTitleClass =
+  "text-xs font-black uppercase tracking-wide text-football-text";
+const itemDescClass =
+  "text-[10px] text-football-text/70 mt-0.5 leading-relaxed";
 
 // ── Reusable setting row ──
-function SettingRow({ icon: Icon, title, description, onClick, danger = false, rightEl }) {
+function SettingRow({
+  icon: Icon,
+  title,
+  description,
+  onClick,
+  danger = false,
+  rightEl,
+}) {
   return (
     <button
       onClick={onClick}
@@ -41,17 +50,22 @@ function SettingRow({ icon: Icon, title, description, onClick, danger = false, r
       <div className="mt-0.5 flex-shrink-0">
         <Icon
           size={14}
-          style={{ color: danger ? "var(--color-accent)" : "var(--text-secondary)" }}
+          style={{
+            color: danger ? "#dc2626" : "var(--text-primary)",
+          }}
         />
       </div>
       <div className="flex-1 min-w-0">
-        <p className={`${itemTitleClass} ${danger ? "text-[var(--color-accent)]" : ""}`}>
+        <p className={`${itemTitleClass} ${danger ? "text-red-600" : ""}`}>
           {title}
         </p>
         {description && <p className={itemDescClass}>{description}</p>}
       </div>
       {rightEl || (
-        <ChevronRight size={12} style={{ color: "var(--text-secondary)", marginTop: 2 }} />
+        <ChevronRight
+          size={12}
+          style={{ color: "var(--text-primary)", marginTop: 2 }}
+        />
       )}
     </button>
   );
@@ -59,7 +73,7 @@ function SettingRow({ icon: Icon, title, description, onClick, danger = false, r
 
 // ── Divider ──
 function Divider() {
-  return <div className="border-t border-[var(--border-color)]" />;
+  return <div className="border-t border-football-text/10" />;
 }
 
 // ── Confirm Modal ──
@@ -67,22 +81,19 @@ function ConfirmModal({ open, title, message, warning, onConfirm, onCancel }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 px-6">
-      <div
-        className="w-full max-w-sm rounded-none border border-[var(--border-color)] p-6 space-y-4"
-        style={{ backgroundColor: "var(--bg-card)" }}
-      >
+      <div className="w-full max-w-sm rounded-[24px] border border-football-subtle p-6 space-y-4 bg-football-card shadow-2xl">
         <div className="flex items-start justify-between">
-          <p className="text-sm font-black uppercase tracking-widest text-[var(--text-primary)]">
+          <p className="text-sm font-black uppercase tracking-widest text-football-text">
             {title}
           </p>
           <button onClick={onCancel}>
-            <X size={16} style={{ color: "var(--text-secondary)" }} />
+            <X size={16} style={{ color: "var(--text-primary)" }} />
           </button>
         </div>
         <p className={itemDescClass}>{message}</p>
         {warning && (
-          <div className="border border-[var(--color-accent)] p-3">
-            <p className="text-[10px] font-black uppercase text-[var(--color-accent)] leading-relaxed">
+          <div className="border border-red-600 p-3">
+            <p className="text-[10px] font-black uppercase text-red-600 leading-relaxed">
               ⚠ {warning}
             </p>
           </div>
@@ -90,13 +101,13 @@ function ConfirmModal({ open, title, message, warning, onConfirm, onCancel }) {
         <div className="flex gap-3 pt-2">
           <button
             onClick={onCancel}
-            className="flex-1 py-2 text-[10px] font-black uppercase tracking-widest border border-[var(--border-color)] text-[var(--text-secondary)] hover:opacity-70 transition-opacity"
+            className="flex-1 py-3 text-[10px] font-black uppercase tracking-widest border border-football-subtle text-football-text rounded-xl hover:bg-football-text/5 transition-all"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 py-2 text-[10px] font-black uppercase tracking-widest border border-[var(--color-accent)] text-[var(--color-accent)] hover:opacity-70 transition-opacity"
+            className="flex-1 py-3 text-[10px] font-black uppercase tracking-widest bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all"
           >
             Confirm
           </button>
@@ -110,21 +121,33 @@ function ConfirmModal({ open, title, message, warning, onConfirm, onCancel }) {
 function FaqItem({ question, answer }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-[var(--border-color)]">
+    <div className="border-b border-football-text/10">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-start justify-between py-3 gap-3 text-left"
       >
         <p className={itemTitleClass}>{question}</p>
         {open ? (
-          <ChevronUp size={12} style={{ color: "var(--text-secondary)", flexShrink: 0, marginTop: 2 }} />
+          <ChevronUp
+            size={12}
+            style={{
+              color: "var(--text-primary)",
+              flexShrink: 0,
+              marginTop: 2,
+            }}
+          />
         ) : (
-          <ChevronDown size={12} style={{ color: "var(--text-secondary)", flexShrink: 0, marginTop: 2 }} />
+          <ChevronDown
+            size={12}
+            style={{
+              color: "var(--text-primary)",
+              flexShrink: 0,
+              marginTop: 2,
+            }}
+          />
         )}
       </button>
-      {open && (
-        <p className={`${itemDescClass} pb-3`}>{answer}</p>
-      )}
+      {open && <p className={`${itemDescClass} pb-3`}>{answer}</p>}
     </div>
   );
 }
@@ -150,27 +173,65 @@ export function Settings() {
   };
 
   const faqs = [
-    { q: "What is Touches™?", a: "Touches™ is a player development tool designed to track match interactions, technical actions, and self-reflection metrics." },
-    { q: "Does Touches™ track my location?", a: "No. The app does not use GPS or location services." },
-    { q: "Does the app record video or audio?", a: "No. Touches™ does not access the camera or microphone." },
-    { q: "Where is my data stored?", a: "All data is stored locally on your device." },
-    { q: "Is my data shared with third parties?", a: "No. Touches™ does not sell or distribute user data." },
-    { q: "Can I export my session results?", a: "Yes. Users may generate PDFs and save reports to their device." },
-    { q: "Can I delete my data?", a: "Yes. You may reset data directly within the app or submit a deletion request." },
-    { q: "Does Touches™ evaluate player ability?", a: "Touches™ provides structured tracking and reflection tools. It does not guarantee performance outcomes or selection decisions." },
-    { q: "Is Touches™ a scouting platform?", a: "No. The app is strictly an educational and tracking utility." },
-    { q: "Why are permissions not required?", a: "Touches™ is designed to function without accessing sensitive device features." },
-    { q: "What happens if I reset data accidentally?", a: "Reset actions are permanent. The app displays confirmation warnings before deletion." },
-    { q: "Is Touches™ suitable for young players?", a: "Yes. The app may be used under parental or coach supervision." },
-    { q: "Who operates Touches™?", a: "Touches™ is operated by Footballer Athletics™, developed by Clem Murdock." },
+    {
+      q: "What is Touches™?",
+      a: "Touches™ is a player development tool designed to track match interactions, technical actions, and self-reflection metrics.",
+    },
+    {
+      q: "Does Touches™ track my location?",
+      a: "No. The app does not use GPS or location services.",
+    },
+    {
+      q: "Does the app record video or audio?",
+      a: "No. Touches™ does not access the camera or microphone.",
+    },
+    {
+      q: "Where is my data stored?",
+      a: "All data is stored locally on your device.",
+    },
+    {
+      q: "Is my data shared with third parties?",
+      a: "No. Touches™ does not sell or distribute user data.",
+    },
+    {
+      q: "Can I export my session results?",
+      a: "Yes. Users may generate PDFs and save reports to their device.",
+    },
+    {
+      q: "Can I delete my data?",
+      a: "Yes. You may reset data directly within the app or submit a deletion request.",
+    },
+    {
+      q: "Does Touches™ evaluate player ability?",
+      a: "Touches™ provides structured tracking and reflection tools. It does not guarantee performance outcomes or selection decisions.",
+    },
+    {
+      q: "Is Touches™ a scouting platform?",
+      a: "No. The app is strictly an educational and tracking utility.",
+    },
+    {
+      q: "Why are permissions not required?",
+      a: "Touches™ is designed to function without accessing sensitive device features.",
+    },
+    {
+      q: "What happens if I reset data accidentally?",
+      a: "Reset actions are permanent. The app displays confirmation warnings before deletion.",
+    },
+    {
+      q: "Is Touches™ suitable for young players?",
+      a: "Yes. The app may be used under parental or coach supervision.",
+    },
+    {
+      q: "Who operates Touches™?",
+      a: "Touches™ is operated by Footballer Athletics™, developed by Clem Murdock.",
+    },
   ];
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "var(--bg-primary)" }}>
+    <div className="min-h-screen">
       <div className="max-w-md mx-auto px-4 pb-20 pt-6">
-
         {/* ── Page Title ── */}
-        <h1 className="text-2xl font-black uppercase tracking-widest text-[var(--text-primary)] border-b-2 border-[var(--text-primary)] pb-2 mb-2">
+        <h1 className="text-2xl font-black uppercase tracking-widest text-football-text border-b-2 border-football-text pb-2 mb-2">
           Settings
         </h1>
 
@@ -182,7 +243,7 @@ export function Settings() {
           icon={User}
           title="Profile"
           description="View and manage player-related information stored on this device."
-          onClick={() => navigate("/profile")}
+          onClick={() => navigate("/register")}
         />
         <Divider />
         <SettingRow
@@ -197,28 +258,28 @@ export function Settings() {
             DATA MANAGEMENT
         ════════════════════════════════ */}
         <p className={sectionHeaderClass}>Data Management</p>
-        <SettingRow
+        {/* <SettingRow
           icon={HardDrive}
           title="Local Data Storage"
           description="Touches™ stores session data locally on your device. No centralised user database is maintained."
           onClick={() => {}}
           rightEl={<span />}
-        />
-        <Divider />
+        /> */}
+        {/* <Divider />
         <SettingRow
           icon={RotateCcw}
           title="Undo Last Action"
           description="Reverses only the most recent touch entry or counter action."
           onClick={() => {}}
-        />
-        <Divider />
+        /> */}
+        {/* <Divider />
         <SettingRow
           icon={Trash2}
           title="Reset Page Data"
           description="Clears all visible fields and counters on the current screen."
           onClick={handleResetPage}
           danger
-        />
+        /> */}
         <Divider />
         <SettingRow
           icon={Trash}
@@ -236,9 +297,9 @@ export function Settings() {
           icon={Shield}
           title="Privacy Policy"
           description="View how Touches™ handles user-entered information and device data."
-          onClick={() => navigate("/privacy")}
+          onClick={() => navigate("/policy")}
         />
-        <Divider />
+        {/* <Divider />
         <SettingRow
           icon={FileText}
           title="Terms & Conditions"
@@ -252,38 +313,45 @@ export function Settings() {
           description="Ownership and intellectual property protection details."
           onClick={() => navigate("/copyright")}
         />
-        <Divider />
-        <SettingRow
+        <Divider /> */}
+        {/* <SettingRow
           icon={Tag}
           title="Trademark Notice"
           description="Touches™ and Footballer Athletics™ brand protections."
           onClick={() => navigate("/trademark")}
-        />
-        <Divider />
+        /> */}
+        {/* <Divider />
         <SettingRow
           icon={AlertTriangle}
           title="Disclaimer"
           description="Limitations of functionality, liability, and usage scope."
           onClick={() => navigate("/disclaimer")}
-        />
+        /> */}
 
         {/* ════════════════════════════════
             PERMISSIONS & ACCESS
         ════════════════════════════════ */}
         <p className={sectionHeaderClass}>Permissions & Access</p>
-        <div
-          className="p-4 border border-[var(--border-color)]"
-          style={{ backgroundColor: "var(--bg-card)" }}
-        >
-          <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)] mb-2">
+        <div className="p-4 border border-football-text/10 bg-football-card rounded-2xl">
+          <p className="text-[10px] font-black uppercase tracking-widest text-football-text mb-2">
             Touches™ does NOT require or request access to:
           </p>
-          {["Location Services", "Camera", "Microphone", "Contacts", "Photos / Media", "Background Tracking"].map((item) => (
-            <p key={item} className="text-[10px] text-[var(--text-secondary)] leading-relaxed">
+          {[
+            "Location Services",
+            "Camera",
+            "Microphone",
+            "Contacts",
+            "Photos / Media",
+            "Background Tracking",
+          ].map((item) => (
+            <p
+              key={item}
+              className="text-[10px] text-football-text/80 leading-relaxed"
+            >
               · {item}
             </p>
           ))}
-          <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)] mt-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-football-text mt-3">
             All data is manually entered by the user.
           </p>
         </div>
@@ -292,11 +360,8 @@ export function Settings() {
             NOTIFICATIONS
         ════════════════════════════════ */}
         <p className={sectionHeaderClass}>Notifications</p>
-        <div
-          className="p-4 border border-[var(--border-color)]"
-          style={{ backgroundColor: "var(--bg-card)" }}
-        >
-          <p className="text-[10px] text-[var(--text-secondary)] leading-relaxed">
+        <div className="p-4 border border-football-text/10 bg-football-card rounded-2xl">
+          <p className="text-[10px] text-football-text/80 leading-relaxed">
             Touches™ does not send push notifications or background alerts.
           </p>
         </div>
@@ -316,11 +381,8 @@ export function Settings() {
             APP INFORMATION
         ════════════════════════════════ */}
         <p className={sectionHeaderClass}>App Information</p>
-        <div
-          className="p-4 border border-[var(--border-color)]"
-          style={{ backgroundColor: "var(--bg-card)" }}
-        >
-          <p className="text-[10px] text-[var(--text-secondary)]">
+        <div className="p-4 border border-football-text/10 bg-football-card rounded-2xl">
+          <p className="text-[10px] text-football-text/80">
             Touches™ Version 1.0 (Build 001)
           </p>
         </div>
@@ -351,18 +413,17 @@ export function Settings() {
             TRADEMARK / LEGAL BLOCK
         ════════════════════════════════ */}
         <p className={sectionHeaderClass}>Trademark</p>
-        <div
-          className="p-4 border border-[var(--border-color)] space-y-2"
-          style={{ backgroundColor: "var(--bg-card)" }}
-        >
-          <p className="text-[10px] text-[var(--text-secondary)] leading-relaxed">
+        <div className="p-4 border border-football-text/10 space-y-2 bg-football-card rounded-2xl">
+          <p className="text-[10px] text-football-text/80 leading-relaxed">
             © 2026 ClemMurdock – Footballer Athletics™. All Rights Reserved.
           </p>
-          <p className="text-[10px] text-[var(--text-secondary)] leading-relaxed">
-            Touches™, Footballer Athletics™, and PlayLikeU™ are protected trademarks by Clem Murdock.
+          <p className="text-[10px] text-football-text/80 leading-relaxed">
+            Touches™, Footballer Athletics™, and PlayLikeU™ are protected
+            trademarks by Clem Murdock.
           </p>
-          <p className="text-[10px] text-[var(--text-secondary)] leading-relaxed">
-            Touches™ is not affiliated with FIFA, UEFA, Apple, Google, or any governing body.
+          <p className="text-[10px] text-football-text/80 leading-relaxed">
+            Touches™ is not affiliated with FIFA, UEFA, Apple, Google, or any
+            governing body.
           </p>
         </div>
 
@@ -371,13 +432,13 @@ export function Settings() {
         ════════════════════════════════ */}
         <button
           onClick={() => setShowFaq(!showFaq)}
-          className="w-full flex items-center justify-between mt-6 pb-2 border-b-2 border-[var(--text-primary)]"
+          className="w-full flex items-center justify-between mt-6 pb-2 border-b-2 border-football-text"
         >
           <div className="text-left">
-            <p className="text-2xl font-black uppercase tracking-widest text-[var(--text-primary)]">
+            <p className="text-2xl font-black uppercase tracking-widest text-football-text">
               FAQ
             </p>
-            <p className="text-[9px] font-black uppercase tracking-widest text-[var(--color-accent)]">
+            <p className="text-[9px] font-black uppercase tracking-widest text-football-text/60">
               — Touches™
             </p>
           </div>
@@ -390,7 +451,7 @@ export function Settings() {
 
         {showFaq && (
           <div className="mt-2">
-            <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)] mb-3">
+            <p className="text-[9px] font-black uppercase tracking-widest text-football-text/60 mb-3">
               Frequently Asked Questions
             </p>
             {faqs.map((faq, i) => (
@@ -398,7 +459,6 @@ export function Settings() {
             ))}
           </div>
         )}
-
       </div>
 
       {/* ── Confirm Modals ── */}

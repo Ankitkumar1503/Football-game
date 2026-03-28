@@ -4,34 +4,34 @@ import { RotateCcw, Share2, FileDown, Save, ChevronDown, ChevronUp } from "lucid
 
 // ── Shared styles ──
 const sectionTitleClass =
-  "text-[11px] font-black uppercase tracking-widest text-[var(--text-primary)] mt-6 mb-1";
+  "text-[11px] font-black uppercase tracking-widest text-football-text mt-6 mb-1";
 const subHeadingClass =
-  "text-[10px] font-black uppercase tracking-wider text-[var(--text-primary)] mt-4 mb-1";
+  "text-[10px] font-black uppercase tracking-wider text-football-text mt-4 mb-1";
 const bodyClass =
-  "text-[10px] text-[var(--text-secondary)] leading-relaxed";
+  "text-[10px] text-football-text/80 leading-relaxed";
 const accentClass =
-  "text-[10px] font-black uppercase tracking-wider text-[var(--color-accent)]";
+  "text-[10px] font-black uppercase tracking-wider text-football-text";
 
 function Divider() {
-  return <div className="border-t border-[var(--border-color)] my-4" />;
+  return <div className="border-t border-football-text/10 my-4" />;
 }
 
 // ── Collapsible Section ──
 function Section({ number, title, children, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-[var(--border-color)]">
+    <div className="border-b border-football-text/10">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between py-3 text-left"
       >
-        <p className="text-[11px] font-black uppercase tracking-widest text-[var(--text-primary)]">
-          {number && <span className="text-[var(--color-accent)] mr-1">{number}.</span>}
+        <p className="text-[11px] font-black uppercase tracking-widest text-football-text">
+          {number && <span className="text-football-text/60 mr-1">{number}.</span>}
           {title}
         </p>
         {open
-          ? <ChevronUp size={12} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
-          : <ChevronDown size={12} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
+          ? <ChevronUp size={12} style={{ color: "var(--text-primary)", flexShrink: 0 }} />
+          : <ChevronDown size={12} style={{ color: "var(--text-primary)", flexShrink: 0 }} />
         }
       </button>
       {open && <div className="pb-4 space-y-2">{children}</div>}
@@ -48,12 +48,12 @@ export function Account() {
   const handleReset = () => console.log("Reset");
 
   return (
-    <div className="min-h-screen pb-24" style={{ backgroundColor: "var(--bg-primary)" }}>
+    <div className="min-h-screen pb-32">
       <div className="max-w-md mx-auto px-4 pt-6">
 
         {/* ── Page Header ── */}
-        <div className="border-b-2 border-[var(--text-primary)] pb-2 mb-1">
-          <h1 className="text-2xl font-black uppercase tracking-widest text-[var(--text-primary)]">
+        <div className="border-b-2 border-football-text pb-2 mb-1">
+          <h1 className="text-2xl font-black uppercase tracking-widest text-football-text">
             Touches™ App
           </h1>
           <p className={bodyClass}>© Footballer Athletics™ All Rights Reserved.</p>
@@ -230,8 +230,7 @@ export function Account() {
           <p className={bodyClass}>Users may request deletion of their data at any time.</p>
           <p className={subHeadingClass}>How to Request Deletion</p>
           <div
-            className="p-3 border border-[var(--border-color)]"
-            style={{ backgroundColor: "var(--bg-card)" }}
+            className="p-4 border border-football-text/10 bg-football-card rounded-2xl"
           >
             {[
               "Open the Touches™ app",
@@ -280,8 +279,7 @@ export function Account() {
           BOTTOM ACTION BAR
       ════════════════════════════════ */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--border-color)]"
-        style={{ backgroundColor: "var(--bg-primary)" }}
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-football-text/10 bg-football-card/90 backdrop-blur-md"
       >
         <div className="max-w-md mx-auto px-4">
           <div className="flex items-center justify-between py-3">
@@ -292,12 +290,11 @@ export function Account() {
               className="flex flex-col items-center gap-1 min-w-[56px] hover:opacity-70 transition-opacity"
             >
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center border border-[var(--border-color)]"
-                style={{ backgroundColor: "var(--bg-card)" }}
+                className="w-10 h-10 rounded-full flex items-center justify-center border border-football-text/20 bg-football-primary"
               >
                 <RotateCcw size={16} style={{ color: "var(--text-primary)" }} />
               </div>
-              <span className="text-[9px] font-black uppercase tracking-wider text-[var(--text-secondary)]">
+              <span className="text-[9px] font-black uppercase tracking-wider text-football-text">
                 Reset
               </span>
             </button>
@@ -308,12 +305,11 @@ export function Account() {
               className="flex flex-col items-center gap-1 min-w-[56px] hover:opacity-70 transition-opacity"
             >
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center border border-[var(--border-color)]"
-                style={{ backgroundColor: "var(--bg-card)" }}
+                className="w-10 h-10 rounded-full flex items-center justify-center border border-football-text/20 bg-football-primary"
               >
                 <Share2 size={16} style={{ color: "var(--text-primary)" }} />
               </div>
-              <span className="text-[9px] font-black uppercase tracking-wider text-[var(--text-secondary)]">
+              <span className="text-[9px] font-black uppercase tracking-wider text-football-text">
                 Share
               </span>
             </button>
@@ -324,12 +320,11 @@ export function Account() {
               className="flex flex-col items-center gap-1 min-w-[56px] hover:opacity-70 transition-opacity"
             >
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center border border-[var(--border-color)]"
-                style={{ backgroundColor: "var(--bg-card)" }}
+                className="w-10 h-10 rounded-full flex items-center justify-center border border-football-text/20 bg-football-primary"
               >
                 <FileDown size={16} style={{ color: "var(--text-primary)" }} />
               </div>
-              <span className="text-[9px] font-black uppercase tracking-wider text-[var(--text-secondary)]">
+              <span className="text-[9px] font-black uppercase tracking-wider text-football-text">
                 PDF
               </span>
             </button>
@@ -356,7 +351,7 @@ export function Account() {
           </div>
 
           {/* Footer brand */}
-          <p className="text-center text-[9px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] pb-3">
+          <p className="text-center text-[9px] font-black uppercase tracking-[0.3em] text-football-text/60 pb-3">
             Footballer Athletics
           </p>
         </div>

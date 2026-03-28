@@ -159,7 +159,7 @@ export function PlayerEvaluation({ isPdf, pdfPart }) {
 
   // Shared input style — theme-aware
   const inputClass =
-    "w-full bg-[var(--bg-input)] text-[var(--text-primary)] px-2 py-1 text-xs font-bold uppercase border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
+    "w-full bg-[var(--bg-input)] text-[var(--text-input)] px-2 py-1 text-xs font-bold uppercase border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
   let categoriesToRender = Object.entries(EVALUATION_CATEGORIES);
   if (isPdf) {

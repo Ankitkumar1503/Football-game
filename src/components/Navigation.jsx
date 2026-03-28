@@ -13,7 +13,8 @@ import {
   StickyNote,
 } from "lucide-react";
 import touches from "../assets/touches.png";
-import touchesLight from "../assets/touches-light.png";
+// import touchesLight from "../assets/touches-light.png";
+import touchesLight from "../assets/touches_black.png";
 import { cn } from "../lib/utils";
 import { useTheme } from "../hooks/useTheme";
 
@@ -24,7 +25,7 @@ const NAV_ITEMS = [
   { label: "TOUCH COUNTER", icon: Timer, path: "/touch-counter" },
   { label: "PLAYER REFLECTION", icon: MessageSquare, path: "/reflection" },
   { label: "PLAYER EVALUATION", icon: Clipboard, path: "/evaluation" },
-  { label: "PLAYER GRADE", icon: Award, path: "/grade" },
+  { label: "ROSTER", icon: Award, path: "/roster" },
   { label: "STARTING LINEUP", icon: Users, path: "/lineup" },
   { label: "NOTE TO COACH", icon: StickyNote, path: "/note-to-coach" },
   { label: "USAGE POLICY", icon: FileText, path: "/policy" },

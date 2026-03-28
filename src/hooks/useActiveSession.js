@@ -85,7 +85,7 @@ export function useActiveSession() {
       total: 0, good: 0, bad: 0,
       Pass: 0, Dribble: 0, 'Corner Kick': 0, Header: 0, Tackle: 0,
       Goal: 0, Shot: 0, 'Free Kick': 0, 'Penalty Kick': 0, Cross: 0,
-      'Yellow Card': 0, 'Red Card': 0, 'Goal Kick': 0
+      'Yellow Card': 0, 'Red Card': 0, 'Goal Kick': 0, 'Throw-In': 0
       // Add other actions here if they appear in the wheel
     };
 

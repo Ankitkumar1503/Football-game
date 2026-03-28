@@ -41,7 +41,7 @@ export function Dashboard() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-md mx-auto px-4 py-6">
+      <main className="max-w-md mx-auto">
         <div id="register" className="scroll-mt-28">
           <PlayerProfile />
         </div>

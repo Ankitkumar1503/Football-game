@@ -98,7 +98,7 @@ export function FootballFormation() {
     "block text-[9px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest";
 
   const inputClass =
-    "w-full bg-[var(--bg-input)] text-[var(--text-primary)] px-2 py-1 text-xs font-bold border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
+    "w-full bg-[var(--bg-input)] text-[var(--text-input)] px-2 py-1 text-xs font-bold border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
   return (
     <div className="mb-6">
@@ -154,173 +154,118 @@ export function FootballFormation() {
       </div>
 
       {/* ── Football Field ── */}
-      {/* 
-        Light mode: --color-accent = #06B6D4 (cyan) → field is cyan
-        Dark mode:  --color-accent = #FF4422 (red)  → field is red/orange
-        We use a slightly transparent version for the field body.
-      */}
       <div
-        className="relative aspect-[3/4] w-full max-w-md mx-auto border-2 border-white overflow-hidden"
-        style={{ backgroundColor: "var(--color-accent)" }}
+        className="football-field relative aspect-[3/4] w-full max-w-md mx-auto overflow-hidden"
+        style={{ backgroundColor: "var(--field-bg)", border: "2px solid var(--field-line)" }}
       >
-        {/* ── Field Markings (all white) ── */}
+        {/* ── Field Markings ── */}
 
         {/* Outer border */}
-        <div className="absolute inset-[6px] border-2 border-white pointer-events-none" />
+        <div className="absolute inset-[6px] pointer-events-none" style={{ border: "2px solid var(--field-line)" }} />
 
         {/* Center line */}
-        <div className="absolute top-1/2 left-[6px] right-[6px] h-[2px] bg-white pointer-events-none" />
+        <div className="absolute top-1/2 left-[6px] right-[6px] h-[2px] pointer-events-none" style={{ backgroundColor: "var(--field-line)" }} />
 
         {/* Center circle */}
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[22%] h-0 pointer-events-none"
           style={{ paddingBottom: "22%" }}
         >
-          <div className="absolute inset-0 border-2 border-white rounded-full" />
+          <div className="absolute inset-0 rounded-full" style={{ border: "2px solid var(--field-line)" }} />
         </div>
 
         {/* Center dot */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full pointer-events-none" style={{ backgroundColor: "var(--field-line)" }} />
 
         {/* Top penalty box */}
-        <div className="absolute top-[6px] left-1/2 -translate-x-1/2 w-[45%] h-[14%] border-2 border-t-0 border-white pointer-events-none" />
+        <div className="absolute top-[6px] left-1/2 -translate-x-1/2 w-[45%] h-[14%] pointer-events-none" style={{ border: "2px solid var(--field-line)", borderTop: "none" }}>
+        </div>
 
         {/* Top goal box */}
-        <div className="absolute top-[6px] left-1/2 -translate-x-1/2 w-[25%] h-[7%] border-2 border-t-0 border-white pointer-events-none" />
+        <div className="absolute top-[6px] left-1/2 -translate-x-1/2 w-[25%] h-[7%] pointer-events-none" style={{ border: "2px solid var(--field-line)", borderTop: "none" }} />
 
         {/* Bottom penalty box */}
-        <div className="absolute bottom-[6px] left-1/2 -translate-x-1/2 w-[45%] h-[14%] border-2 border-b-0 border-white pointer-events-none" />
+        <div className="absolute bottom-[6px] left-1/2 -translate-x-1/2 w-[45%] h-[14%] pointer-events-none" style={{ border: "2px solid var(--field-line)", borderBottom: "none" }}>
+        </div>
 
         {/* Bottom goal box */}
-        <div className="absolute bottom-[6px] left-1/2 -translate-x-1/2 w-[25%] h-[7%] border-2 border-b-0 border-white pointer-events-none" />
+        <div className="absolute bottom-[6px] left-1/2 -translate-x-1/2 w-[25%] h-[7%] pointer-events-none" style={{ border: "2px solid var(--field-line)", borderBottom: "none" }} />
 
         {/* ── Player Positions ── */}
-
-        {/* #9 — Striker — top center */}
         <PlayerPosition
           number={9}
           name={formData.players[9]}
           onChange={(v) => handlePlayerChange(9, v)}
-          style={{ top: "5%", left: "50%", transform: "translateX(-50%)" }}
+          style={{ top: "4%", left: "50%", transform: "translateX(-50%)" }}
         />
-
-        {/* #11 — Left Wing — upper left */}
         <PlayerPosition
           number={11}
           name={formData.players[11]}
           onChange={(v) => handlePlayerChange(11, v)}
-          style={{ top: "14%", left: "13%" }}
+          style={{ top: "18%", left: "15%" }}
         />
-
-        {/* #7 — Right Wing — upper right */}
         <PlayerPosition
           number={7}
           name={formData.players[7]}
           onChange={(v) => handlePlayerChange(7, v)}
-          style={{ top: "14%", right: "13%" }}
+          style={{ top: "18%", right: "15%" }}
         />
-
-        {/* #10 — Attacking Mid Left */}
         <PlayerPosition
           number={10}
           name={formData.players[10]}
           onChange={(v) => handlePlayerChange(10, v)}
-          style={{ top: "31%", left: "23%" }}
+          style={{ top: "36%", left: "22%" }}
         />
-
-        {/* #8 — Attacking Mid Right */}
         <PlayerPosition
           number={8}
           name={formData.players[8]}
           onChange={(v) => handlePlayerChange(8, v)}
-          style={{ top: "31%", right: "23%" }}
+          style={{ top: "36%", right: "22%" }}
         />
-
-        {/* #6 — Defensive Mid — center */}
         <PlayerPosition
           number={6}
           name={formData.players[6]}
           onChange={(v) => handlePlayerChange(6, v)}
           style={{
-            top: "54%",
+            top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
           }}
         />
-
-        {/* #3 — Left Back */}
         <PlayerPosition
           number={3}
           name={formData.players[3]}
           onChange={(v) => handlePlayerChange(3, v)}
-          style={{ top: "51%", left: "9%" }}
+          style={{ top: "54%", left: "10%" }}
         />
-
-        {/* #2 — Right Back */}
         <PlayerPosition
           number={2}
           name={formData.players[2]}
           onChange={(v) => handlePlayerChange(2, v)}
-          style={{ top: "51%", right: "9%" }}
+          style={{ top: "54%", right: "10%" }}
         />
-
-        {/* #5 — Left Center Back */}
         <PlayerPosition
           number={5}
           name={formData.players[5]}
           onChange={(v) => handlePlayerChange(5, v)}
-          style={{ top: "69%", left: "23%" }}
+          style={{ top: "72%", left: "22%" }}
         />
-
-        {/* #4 — Right Center Back */}
         <PlayerPosition
           number={4}
           name={formData.players[4]}
           onChange={(v) => handlePlayerChange(4, v)}
-          style={{ top: "69%", right: "23%" }}
+          style={{ top: "72%", right: "22%" }}
         />
-
-        {/* #1 — Goalkeeper — bottom center */}
         <PlayerPosition
           number={1}
           name={formData.players[1]}
           onChange={(v) => handlePlayerChange(1, v)}
-          style={{ top: "84%", left: "50%", transform: "translateX(-50%)" }}
+          style={{ bottom: "4%", left: "50%", transform: "translateX(-50%)" }}
         />
       </div>
     </div>
   );
 }
-
-// ── Player Position Component ──────────────────────────────────────────────
-// function PlayerPosition({ number, name, onChange, style }) {
-//   return (
-//     <div className="absolute" style={style}>
-//       <div className="flex flex-col items-center gap-[2px]">
-//         {/* Number badge */}
-//         <div
-//           className="w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shrink-0"
-//           style={{ backgroundColor: "#111111" }}
-//         >
-//           <span className="text-white text-[9px] font-black leading-none">
-//             {number}
-//           </span>
-//         </div>
-//         {/* Name inputs — 3 stacked lines like the target image */}
-//         <input
-//           type="text"
-//           value={name}
-//           onChange={(e) => onChange(e.target.value)}
-//           className="w-20 bg-white/90 text-black px-1 py-[2px] text-[8px] font-bold border-none text-center focus:outline-none focus:ring-1 focus:ring-black"
-//           placeholder=""
-//         />
-//         {/* Extra visual lines to match the "3 lines" look in the target */}
-//         <div className="w-20 h-[2px] bg-white/70" />
-//         <div className="w-20 h-[2px] bg-white/70" />
-//       </div>
-//     </div>
-//   );
-// }
 
 function PlayerPosition({ number, name, onChange, style }) {
   const [line1, line2, line3] = (name || ",,").split(",");
@@ -332,16 +277,11 @@ function PlayerPosition({ number, name, onChange, style }) {
   };
 
   return (
-    <div className="absolute" style={style}>
-      <div className="flex flex-col items-center gap-[2px]">
+    <div className="absolute z-10" style={style}>
+      <div className="flex flex-col items-center gap-[1px]">
         {/* Number badge */}
-        <div
-          className="w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shrink-0"
-          style={{ backgroundColor: "#111111" }}
-        >
-          <span className="text-white text-[9px] font-black leading-none">
-            {number}
-          </span>
+        <div className="w-6 h-6 rounded-full flex items-center justify-center border-2 border-white bg-black mb-1">
+          <span className="text-white text-[10px] font-black">{number}</span>
         </div>
 
         {/* 3 input lines */}
@@ -351,7 +291,8 @@ function PlayerPosition({ number, name, onChange, style }) {
             type="text"
             value={lineVal || ""}
             onChange={(e) => handleLineChange(i, e.target.value)}
-            className="w-20 bg-white/90 text-black px-1 py-[2px] text-[8px] font-bold border-none text-center focus:outline-none focus:ring-1 focus:ring-black"
+            className="w-20 bg-white/95 text-black px-1 py-[2px] text-[8px] font-black text-center focus:outline-none focus:ring-1 focus:ring-black h-4"
+            style={{ border: "1px solid var(--field-line)" }}
             placeholder=""
           />
         ))}

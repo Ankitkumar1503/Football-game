@@ -40,7 +40,7 @@ function AppContent() {
         <Route path="touch-counter" element={<TouchCounterPage />} />
         <Route path="reflection" element={<PlayerReflection />} />
         <Route path="evaluation" element={<PlayerEvaluation />} />
-        <Route path="grade" element={<PlayerAttendanceGrade />} />
+        <Route path="roster" element={<PlayerAttendanceGrade />} />
         <Route path="lineup" element={<FootballFormation />} />
         <Route path="note-to-coach" element={<NoteToCoach />} />
         <Route path="policy" element={<UsagePolicy />} />

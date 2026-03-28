@@ -18,14 +18,11 @@ export function Layout({ defaultMenuOpen = false }) {
         color: "var(--text-primary)",
       }}
     >
-      <Navigation
-        isOpen={isMenuOpen}
-        onClose={() => setIsMenuOpen(false)}
-      />
+      <Navigation isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
       <Header isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
 
-      <main className="max-w-md mx-auto px-4 py-6">
+      <main className="max-w-md mx-auto">
         <Outlet />
       </main>
 

@@ -14,7 +14,7 @@ import { db } from "../../lib/db";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { ShareModal } from "./ShareModal";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const WELL_DONE_TAGS = [
   "ATTACKING",
@@ -214,7 +214,7 @@ export function PlayerReflection({ isPdf, pdfPart }) {
                     type="text"
                     value={formData.playerName}
                     onChange={handleTextChange}
-                    className="w-full bg-football-input text-football-text px-3 py-[4px] text-sm font-bold uppercase border-none focus:outline-none focus:ring-1 focus:ring-football-accent"
+                    className="w-full bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-[4px] text-sm font-bold uppercase border-none focus:outline-none focus:ring-1 focus:ring-football-accent"
                   />
                 </div>
                 <div className="flex items-center gap-3">
@@ -229,7 +229,7 @@ export function PlayerReflection({ isPdf, pdfPart }) {
                     type="text"
                     value={formData.playerAge}
                     onChange={handleTextChange}
-                    className="w-20 bg-football-input text-football-text px-3 py-[4px] text-sm font-bold uppercase border-none focus:outline-none focus:ring-1 focus:ring-football-accent"
+                    className="w-20 bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-[4px] text-sm font-bold uppercase border-none focus:outline-none focus:ring-1 focus:ring-football-accent"
                   />
                 </div>
               </div>
@@ -247,14 +247,19 @@ export function PlayerReflection({ isPdf, pdfPart }) {
                     className="flex items-center gap-2 cursor-pointer group"
                   >
                     <div
-                      className={`w-4 h-4 border-2 flex items-center justify-center transition-all bg-football-card border-football-subtle ${
-                        formData.wellDoneTags.includes(tag)
-                          ? "bg-football-card"
-                          : "bg-football-card"
-                      }`}
+                      className="w-4 h-4 border-2 flex items-center justify-center transition-all bg-football-card border-football-subtle"
+                      style={{
+                        borderColor: "var(--text-primary)",
+                        backgroundColor: formData.wellDoneTags.includes(tag)
+                          ? "var(--checkbox-checked-bg)"
+                          : "transparent",
+                      }}
                     >
                       {formData.wellDoneTags.includes(tag) && (
-                        <span className="text-football-text font-bold text-[12px]">
+                        <span
+                          className="font-bold text-[12px]"
+                          style={{ color: "var(--checkbox-check-color)" }}
+                        >
                           ✓
                         </span>
                       )}
@@ -287,7 +292,7 @@ export function PlayerReflection({ isPdf, pdfPart }) {
                   type="text"
                   value={formData.achievedGoal}
                   onChange={handleTextChange}
-                  className="w-full bg-football-input text-football-text border-none px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-football-accent h-8"
+                  className="w-full bg-[var(--bg-input)] text-[var(--text-input)] border-none px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-football-accent h-8"
                 />
               </div>
               <div>
@@ -302,7 +307,7 @@ export function PlayerReflection({ isPdf, pdfPart }) {
                   type="text"
                   value={formData.whatLearned}
                   onChange={handleTextChange}
-                  className="w-full bg-football-input text-football-text border-none px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-football-accent h-8"
+                  className="w-full bg-[var(--bg-input)] text-[var(--text-input)] border-none px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-football-accent h-8"
                 />
               </div>
               <div>
@@ -317,7 +322,7 @@ export function PlayerReflection({ isPdf, pdfPart }) {
                   type="text"
                   value={formData.whatWouldChange}
                   onChange={handleTextChange}
-                  className="w-full bg-football-input text-football-text border-none px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-football-accent h-8"
+                  className="w-full bg-[var(--bg-input)] text-[var(--text-input)] border-none px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-football-accent h-8"
                 />
               </div>
             </div>
@@ -348,18 +353,20 @@ export function PlayerReflection({ isPdf, pdfPart }) {
                       min="1"
                       max="10"
                       value={value}
-                      onChange={(e) => handleMetricChange(metric, e.target.value)}
-                      className="slider-thumb flex-1 h-1.5 rounded-full appearance-none cursor-pointer min-w-0"
+                      onChange={(e) =>
+                        handleMetricChange(metric, e.target.value)
+                      }
+                      className="slider-thumb flex-1 h-2 rounded-full appearance-none cursor-pointer min-w-0"
                       style={{
                         background: `linear-gradient(to right,
-                  var(--color-accent) 0%,
-                  var(--color-accent) ${percent}%,
-                  var(--bg-input) ${percent}%,
-                  var(--bg-input) 100%)`,
+                          var(--slider-filled) 0%,
+                          var(--slider-filled) ${percent}%,
+                          var(--slider-unfilled) ${percent}%,
+                          var(--slider-unfilled) 100%)`,
                       }}
                     />
                     {/* Value - fixed width */}
-                    <span className="text-[9px] font-bold text-football-accent w-3 text-right shrink-0">
+                    <span className="text-[9px] font-bold text-white w-3 text-right shrink-0">
                       {value}
                     </span>
                   </div>
@@ -373,12 +380,43 @@ export function PlayerReflection({ isPdf, pdfPart }) {
   );
 }
 
+// Map route paths to human-readable page names
+const ROUTE_PAGE_NAMES = {
+  "/register": "Register",
+  "/stats": "Player Stats",
+  "/touch-counter": "Touch Counter",
+  "/reflection": "Player Reflection",
+  "/evaluation": "Player Evaluation",
+  "/roster": "Roster",
+  "/lineup": "Starting Lineup",
+  "/note-to-coach": "Note to Coach",
+};
+
 export function BottomBar() {
   const { sessionId } = useActiveSession();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [pdfChoiceModal, setPdfChoiceModal] = useState({ open: false, action: null });
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const [isLightTheme, setIsLightTheme] = useState(
+    document.documentElement.classList.contains("theme-light"),
+  );
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsLightTheme(
+        document.documentElement.classList.contains("theme-light"),
+      );
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
 
   const handleReset = async () => {
     if (
@@ -417,10 +455,8 @@ export function BottomBar() {
     }
   };
 
-
-
   const handleDownloadPDF = () => {
-    navigate("/pdf-report");
+    setPdfChoiceModal({ open: true, action: "download" });
   };
 
   const handleSave = async () => {
@@ -479,43 +515,108 @@ export function BottomBar() {
 
   const handleNativeShare = async () => {
     if (navigator.share) {
-      navigate("/pdf-report?action=share");
+      setPdfChoiceModal({ open: true, action: "share" });
     } else {
       console.warn("navigator.share not available on this device/browser");
       alert("Sharing is not supported on this device/browser.");
     }
   };
 
+  const handlePdfChoice = (scope) => {
+    const { action } = pdfChoiceModal;
+    setPdfChoiceModal({ open: false, action: null });
+
+    let url = "/pdf-report";
+    const params = new URLSearchParams();
+
+    if (scope === "current") {
+      // Get the current route path (e.g. "/lineup")
+      const currentPath = location.pathname;
+      // Strip leading slash for the param value
+      const sectionKey = currentPath.startsWith("/") ? currentPath.slice(1) : currentPath;
+      if (sectionKey) params.set("section", sectionKey);
+    }
+
+    if (action === "share") params.set("action", "share");
+
+    const qs = params.toString();
+    navigate(qs ? `${url}?${qs}` : url);
+  };
+
+  const currentPageName = ROUTE_PAGE_NAMES[location.pathname] || "Current Page";
+
   return (
     <>
       {/* Loading Overlay */}
       {isGenerating && <LoadingOverlay progress={progress} />}
 
+      {/* PDF Choice Modal */}
+      {pdfChoiceModal.open && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="bg-[#111] rounded-xl p-6 max-w-xs w-full mx-4 shadow-2xl border border-white/10">
+            <h3 className="text-lg font-black uppercase text-white text-center mb-1">
+              {pdfChoiceModal.action === "share" ? "Share PDF" : "Download PDF"}
+            </h3>
+            <p className="text-xs text-gray-400 text-center mb-5">
+              What would you like to export?
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => handlePdfChoice("current")}
+                className="w-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-black uppercase py-3 rounded-lg tracking-wider transition-colors text-sm"
+              >
+                This Page Only ({currentPageName})
+              </button>
+              <button
+                onClick={() => handlePdfChoice("all")}
+                className="w-full bg-white/10 hover:bg-white/20 text-white font-bold uppercase py-3 rounded-lg tracking-wider transition-colors text-sm border border-white/20"
+              >
+                All Sections
+              </button>
+              <button
+                onClick={() => setPdfChoiceModal({ open: false, action: null })}
+                className="w-full text-gray-400 hover:text-white text-xs uppercase py-2 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div
         id="bottom-bar-container"
-        className="fixed bottom-0 left-0 right-0 p-4 bg-black/95 backdrop-blur-lg z-[100]"
+        className={`fixed bottom-0 left-0 right-0 p-4 ${isLightTheme ? "bg-[var(--bg-primary)]" : "bg-black/95"} backdrop-blur-lg z-[100]`}
       >
         <div className="max-w-md mx-auto grid grid-cols-4 gap-2">
           <Button
             variant="secondary"
             size="sm"
-            className="flex-col gap-1 py-3 h-auto bg-black text-white border border-white/20 hover:bg-white/10 transition-all"
+            className={`flex-col gap-1 py-3 h-auto rounded-xl transition-all ${
+              isLightTheme
+                ? "bg-transparent text-white border-2 border-white hover:bg-white/10"
+                : "bg-black text-white border border-white/20 hover:bg-white/10"
+            }`}
             onClick={handleReset}
             disabled={isGenerating}
           >
             <RotateCcw className="size-4" />
-            <span className="text-[10px]">Reset</span>
+            <span className="text-[10px] font-bold">Reset</span>
           </Button>
           {navigator.share && (
             <Button
               variant="secondary"
               size="sm"
-              className="flex-col gap-1 py-3 h-auto bg-black text-white border border-white/20 hover:bg-white/10 transition-all"
+              className={`flex-col gap-1 py-3 h-auto rounded-xl transition-all ${
+                isLightTheme
+                  ? "bg-transparent text-white border-2 border-white hover:bg-white/10"
+                  : "bg-black text-white border border-white/20 hover:bg-white/10"
+              }`}
               onClick={handleNativeShare}
               disabled={isGenerating}
             >
               <Share2 className="size-4" />
-              <span className="text-[10px]">Share</span>
+              <span className="text-[10px] font-bold">Share</span>
             </Button>
           )}
           {/* <Button
@@ -531,22 +632,40 @@ export function BottomBar() {
           <Button
             variant="secondary"
             size="sm"
-            className="flex-col gap-1 py-3 h-auto bg-black text-white border border-white/20 hover:bg-white/10 transition-all"
+            className={`flex-col gap-1 py-3 h-auto rounded-xl transition-all ${
+              isLightTheme
+                ? "bg-transparent text-white border-2 border-white hover:bg-white/10"
+                : "bg-black text-white border border-white/20 hover:bg-white/10"
+            }`}
             onClick={handleDownloadPDF}
             disabled={isGenerating}
           >
             <Download className="size-4" />
-            <span className="text-[10px]">{isGenerating ? "..." : "PDF"}</span>
+            <span className="text-[10px] font-bold">
+              {isGenerating ? "..." : "PDF"}
+            </span>
           </Button>
           <Button
             variant="primary"
-            className="flex-col gap-1 py-3 h-auto shadow-lg shadow-[var(--color-accent)]/60 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] border-none text-white transition-all"
+            className={`flex-col gap-1 py-3 h-auto rounded-xl transition-all ${
+              isLightTheme
+                ? "bg-[#111111] text-white border-2 border-white hover:bg-black/90 shadow-none"
+                : "bg-[var(--color-accent)] text-white border-none shadow-lg shadow-[var(--color-accent)]/60 hover:bg-[var(--color-accent-hover)]"
+            }`}
             onClick={handleSave}
             disabled={isGenerating}
           >
             <Save className="size-4" />
-            <span className="text-[10px]">Save</span>
+            <span className="text-[10px] font-bold">Save</span>
           </Button>
+        </div>
+        <div className="text-center mt-3">
+          <span
+            className="text-[11px] tracking-[0.15em] text-white"
+          >
+            <span className="font-black">FOOTBALLER</span>{" "}
+            <span className="font-normal">ATHLETICS</span>
+          </span>
         </div>
       </div>
     </>

@@ -127,7 +127,7 @@ export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
 
   // Shared input style
   const inputClass =
-    "w-full bg-[var(--bg-input)] text-[var(--text-primary)] px-2 py-1 text-xs font-bold border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
+    "w-full bg-[var(--bg-input)] text-[var(--text-input)] px-2 py-1 text-xs font-bold border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
   const labelClass =
     "block text-[9px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest";
@@ -147,7 +147,7 @@ export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
           {/* ── Header ── */}
           <div className="text-center mb-4 border-b-2 border-[var(--text-primary)] pb-2">
             <h2 className="text-2xl font-black uppercase text-[var(--text-primary)] tracking-widest">
-              GRADE
+              ROSTER
             </h2>
           </div>
 
@@ -210,12 +210,15 @@ export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
                     borderColor: "var(--text-primary)",
                     backgroundColor:
                       fullData.metadata?.sessionType === type
-                        ? "var(--color-accent)"
+                        ? "var(--checkbox-checked-bg)"
                         : "transparent",
                   }}
                 >
                   {fullData.metadata?.sessionType === type && (
-                    <div className="w-2 h-2 rounded-full bg-white" />
+                    <div 
+                      className="w-2 h-2 rounded-full" 
+                      style={{ backgroundColor: "var(--checkbox-check-color)" }} 
+                    />
                   )}
                 </div>
                 <span className="text-[9px] font-black uppercase text-[var(--text-primary)] tracking-wider">
@@ -278,7 +281,7 @@ export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
                     onChange={(e) =>
                       handleRecordChange(row.id, "name", e.target.value)
                     }
-                    className="w-full bg-transparent text-[var(--text-primary)] px-1 py-[2px] text-[9px] font-bold border-b border-[var(--border-color)] focus:outline-none focus:border-[var(--color-accent)]"
+                    className="w-full bg-transparent text-[var(--text-input)] px-1 py-[2px] text-[9px] font-bold border-b border-[var(--border-color)] focus:outline-none focus:border-[var(--color-accent)]"
                   />
                 </td>
 
@@ -293,7 +296,7 @@ export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
                     onChange={(e) =>
                       handleRecordChange(row.id, "age", e.target.value)
                     }
-                    className="w-full bg-transparent text-[var(--text-primary)] px-1 py-[2px] text-[9px] font-bold border-b border-[var(--border-color)] text-center focus:outline-none focus:border-[var(--color-accent)]"
+                    className="w-full bg-transparent text-[var(--text-input)] px-1 py-[2px] text-[9px] font-bold border-b border-[var(--border-color)] text-center focus:outline-none focus:border-[var(--color-accent)]"
                   />
                 </td>
 
@@ -308,7 +311,7 @@ export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
                     onChange={(e) =>
                       handleRecordChange(row.id, "position", e.target.value)
                     }
-                    className="w-full bg-transparent text-[var(--text-primary)] px-1 py-[2px] text-[9px] font-bold border-b border-[var(--border-color)] text-center focus:outline-none focus:border-[var(--color-accent)]"
+                    className="w-full bg-transparent text-[var(--text-input)] px-1 py-[2px] text-[9px] font-bold border-b border-[var(--border-color)] text-center focus:outline-none focus:border-[var(--color-accent)]"
                   />
                 </td>
 
@@ -323,16 +326,23 @@ export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
                         className="sr-only peer"
                       />
                       <div
-                        className="w-5 h-5 rounded-full border-2 transition-colors"
+                        className="w-5 h-5 rounded-full border-2 transition-colors flex items-center justify-center"
                         style={{
                           borderColor: row.grades[grade]
-                            ? "var(--color-accent)"
-                            : "var(--text-secondary)",
+                            ? "var(--checkbox-checked-bg)"
+                            : "var(--text-primary)",
                           backgroundColor: row.grades[grade]
-                            ? "var(--color-accent)"
+                            ? "var(--checkbox-checked-bg)"
                             : "transparent",
                         }}
-                      />
+                      >
+                         {row.grades[grade] && (
+                          <div 
+                            className="w-2 h-2 rounded-full" 
+                            style={{ backgroundColor: "var(--checkbox-check-color)" }} 
+                          />
+                        )}
+                      </div>
                     </label>
                   </td>
                 ))}

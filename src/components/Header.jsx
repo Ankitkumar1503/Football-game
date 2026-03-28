@@ -3,7 +3,9 @@ import { User, Settings, Menu, Moon, Sun } from "lucide-react";
 import { useTheme } from "../hooks/useTheme";
 import touches from "../assets/touches.png";
 import { useNavigate } from "react-router-dom";
-import touchesLight from "../assets/touches-light.png";
+import { cn } from "../lib/utils";
+// import touchesLight from "../assets/touches-light.png";
+import touchesLight from "../assets/touches_black.png";
 
 export function Header({ isMenuOpen, setIsMenuOpen }) {
   const { theme, toggleTheme } = useTheme();
@@ -33,7 +35,9 @@ export function Header({ isMenuOpen, setIsMenuOpen }) {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate("/account")}
-              className="text-football-text hover:text-football-accent transition-colors"
+              className={`hover:text-football-accent transition-colors ${
+                theme === "light" ? "text-[#0F172A]" : "text-white"
+              }`}
             >
               <User size={24} />
             </button>
@@ -41,9 +45,11 @@ export function Header({ isMenuOpen, setIsMenuOpen }) {
             <div className="relative">
               <button
                 onClick={() => setShowSettings(!showSettings)}
-                className="text-football-text hover:text-football-accent transition-colors"
+                className={`hover:text-football-accent transition-colors ${
+                  theme === "light" ? "text-[#0F172A]" : "text-white"
+                }`}
               >
-                <Settings size={24} />
+                <Settings size={28} />
               </button>
 
               {/* Settings Dropdown for Theme */}
@@ -54,84 +60,71 @@ export function Header({ isMenuOpen, setIsMenuOpen }) {
                     className="fixed inset-0 z-40"
                     onClick={() => setShowSettings(false)}
                   />
-                  <div className="absolute right-0 mt-2 w-52 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg shadow-xl p-2 z-50">
-                    {/* Theme Toggle */}
-                    <div className="flex items-center justify-between px-3 py-2">
+                  <div className="absolute right-0 mt-2 w-52 bg-football-primary border border-white/20 rounded-xl shadow-2xl p-3 z-50">
+                    {/* Theme Toggle Row */}
+                    <div className="flex items-center justify-between mb-2 px-1">
                       <div className="flex items-center gap-2">
                         {theme === "dark" ? (
                           <Moon
                             size={16}
-                            style={{ color: "var(--text-primary)" }}
+                            className="text-white"
                           />
                         ) : (
                           <Sun
-                            size={16}
-                            style={{ color: "var(--text-primary)" }}
+                            size={20}
+                            className="text-white"
                           />
                         )}
-                        <span
-                          className="text-[11px] font-black uppercase tracking-wider"
-                          style={{ color: "var(--text-primary)" }}
-                        >
-                          {theme === "dark" ? "Dark Mode" : "Light Mode"}
+                        <span className="text-[11px] font-black uppercase tracking-tight text-white/90">
+                          {theme === "dark" ? "Dark" : "Light"} Mode
                         </span>
                       </div>
-                      {/* Toggle Switch */}
+                      
+                      {/* Professional Toggle Switch */}
                       <button
                         onClick={toggleTheme}
-                        className="relative w-11 h-6 rounded-full transition-colors duration-300 focus:outline-none"
-                        style={{
-                          backgroundColor:
-                            theme === "dark"
-                              ? "var(--color-accent)"
-                              : "var(--bg-input)",
-                          border: "2px solid var(--border-color)",
-                        }}
+                        className={cn(
+                          "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none flex items-center shadow-inner",
+                          theme === "dark" 
+                            ? "bg-white/40" 
+                            : "bg-white/20"
+                        )}
                       >
-                        <div
-                          className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-300"
-                          style={{
-                            transform:
-                              theme === "dark"
-                                ? "translateX(20px)"
-                                : "translateX(2px)",
-                          }}
+                        <span
+                          className={cn(
+                            "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-xl ring-0 transition duration-200 ease-in-out",
+                            theme === "dark" ? "translate-x-5" : "translate-x-0"
+                          )}
                         />
                       </button>
                     </div>
 
                     {/* Divider */}
-                    <div
-                      className="my-1 border-t"
-                      style={{ borderColor: "var(--border-color)" }}
-                    />
+                    <div className="h-px bg-white/20 mb-3" />
 
-                    {/* Settings Page Link */}
+                    {/* Professional Settings Link Card */}
                     <button
                       onClick={() => {
                         navigate("/settings");
                         setShowSettings(false);
                       }}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-md transition-colors hover:opacity-80"
-                      style={{ backgroundColor: "transparent" }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.backgroundColor =
-                          "var(--bg-input)")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.backgroundColor = "transparent")
-                      }
+                      className={cn(
+                        "w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all font-black uppercase tracking-tight group",
+                        theme === "light" 
+                          ? "bg-white text-black hover:bg-gray-100" 
+                          : "bg-white/10 text-white hover:bg-white/20"
+                      )}
                     >
-                      <Settings
-                        size={16}
-                        style={{ color: "var(--color-accent)" }}
-                      />
-                      <span
-                        className="text-[11px] font-black uppercase tracking-wider"
-                        style={{ color: "var(--text-primary)" }}
-                      >
-                        Settings
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <Settings
+                          size={16}
+                          className={theme === "light" ? "text-black" : "text-white"}
+                        />
+                        <span className="text-[11px]">Settings</span>
+                      </div>
+                      <div className="opacity-50 group-hover:translate-x-0.5 transition-transform text-xs">
+                        →
+                      </div>
                     </button>
                   </div>
                 </>
@@ -140,9 +133,11 @@ export function Header({ isMenuOpen, setIsMenuOpen }) {
 
             <button
               onClick={() => setIsMenuOpen(true)}
-              className="text-football-text hover:text-football-accent transition-colors"
+              className={`hover:text-football-accent transition-colors ${
+                theme === "light" ? "text-[#0F172A]" : "text-white"
+              }`}
             >
-              <Menu size={24} />
+              <Menu size={32} />
             </button>
           </div>
         </div>

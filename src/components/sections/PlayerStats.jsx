@@ -5,6 +5,7 @@ import { useCumulativeStats } from "../../hooks/useCumulativeStats";
 import toucheDark from "../../assets/touche-dark.png";
 import toucheLight from "../../assets/touche-light.png";
 import touchesIntro from "../../assets/touches-intro.png";
+import touchesIntro2 from "../../assets/touches-intro2.png";
 
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -37,17 +38,7 @@ export function PlayerStats() {
   }, []);
 
   const [formData, setFormData] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("playerProfile");
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          console.error("Error parsing localStorage data:", e);
-        }
-      }
-    }
-    return {
+    let profile = {
       fullName: "",
       dateOfBirth: "",
       age: "",
@@ -58,23 +49,47 @@ export function PlayerStats() {
       team: "",
       position: "",
       activeFooter: "",
+    };
+    let career = {
       totalYearsPlaying: "",
       totalHoursTrained: "",
+      totalSessions: "",
+      totalGames: "",
+      totalGoals: "",
+      totalPenalties: "",
+      totalCornerKicks: "",
+      totalThrowIns: "",
     };
+
+    if (typeof window !== "undefined") {
+      const savedProfile = localStorage.getItem("playerProfile");
+      const savedCareer = localStorage.getItem("playerCareerStats");
+      if (savedProfile) {
+        try {
+          profile = { ...profile, ...JSON.parse(savedProfile) };
+        } catch (e) {}
+      }
+      if (savedCareer) {
+        try {
+          career = { ...career, ...JSON.parse(savedCareer) };
+        } catch (e) {}
+      }
+    }
+    return { ...profile, ...career };
   });
 
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     if (session.id && !isLoaded) {
-      const saved = localStorage.getItem("playerProfile");
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          setFormData((prev) => ({ ...prev, ...parsed }));
-        } catch (e) {
-          console.error("Error parsing localStorage data:", e);
-        }
+      const savedProfile = localStorage.getItem("playerProfile");
+      const savedCareer = localStorage.getItem("playerCareerStats");
+      let data = {};
+      if (savedProfile) try { data = { ...data, ...JSON.parse(savedProfile) }; } catch (e) {}
+      if (savedCareer) try { data = { ...data, ...JSON.parse(savedCareer) }; } catch (e) {}
+      
+      if (Object.keys(data).length > 0) {
+        setFormData((prev) => ({ ...prev, ...data }));
       }
       setIsLoaded(true);
     }
@@ -83,18 +98,18 @@ export function PlayerStats() {
   const debouncedData = useDebounce(formData, 800);
 
   useEffect(() => {
-    // Merge into the shared localStorage key
-    const existing = localStorage.getItem("playerProfile");
-    let merged = {};
-    if (existing) {
-      try {
-        merged = JSON.parse(existing);
-      } catch (e) {}
-    }
-    localStorage.setItem(
-      "playerProfile",
-      JSON.stringify({ ...merged, ...formData }),
-    );
+    // Split the data back into two keys
+    const profileKeys = ["fullName", "dateOfBirth", "age", "cellPhone", "school", "academy", "club", "team", "position", "activeFooter"];
+    const careerKeys = ["totalYearsPlaying", "totalHoursTrained", "totalSessions", "totalGames", "totalGoals", "totalPenalties", "totalCornerKicks", "totalThrowIns"];
+    
+    const profileData = {};
+    const careerData = {};
+    
+    profileKeys.forEach(key => profileData[key] = formData[key]);
+    careerKeys.forEach(key => careerData[key] = formData[key]);
+
+    localStorage.setItem("playerProfile", JSON.stringify(profileData));
+    localStorage.setItem("playerCareerStats", JSON.stringify(careerData));
   }, [formData]);
 
   useEffect(() => {
@@ -117,10 +132,10 @@ export function PlayerStats() {
     "block text-[9px] font-black uppercase text-[var(--text-primary)] tracking-widest";
 
   const inputClass =
-    "w-full bg-[var(--bg-input)] text-[var(--text-primary)] px-3 py-2 text-xs font-bold uppercase border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
+    "w-full bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-2 text-xs font-bold uppercase border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
   const smallInputClass =
-    "w-20 bg-[var(--bg-input)] text-[var(--text-primary)] px-2 py-1 text-xs font-bold text-center border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
+    "w-20 bg-[var(--bg-input)] text-[var(--text-input)] px-2 py-1 text-xs font-bold text-center border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
   return (
     <div className="mb-8">
@@ -253,25 +268,32 @@ export function PlayerStats() {
               className="flex justify-between items-center p-1"
               style={{ backgroundColor: "var(--bg-input)" }}
             >
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((num) => (
-                <button
-                  key={num}
-                  onClick={() => handlePositionSelect(num)}
-                  className="w-7 h-7 flex items-center justify-center text-xs font-black transition-colors"
-                  style={{
-                    color:
-                      formData.position === num.toString()
-                        ? "var(--color-accent)"
-                        : "var(--text-primary)",
-                    backgroundColor:
-                      formData.position === num.toString()
-                        ? "var(--bg-primary)"
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((num) => {
+                const isSelected = formData.position === num.toString();
+                return (
+                  <button
+                    key={num}
+                    onClick={() => handlePositionSelect(num)}
+                    className="w-7 h-7 flex items-center justify-center text-xs font-black transition-colors"
+                    style={{
+                      color: isSelected
+                        ? isLightTheme
+                          ? "#FFFFFF"
+                          : "var(--color-accent)"
+                        : isLightTheme
+                          ? "var(--text-input)"
+                          : "var(--text-primary)",
+                      backgroundColor: isSelected
+                        ? isLightTheme
+                          ? "#000000"
+                          : "var(--bg-primary)"
                         : "transparent",
-                  }}
-                >
-                  {num}
-                </button>
-              ))}
+                    }}
+                  >
+                    {num}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -294,13 +316,13 @@ export function PlayerStats() {
                 alt="Left Footer"
                 className="w-16 h-16 object-contain"
                 style={{
-                  opacity: formData.activeFooter === "left" ? 1 : 0.5,
+                  // opacity: formData.activeFooter === "left" ? 1 : 0.4,
                   filter:
                     formData.activeFooter === "left"
-                      ? "none"
-                      : isLightTheme
-                        ? "invert(1) grayscale(100%)"
-                        : "grayscale(100%)",
+                      ? isLightTheme
+                        ? "brightness(0)"
+                        : "none"
+                      : "none",
                 }}
               />
               <span
@@ -308,7 +330,9 @@ export function PlayerStats() {
                 style={{
                   color:
                     formData.activeFooter === "left"
-                      ? "var(--text-primary)"
+                      ? isLightTheme
+                        ? "#000000"
+                        : "var(--text-primary)"
                       : "var(--text-secondary)",
                 }}
               >
@@ -327,18 +351,19 @@ export function PlayerStats() {
                     ? isLightTheme
                       ? toucheLight
                       : toucheDark
-                    : touchesIntro
+                    : touchesIntro2
                 }
                 alt="Right Footer"
                 className="w-16 h-16 object-contain"
                 style={{
-                  opacity: formData.activeFooter === "right" ? 1 : 0.5,
+                  transform: formData.activeFooter === "right" ? "scaleX(-1)" : "none",
+                  // opacity: formData.activeFooter === "right" ? 1 : 0.4,
                   filter:
                     formData.activeFooter === "right"
-                      ? "none"
-                      : isLightTheme
-                        ? "invert(1) grayscale(100%)"
-                        : "grayscale(100%)",
+                      ? isLightTheme
+                        ? "brightness(0)"
+                        : "none"
+                      : "none",
                 }}
               />
               <span
@@ -346,13 +371,23 @@ export function PlayerStats() {
                 style={{
                   color:
                     formData.activeFooter === "right"
-                      ? "var(--text-primary)"
+                      ? isLightTheme
+                        ? "#000000"
+                        : "var(--text-primary)"
                       : "var(--text-secondary)",
                 }}
               >
                 Right Footer
               </span>
             </button>
+          </div>
+
+          {/* ═══ PLAYER STATS Details Heading ═══ */}
+          <div className="pt-4 pb-2 px-1">
+            <h3 className="text-center text-lg font-black uppercase tracking-widest text-[var(--text-primary)]">
+              Player Stats
+            </h3>
+            <div className="h-0.5 bg-[var(--text-primary)] w-full mt-1" />
           </div>
 
           {/* Stats */}
@@ -385,35 +420,29 @@ export function PlayerStats() {
               />
             </div>
 
-            {/* Auto-computed stats */}
+            {/* Editable career stats */}
             {[
-              {
-                label: "Number of Sessions",
-                value: cumulativeStats.totalSessions,
-              },
-              { label: "Number of Games", value: cumulativeStats.totalGames },
-              { label: "Goals Scored", value: cumulativeStats.totalGoals },
-              {
-                label: "Penalties Taken",
-                value: cumulativeStats.totalPenalties,
-              },
-              {
-                label: "Corner Kicks",
-                value: cumulativeStats.totalCornerKicks ?? 0,
-              },
-              {
-                label: "Throw-ins",
-                value: cumulativeStats.totalThrowIns ?? 0,
-              },
+              { id: "totalSessions", label: "Number of Sessions" },
+              { id: "totalGames", label: "Number of Games" },
+              { id: "totalGoals", label: "Goals Scored" },
+              { id: "totalPenalties", label: "Penalties Taken" },
+              { id: "totalCornerKicks", label: "Corner Kicks" },
+              { id: "totalThrowIns", label: "Throw-ins" },
             ].map((item) => (
               <div
-                key={item.label}
+                key={item.id}
                 className="flex items-center justify-between py-1"
               >
-                <span className={labelClass}>{item.label}</span>
-                <div className="w-20 px-2 py-1 text-xs font-black text-center text-[var(--color-accent)] bg-[var(--bg-input)] border border-[var(--color-accent)]/30">
-                  {item.value}
-                </div>
+                <label htmlFor={item.id} className={labelClass}>
+                  {item.label}
+                </label>
+                <input
+                  id={item.id}
+                  type="number"
+                  className={smallInputClass}
+                  value={formData[item.id] || ""}
+                  onChange={handleChange}
+                />
               </div>
             ))}
           </div>

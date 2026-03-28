@@ -176,7 +176,7 @@ export function PlayerProfile() {
     "block text-[9px] font-black uppercase text-[var(--text-primary)] tracking-widest";
 
   const inputClass =
-    "w-full bg-[var(--bg-input)] text-[var(--text-primary)] px-3 py-2 text-xs font-bold uppercase border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
+    "w-full bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-2 text-xs font-bold uppercase border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
   return (
     <div className="mb-8">
@@ -425,6 +425,7 @@ export function PlayerProfile() {
             >
               {GAME_TYPES.map((type) => {
                 const isSelected = (formData.gameTypes || []).includes(type);
+                const isLightTheme = document.documentElement.classList.contains("theme-light");
                 return (
                   <button
                     key={type}
@@ -432,10 +433,10 @@ export function PlayerProfile() {
                     className="px-2 py-1.5 text-[9px] font-black uppercase tracking-wider transition-colors"
                     style={{
                       color: isSelected
-                        ? "var(--color-accent)"
-                        : "var(--text-primary)",
+                        ? (isLightTheme ? "#FFFFFF" : "var(--color-accent)")
+                        : (isLightTheme ? "var(--text-input)" : "var(--text-primary)"),
                       backgroundColor: isSelected
-                        ? "var(--bg-primary)"
+                        ? (isLightTheme ? "#000000" : "var(--bg-primary)")
                         : "transparent",
                     }}
                   >

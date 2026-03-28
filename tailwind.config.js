@@ -20,6 +20,7 @@ export default {
           subtle: 'var(--border-color)',
           text: 'var(--text-primary)',
           'text-secondary': 'var(--text-secondary)',
+          'text-input': 'var(--text-input)',
           
           // Legacy mappings to keep existing code working where possible, 
           // though refactoring to semantic names is better.

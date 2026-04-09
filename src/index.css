@@ -14,8 +14,10 @@
     --text-secondary: #A0A0A0;
     --text-input: #FFFFFF; /* White text for dark inputs */
     --color-accent: #FF4422;
+    --color-accent-modal: #FF4422;
     --color-accent-new: #FFFFFF; /* Orange-Red */
     --color-accent-hover: #FF6B35;
+    --color-accent-modal-hover: #FF6B35;
     --border-color: #2A2A2A;
     --bg-action-overlay: var(--color-accent); /* Orange for dark mode */
     
@@ -50,8 +52,10 @@
     --text-secondary: #E0F2FE;
     --text-input: #0F172A; /* Dark text for white inputs in light theme */
     --color-accent: #FFFFFF;
+    --color-accent-modal: #ffffff1a;
     --color-accent-new: #FFFFFF; /* White accents often used on Cyan */
     --color-accent-hover: #F1F5F9;
+    --color-accent-modal-hover: #ffffff33;
     --border-color: rgba(255, 255, 255, 0.3);
     --bg-action-overlay: #00AEEF; /* Dark overlay for Action Wheel in light mode */
 

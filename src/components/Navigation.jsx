@@ -72,7 +72,7 @@ export function Navigation({ isOpen, onClose }) {
       </div>
 
       {/* ── Nav Items ── */}
-      <div className="flex-1 px-6 py-8 flex flex-col items-center max-w-md mx-auto w-full">
+      <div className="flex-1 px-6 py-8 pb-[96px] flex flex-col items-center max-w-md mx-auto w-full">
         {NAV_ITEMS.map(({ label, icon: Icon, path }) => {
           const isActive = location.pathname === path;
 

@@ -563,7 +563,7 @@ export function BottomBar() {
             <div className="flex flex-col gap-3">
               <button
                 onClick={() => handlePdfChoice("current")}
-                className="w-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-black uppercase py-3 rounded-lg tracking-wider transition-colors text-sm"
+                className="w-full bg-[var(--color-accent-modal)] hover:bg-[var(--color-accent-modal-hover)] text-white font-black uppercase py-3 rounded-lg tracking-wider transition-colors text-sm"
               >
                 This Page Only ({currentPageName})
               </button>

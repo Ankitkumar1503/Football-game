@@ -22,7 +22,7 @@ export function Layout({ defaultMenuOpen = false }) {
 
       <Header isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
 
-      <main className="max-w-md mx-auto">
+      <main className="max-w-md mx-auto px-2 py-10">
         <Outlet />
       </main>
 

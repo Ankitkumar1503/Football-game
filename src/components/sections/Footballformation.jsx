@@ -298,7 +298,7 @@ export function FootballFormation() {
   );
 }
 
-function PlayerPosition({ number, name, onChange, style }) {
+function PlayerPosition({ number, name, onChange, style, className = "" }) {
   const [line1, line2, line3] = (name || ",,").split(",");
 
   const handleLineChange = (lineIndex, value) => {
@@ -308,7 +308,7 @@ function PlayerPosition({ number, name, onChange, style }) {
   };
 
   return (
-    <div className="absolute z-10" style={style}>
+    <div className={`absolute z-10 ${className}`} style={{ ...style, width: "21.4%" }}>
       <div className="flex flex-col items-center gap-[3px]">
         {/* Number badge */}
         <div className="w-6 h-6 rounded-full flex items-center justify-center border-2 border-white bg-black mb-1">
@@ -322,7 +322,7 @@ function PlayerPosition({ number, name, onChange, style }) {
             type="text"
             value={lineVal || ""}
             onChange={(e) => handleLineChange(i, e.target.value)}
-            className="w-24 bg-white/95 text-black px-1 py-[2px] text-[8px] font-black text-center focus:outline-none focus:ring-1 focus:ring-black h-4"
+            className="w-full bg-white/95 text-black px-[2px] py-[2px] text-[8px] font-black text-center focus:outline-none focus:ring-1 focus:ring-black h-4"
             style={{ border: "1px solid black" }}
             placeholder=""
           />

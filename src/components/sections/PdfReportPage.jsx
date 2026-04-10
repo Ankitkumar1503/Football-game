@@ -414,12 +414,21 @@ export function PdfReportPage() {
 
         const cleanup = prepareInputsForCapture(sectionEl);
 
+        // Inject the FOOTBALLER ATHLETICS logo to the bottom of the section
+        const footer = document.createElement("div");
+        footer.className = "text-center pt-8 pb-2";
+        footer.innerHTML = `<span class="text-[12px] tracking-[0.15em] text-black uppercase">
+          <strong class="font-black">FOOTBALLER</strong> <span class="font-normal">ATHLETICS</span>
+        </span>`;
+        sectionEl.appendChild(footer);
+
         const canvas = await html2canvas(sectionEl, {
           scale: 2,
           useCORS: true,
           backgroundColor: "#ffffff",
         });
 
+        sectionEl.removeChild(footer);
         cleanup();
 
         // ✅ Trim extra white space (IMPORTANT)

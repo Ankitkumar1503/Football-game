@@ -233,25 +233,25 @@ export function FootballFormation() {
           number={11}
           name={formData.players[11]}
           onChange={(v) => handlePlayerChange(11, v)}
-          style={{ top: "11%", left: "10%" }}
+          style={{ top: "10%", left: "10%" }}
         />
         <PlayerPosition
           number={7}
           name={formData.players[7]}
           onChange={(v) => handlePlayerChange(7, v)}
-          style={{ top: "11%", right: "10%" }}
+          style={{ top: "10%", right: "10%" }}
         />
         <PlayerPosition
           number={10}
           name={formData.players[10]}
           onChange={(v) => handlePlayerChange(10, v)}
-          style={{ top: "28%", left: "18%" }}
+          style={{ top: "29%", left: "18%" }}
         />
         <PlayerPosition
           number={8}
           name={formData.players[8]}
           onChange={(v) => handlePlayerChange(8, v)}
-          style={{ top: "28%", right: "18%" }}
+          style={{ top: "29%", right: "18%" }}
         />
         <PlayerPosition
           number={6}
@@ -308,7 +308,10 @@ function PlayerPosition({ number, name, onChange, style, className = "" }) {
   };
 
   return (
-    <div className={`absolute z-10 ${className}`} style={{ ...style, width: "21.4%" }}>
+    <div
+      className={`absolute z-10 ${className}`}
+      style={{ ...style, width: "21.4%" }}
+    >
       <div className="flex flex-col items-center gap-[3px]">
         {/* Number badge */}
         <div className="w-6 h-6 rounded-full flex items-center justify-center border-2 border-white bg-black mb-1">

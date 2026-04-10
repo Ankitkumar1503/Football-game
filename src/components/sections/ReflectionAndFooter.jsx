@@ -192,13 +192,13 @@ export function PlayerReflection({ isPdf, pdfPart }) {
   }
 
   return (
-    <Card className="mb-[24px] bg-football-card border-none shadow-none">
+    <Card className="mb-[24px] border-none shadow-none">
       <CardContent className="p-2">
         {(!isPdf || !pdfPart || pdfPart === 1) && (
           <>
             {/* Header */}
             <div className="mb-6 border-b-2 border-black dark:border-white pb-2">
-              <h2 className="text-xl font-black uppercase text-football-text">
+              <h2 className="text-xl font-black uppercase text-football-text text-center">
                 PLAYER REFLECTION
               </h2>
               <div className="flex gap-4 mb-1 mt-2">
@@ -397,7 +397,10 @@ export function BottomBar() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [pdfChoiceModal, setPdfChoiceModal] = useState({ open: false, action: null });
+  const [pdfChoiceModal, setPdfChoiceModal] = useState({
+    open: false,
+    action: null,
+  });
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -533,7 +536,9 @@ export function BottomBar() {
       // Get the current route path (e.g. "/lineup")
       const currentPath = location.pathname;
       // Strip leading slash for the param value
-      const sectionKey = currentPath.startsWith("/") ? currentPath.slice(1) : currentPath;
+      const sectionKey = currentPath.startsWith("/")
+        ? currentPath.slice(1)
+        : currentPath;
       if (sectionKey) params.set("section", sectionKey);
     }
 
@@ -660,9 +665,7 @@ export function BottomBar() {
           </Button>
         </div>
         <div className="text-center mt-3">
-          <span
-            className="text-[11px] tracking-[0.15em] text-white"
-          >
+          <span className="text-[11px] tracking-[0.15em] text-white">
             <span className="font-black">FOOTBALLER</span>{" "}
             <span className="font-normal">ATHLETICS</span>
           </span>

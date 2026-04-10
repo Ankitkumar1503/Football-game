@@ -5,7 +5,7 @@ export function Card({ className, children, ...props }) {
   return (
     <div
       className={cn(
-        "bg-football-card text-football-text shadow-sm border border-football-subtle overflow-hidden transition-colors duration-300",
+        "text-football-text shadow-sm border border-football-subtle overflow-hidden transition-colors duration-300",
         className,
       )}
       {...props}

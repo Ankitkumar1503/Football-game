@@ -53,7 +53,7 @@
     --text-input: #0F172A; /* Dark text for white inputs in light theme */
     --color-accent: #FFFFFF;
     --color-accent-modal: #ffffff1a;
-    --color-accent-new: #FFFFFF; /* White accents often used on Cyan */
+    --color-accent-new: #0F172A; /* White accents often used on Cyan */
     --color-accent-hover: #F1F5F9;
     --color-accent-modal-hover: #ffffff33;
     --border-color: rgba(255, 255, 255, 0.3);

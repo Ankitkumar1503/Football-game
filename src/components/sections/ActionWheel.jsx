@@ -94,7 +94,7 @@ export function ActionWheel() {
                   onClick={() => handleRating("positive")}
                   className="flex flex-col items-center gap-1 group transition-transform hover:scale-110 active:scale-95"
                 >
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#FF4422] flex items-center justify-center border-2 border-white shadow-lg">
+                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[var(--color-accent)] flex items-center justify-center border-2 border-white shadow-lg">
                     <Check
                       className="size-7 md:size-8 stroke-[4]"
                       style={{ color: "var(--color-accent-new)" }}
@@ -127,8 +127,7 @@ export function ActionWheel() {
               </div>
               <button
                 onClick={resetSelection}
-                className="mt-2 text-sm md:text-base text-white hover:text-white font-black uppercase tracking-widest transition-colors"
-                style={{ textShadow: "0 1px 4px rgba(0,0,0,0.3)" }}
+                className="mt-5 px-6 py-1.5 text-xs md:text-sm text-white bg-transparent hover:bg-white hover:text-black rounded-full font-black uppercase tracking-widest transition-all border-2 border-white/60 hover:border-white active:scale-95 shadow-sm"
               >
                 CANCEL
               </button>
@@ -354,11 +353,11 @@ export function ActionWheel() {
                   THROW-IN
                 </text>
                 <text
-                  x="750"
-                  y="230"
+                  x="1150"
+                  y="260"
                   textAnchor="middle"
                   className="text-[41px]"
-                  transform="rotate(82, 100, 150)"
+                  transform="rotate(-95, 910, 1000)"
                 >
                   TACKLE
                 </text>
@@ -429,10 +428,10 @@ export function ActionWheel() {
                   GOAL
                 </text>
                 <text
-                  x="920"
-                  y="-15"
+                  x="930"
+                  y="-18"
                   textAnchor="middle"
-                  transform="rotate(20, 300, 150)"
+                  transform="rotate(25, 430, 150)"
                   className="text-[41px]"
                 >
                   SHOT

@@ -124,7 +124,7 @@ export function NoteToCoach({ isPdf, pdfPart }) {
           </div>
 
           {/* ── NAME / DATE ── */}
-          <div className="grid grid-cols-[1fr_120px] gap-3 mb-2">
+          <div className="grid grid-cols-1 gap-3 mb-2">
             <div>
               <label className={labelClass}>NAME</label>
               <input
@@ -134,7 +134,7 @@ export function NoteToCoach({ isPdf, pdfPart }) {
                 className={inputClass}
               />
             </div>
-            <div>
+            {/* <div>
               <label className={labelClass}>DATE</label>
               <input
                 type="date"
@@ -142,7 +142,7 @@ export function NoteToCoach({ isPdf, pdfPart }) {
                 onChange={(e) => handleChange("date", e.target.value)}
                 className={inputClass}
               />
-            </div>
+            </div> */}
           </div>
 
           {/* ── CLUB ── */}
@@ -201,7 +201,9 @@ export function NoteToCoach({ isPdf, pdfPart }) {
             <textarea
               rows={3}
               value={formData.wouldLikeToDoMore}
-              onChange={(e) => handleChange("wouldLikeToDoMore", e.target.value)}
+              onChange={(e) =>
+                handleChange("wouldLikeToDoMore", e.target.value)
+              }
               className={textareaClass}
             />
           </div>

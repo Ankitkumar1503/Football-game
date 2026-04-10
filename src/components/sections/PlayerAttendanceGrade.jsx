@@ -127,7 +127,7 @@ export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
 
   // Shared input style
   const inputClass =
-    "w-full bg-[var(--bg-input)] text-[var(--text-input)] px-2 py-1 text-xs font-bold border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
+    "w-full bg-[var(--bg-input)] text-[var(--text-input)] px-2 py-2 text-xs font-bold border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
   const labelClass =
     "block text-[9px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest";
@@ -152,7 +152,7 @@ export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
           </div>
 
           {/* ── DATE / TIME ── */}
-          <div className="grid grid-cols-2 gap-3 mb-2">
+          <div className="grid grid-cols-1 gap-3 mb-2">
             <div>
               <label className={labelClass}>DATE</label>
               <input
@@ -162,7 +162,7 @@ export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
                 className={inputClass}
               />
             </div>
-            <div>
+            {/* <div>
               <label className={labelClass}>TIME</label>
               <input
                 type="time"
@@ -170,7 +170,7 @@ export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
                 onChange={(e) => handleMetadataChange("time", e.target.value)}
                 className={inputClass}
               />
-            </div>
+            </div> */}
           </div>
 
           {/* ── TEAM / AGE ── */}
@@ -215,9 +215,9 @@ export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
                   }}
                 >
                   {fullData.metadata?.sessionType === type && (
-                    <div 
-                      className="w-2 h-2 rounded-full" 
-                      style={{ backgroundColor: "var(--checkbox-check-color)" }} 
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: "var(--checkbox-check-color)" }}
                     />
                   )}
                 </div>
@@ -336,10 +336,12 @@ export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
                             : "transparent",
                         }}
                       >
-                         {row.grades[grade] && (
-                          <div 
-                            className="w-2 h-2 rounded-full" 
-                            style={{ backgroundColor: "var(--checkbox-check-color)" }} 
+                        {row.grades[grade] && (
+                          <div
+                            className="w-2 h-2 rounded-full"
+                            style={{
+                              backgroundColor: "var(--checkbox-check-color)",
+                            }}
                           />
                         )}
                       </div>

@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "../ui/Card";
 import { useActiveSession } from "../../hooks/useActiveSession";
-
-function useDebounce(value, delay) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-  useEffect(() => {
-    const handler = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-  return debouncedValue;
-}
+import { useTheme } from "../../contexts/ThemeContext";
 
 const GAME_TYPES = ["GRASSROOTS", "4V4", "7V7", "9V9", "11V11"];
 
 export function PlayerProfile() {
   const { session, updateSession } = useActiveSession();
+  const { theme } = useTheme();
+  const isLightTheme = theme === "light";
 
   const [formData, setFormData] = useState(() => {
     if (typeof window !== "undefined") {
@@ -90,84 +84,58 @@ export function PlayerProfile() {
     };
   });
 
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  useEffect(() => {
-    if (session.id) {
-      const hasLocalData =
-        formData.fullName ||
-        formData.playerName ||
-        formData.club ||
-        formData.team;
-      if (!isLoaded) {
-        if (!hasLocalData) {
-          setFormData((prev) => ({
-            ...prev,
-            level: session.level || "",
-            date: session.date || new Date().toISOString().split("T")[0],
-            time: session.time || new Date().toTimeString().slice(0, 5),
-            fullName: session.fullName || session.playerName || "",
-            age: session.age || "",
-            club: session.club || "",
-            team: session.team || "",
-            position: session.position || "",
-            totalYearsPlaying: session.totalYearsPlaying || "",
-            totalHoursTrained: session.totalHoursTrained || "",
-            totalSessions: session.totalSessions || "",
-            gameNumber: session.gameNumber || "",
-            totalGames: session.totalGames || "",
-            totalGoals: session.totalGoals || "",
-            totalPenalties: session.totalPenalties || "",
-            yourPosition: session.yourPosition || "",
-            rightFooter: session.rightFooter || "",
-            leftFooter: session.leftFooter || "",
-          }));
-        }
-        setIsLoaded(true);
-      }
-    }
-  }, [session, isLoaded]);
-
-  const debouncedData = useDebounce(formData, 800);
-
   useEffect(() => {
     localStorage.setItem("playerProfile", JSON.stringify(formData));
   }, [formData]);
 
   useEffect(() => {
-    if (session.id && isLoaded) {
-      // Map fullName to playerName for backward compatibility
-      const dataToSave = {
-        ...debouncedData,
-        playerName: debouncedData.fullName,
-      };
-      updateSession(dataToSave);
-    } else if (
-      session.id &&
-      !isLoaded &&
-      (formData.fullName || formData.playerName || formData.club)
-    ) {
-      const dataToSave = {
-        ...debouncedData,
-        playerName: debouncedData.fullName,
-      };
-      updateSession(dataToSave);
-    }
-  }, [debouncedData, session.id, updateSession, isLoaded]);
+    if (session.id && session) {
+      const newData = { ...formData };
+      let hasChanges = false;
 
-  const handleChange = (e) => {
+      // Only update fields that actually exist in the session and differ from local state
+      Object.keys(newData).forEach((key) => {
+        if (session[key] !== undefined && session[key] !== formData[key]) {
+          newData[key] = session[key];
+          hasChanges = true;
+        }
+      });
+
+      if (session.playerName && (!session.fullName || session.fullName === "")) {
+        if (newData.fullName !== session.playerName) {
+          newData.fullName = session.playerName;
+          hasChanges = true;
+        }
+      }
+
+      // We only merge if there's actual data in the DB to avoid wiping user unsaved local data
+      const hasDbData = Object.keys(newData).some((key) => session[key] !== undefined && session[key] !== "");
+
+      if (hasDbData && hasChanges && JSON.stringify(formData) !== JSON.stringify(newData)) {
+        setFormData(newData);
+      }
+    }
+  }, [session]);
+
+  const handleChange = async (e) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
+    const updates = { [id]: value };
+    if (id === "fullName") {
+      updates.playerName = value;
+    }
+    await updateSession(updates);
   };
 
-  const handleGameTypeToggle = (type) => {
+  const handleGameTypeToggle = async (type) => {
     setFormData((prev) => {
       const current = prev.gameTypes || [];
-      if (current.includes(type)) {
-        return { ...prev, gameTypes: current.filter((t) => t !== type) };
-      } else {
-        return { ...prev, gameTypes: [...current, type] };
-      }
+      const newGameTypes = current.includes(type)
+        ? current.filter((t) => t !== type)
+        : [...current, type];
+        
+      updateSession({ gameTypes: newGameTypes });
+      return { ...prev, gameTypes: newGameTypes };
     });
   };
 
@@ -425,7 +393,6 @@ export function PlayerProfile() {
             >
               {GAME_TYPES.map((type) => {
                 const isSelected = (formData.gameTypes || []).includes(type);
-                const isLightTheme = document.documentElement.classList.contains("theme-light");
                 return (
                   <button
                     key={type}
@@ -433,10 +400,10 @@ export function PlayerProfile() {
                     className="px-2 py-1.5 text-[9px] font-black uppercase tracking-wider transition-colors"
                     style={{
                       color: isSelected
-                        ? (isLightTheme ? "#FFFFFF" : "var(--color-accent)")
+                        ? "var(--color-accent)"
                         : (isLightTheme ? "var(--text-input)" : "var(--text-primary)"),
                       backgroundColor: isSelected
-                        ? (isLightTheme ? "#000000" : "var(--bg-primary)")
+                        ? "var(--bg-primary)"
                         : "transparent",
                     }}
                   >

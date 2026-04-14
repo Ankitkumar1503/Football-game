@@ -103,7 +103,10 @@ export function PlayerProfile() {
         }
       });
 
-      if (session.playerName && (!session.fullName || session.fullName === "")) {
+      if (
+        session.playerName &&
+        (!session.fullName || session.fullName === "")
+      ) {
         if (newData.fullName !== session.playerName) {
           newData.fullName = session.playerName;
           hasChanges = true;
@@ -111,9 +114,15 @@ export function PlayerProfile() {
       }
 
       // We only merge if there's actual data in the DB to avoid wiping user unsaved local data
-      const hasDbData = Object.keys(newData).some((key) => session[key] !== undefined && session[key] !== "");
+      const hasDbData = Object.keys(newData).some(
+        (key) => session[key] !== undefined && session[key] !== "",
+      );
 
-      if (hasDbData && hasChanges && JSON.stringify(formData) !== JSON.stringify(newData)) {
+      if (
+        hasDbData &&
+        hasChanges &&
+        JSON.stringify(formData) !== JSON.stringify(newData)
+      ) {
         setFormData(newData);
       }
     }
@@ -135,7 +144,7 @@ export function PlayerProfile() {
       const newGameTypes = current.includes(type)
         ? current.filter((t) => t !== type)
         : [...current, type];
-        
+
       updateSession({ gameTypes: newGameTypes });
       return { ...prev, gameTypes: newGameTypes };
     });
@@ -403,7 +412,9 @@ export function PlayerProfile() {
                     style={{
                       color: isSelected
                         ? "var(--color-accent)"
-                        : (isLightTheme ? "var(--text-input)" : "var(--text-primary)"),
+                        : isLightTheme
+                          ? "var(--text-input)"
+                          : "var(--text-primary)",
                       backgroundColor: isSelected
                         ? "var(--bg-primary)"
                         : "transparent",

@@ -11,17 +11,7 @@ export function PlayerProfile() {
   const isLightTheme = theme === "light";
 
   const [formData, setFormData] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("playerProfile");
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          console.error("Error parsing localStorage data:", e);
-        }
-      }
-    }
-    return {
+    const defaultState = {
       // Existing fields
       level: "",
       date: new Date().toISOString().split("T")[0],
@@ -82,6 +72,18 @@ export function PlayerProfile() {
       club: "",
       team: "",
     };
+
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("playerProfile");
+      if (saved) {
+        try {
+          return { ...defaultState, ...JSON.parse(saved) };
+        } catch (e) {
+          console.error("Error parsing localStorage data:", e);
+        }
+      }
+    }
+    return defaultState;
   });
 
   useEffect(() => {

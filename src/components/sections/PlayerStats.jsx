@@ -98,12 +98,25 @@ export function PlayerStats() {
   const debouncedData = useDebounce(formData, 800);
 
   useEffect(() => {
-    // Split the data back into two keys
+    // Split the data back into two keys, but MERGE with existing to avoid destroying other fields
     const profileKeys = ["fullName", "dateOfBirth", "age", "cellPhone", "school", "academy", "club", "team", "position", "activeFooter"];
     const careerKeys = ["totalYearsPlaying", "totalHoursTrained", "totalSessions", "totalGames", "totalGoals", "totalPenalties", "totalCornerKicks", "totalThrowIns"];
     
-    const profileData = {};
-    const careerData = {};
+    // Get existing to prevent wiping out data managed by other components
+    let existingProfile = {};
+    let existingCareer = {};
+    try {
+      const savedProfile = localStorage.getItem("playerProfile");
+      if (savedProfile) existingProfile = JSON.parse(savedProfile);
+      
+      const savedCareer = localStorage.getItem("playerCareerStats");
+      if (savedCareer) existingCareer = JSON.parse(savedCareer);
+    } catch (e) {
+      console.error("Error reading from localStorage in PlayerStats", e);
+    }
+
+    const profileData = { ...existingProfile };
+    const careerData = { ...existingCareer };
     
     profileKeys.forEach(key => profileData[key] = formData[key]);
     careerKeys.forEach(key => careerData[key] = formData[key]);

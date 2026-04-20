@@ -244,12 +244,12 @@ export function PlayerEvaluation({ isPdf, pdfPart }) {
         <span className="text-[16px] font-black text-[var(--text-primary)] tracking-wider">
           EVALUATION:
         </span>
-        <div className="flex gap-[12px] pb-[1px]">
+        <div className="flex gap-[7px] pb-[1px]">
           {["1 : VERY GOOD", "2 : GOOD", "3 : AVERAGE", "4 : POOR"].map(
             (label) => (
               <span
                 key={label}
-                className="text-[12px] font-bold uppercase text-[var(--text-primary)]"
+                className="text-[11px] font-bold uppercase text-[var(--text-primary)]"
               >
                 {label}
               </span>
@@ -259,80 +259,54 @@ export function PlayerEvaluation({ isPdf, pdfPart }) {
       </div>
 
       {/* ── Categories & Skills ── */}
-      <div className="space-y-[16px]">
-        {categoriesToRender.map(([category, skills], catIdx) => (
-          <div key={category} className="space-y-[6px]">
-            {/* Category header */}
-            <div className="flex justify-between items-end pb-[2px] border-b-[1.5px] border-[var(--text-primary)]">
-              <span className="text-[14px] font-black uppercase tracking-wider text-[var(--text-primary)] pl-1">
-                {category}
-              </span>
-              {catIdx === 0 && (
-                <div className="flex justify-between w-[116px] mr-[24px] pr-[1px]">
-                  <span className="text-[13px] font-black text-[var(--text-primary)] w-4 text-center">
-                    1
-                  </span>
-                  <span className="text-[13px] font-black text-[var(--text-primary)] w-4 text-center">
-                    2
-                  </span>
-                  <span className="text-[13px] font-black text-[var(--text-primary)] w-4 text-center">
-                    3
-                  </span>
-                  <span className="text-[13px] font-black text-[var(--text-primary)] w-4 text-center">
-                    4
+      <div className="space-y-[6px]">
+        {Object.entries(EVALUATION_CATEGORIES)
+          .flatMap(([category, skills]) =>
+            skills.map((skill) => ({ category, skill })),
+          )
+          .map(({ category, skill }) => {
+            const currentRating = ratings[category]?.[skill];
+            const value = currentRating || 4;
+            const percent = ((value - 1) / 3) * 100;
+
+            return (
+              <div
+                key={skill}
+                className="flex justify-between items-center px-1"
+              >
+                <span className="text-[12px] font-bold uppercase text-[var(--text-primary)] pr-2 leading-tight flex-1">
+                  {skill}
+                </span>
+
+                <div className="flex items-center gap-[4px] w-[140px] shrink-0">
+                  <input
+                    type="range"
+                    min="1"
+                    max="4"
+                    value={value}
+                    onChange={(e) =>
+                      handleRatingChange(
+                        category,
+                        skill,
+                        Number(e.target.value),
+                      )
+                    }
+                    className="slider-thumb w-[116px] h-2.5 rounded-full appearance-none cursor-pointer shrink-0"
+                    style={{
+                      background: `linear-gradient(to right,
+                  var(--slider-filled) 0%,
+                  var(--slider-filled) ${percent}%,
+                  var(--slider-unfilled) ${percent}%,
+                  var(--slider-unfilled) 100%)`,
+                    }}
+                  />
+                  <span className="text-[13px] font-black text-[var(--text-primary)] w-[20px] text-right shrink-0">
+                    {currentRating || ""}
                   </span>
                 </div>
-              )}
-            </div>
-
-            {/* Skill rows */}
-            <div className="space-y-[6px]">
-              {skills.map((skill) => {
-                const currentRating = ratings[category]?.[skill];
-                const value = currentRating || 4; // Used only for rendering width
-                const percent = ((value - 1) / 3) * 100;
-
-                return (
-                  <div
-                    key={skill}
-                    className="flex justify-between items-center px-1"
-                  >
-                    <span className="text-[12px] font-bold uppercase text-[var(--text-primary)] pr-2 leading-tight flex-1">
-                      {skill}
-                    </span>
-
-                    <div className="flex items-center gap-[4px] w-[140px] shrink-0">
-                      <input
-                        type="range"
-                        min="1"
-                        max="4"
-                        value={value}
-                        onChange={(e) =>
-                          handleRatingChange(
-                            category,
-                            skill,
-                            Number(e.target.value),
-                          )
-                        }
-                        className="slider-thumb w-[116px] h-2.5 rounded-full appearance-none cursor-pointer shrink-0"
-                        style={{
-                          background: `linear-gradient(to right,
-                            var(--slider-filled) 0%,
-                            var(--slider-filled) ${percent}%,
-                            var(--slider-unfilled) ${percent}%,
-                            var(--slider-unfilled) 100%)`,
-                        }}
-                      />
-                      <span className="text-[13px] font-black text-[var(--text-primary)] w-[20px] text-right shrink-0">
-                        {currentRating || ""}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+              </div>
+            );
+          })}
       </div>
     </div>
   );

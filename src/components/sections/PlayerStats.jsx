@@ -85,9 +85,15 @@ export function PlayerStats() {
       const savedProfile = localStorage.getItem("playerProfile");
       const savedCareer = localStorage.getItem("playerCareerStats");
       let data = {};
-      if (savedProfile) try { data = { ...data, ...JSON.parse(savedProfile) }; } catch (e) {}
-      if (savedCareer) try { data = { ...data, ...JSON.parse(savedCareer) }; } catch (e) {}
-      
+      if (savedProfile)
+        try {
+          data = { ...data, ...JSON.parse(savedProfile) };
+        } catch (e) {}
+      if (savedCareer)
+        try {
+          data = { ...data, ...JSON.parse(savedCareer) };
+        } catch (e) {}
+
       if (Object.keys(data).length > 0) {
         setFormData((prev) => ({ ...prev, ...data }));
       }
@@ -99,16 +105,36 @@ export function PlayerStats() {
 
   useEffect(() => {
     // Split the data back into two keys, but MERGE with existing to avoid destroying other fields
-    const profileKeys = ["fullName", "dateOfBirth", "age", "cellPhone", "school", "academy", "club", "team", "position", "activeFooter"];
-    const careerKeys = ["totalYearsPlaying", "totalHoursTrained", "totalSessions", "totalGames", "totalGoals", "totalPenalties", "totalCornerKicks", "totalThrowIns"];
-    
+    const profileKeys = [
+      "fullName",
+      "dateOfBirth",
+      "age",
+      "cellPhone",
+      "school",
+      "academy",
+      "club",
+      "team",
+      "position",
+      "activeFooter",
+    ];
+    const careerKeys = [
+      "totalYearsPlaying",
+      "totalHoursTrained",
+      "totalSessions",
+      "totalGames",
+      "totalGoals",
+      "totalPenalties",
+      "totalCornerKicks",
+      "totalThrowIns",
+    ];
+
     // Get existing to prevent wiping out data managed by other components
     let existingProfile = {};
     let existingCareer = {};
     try {
       const savedProfile = localStorage.getItem("playerProfile");
       if (savedProfile) existingProfile = JSON.parse(savedProfile);
-      
+
       const savedCareer = localStorage.getItem("playerCareerStats");
       if (savedCareer) existingCareer = JSON.parse(savedCareer);
     } catch (e) {
@@ -117,9 +143,9 @@ export function PlayerStats() {
 
     const profileData = { ...existingProfile };
     const careerData = { ...existingCareer };
-    
-    profileKeys.forEach(key => profileData[key] = formData[key]);
-    careerKeys.forEach(key => careerData[key] = formData[key]);
+
+    profileKeys.forEach((key) => (profileData[key] = formData[key]));
+    careerKeys.forEach((key) => (careerData[key] = formData[key]));
 
     localStorage.setItem("playerProfile", JSON.stringify(profileData));
     localStorage.setItem("playerCareerStats", JSON.stringify(careerData));
@@ -141,8 +167,12 @@ export function PlayerStats() {
   };
 
   // ── Shared style strings ──
+  // const labelClass =
+  //   "block text-[9px] font-black uppercase text-[var(--text-primary)] tracking-widest";
+
+  // Change this line in your section components:
   const labelClass =
-    "block text-[9px] font-black uppercase text-[var(--text-primary)] tracking-widest";
+    "block text-[9px] font-black uppercase text-[var(--text-primary)] tracking-widest mb-1 relative z-10";
 
   const inputClass =
     "w-full bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-2 text-xs font-bold uppercase border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
@@ -153,17 +183,17 @@ export function PlayerStats() {
   return (
     <div className="mb-8">
       <Card className="bg-transparent border-none shadow-none">
-        <CardContent className="p-1 space-y-4">
+        <CardContent className="p-1 space-y-2">
           {/* ═══ PLAYER STATS Heading ═══ */}
-          <h2 className="text-center text-2xl font-black uppercase text-[var(--text-primary)] tracking-widest border-b-2 border-[var(--text-primary)] pb-2 mb-2">
+          <h2 className="text-center text-2xl font-black uppercase text-[var(--text-primary)] tracking-widest border-b-2 border-[var(--text-primary)] pb-2 mb-1">
             Player Stats
           </h2>
-          <p className="text-[7px] uppercase tracking-widest text-center text-[var(--text-secondary)] mb-3 font-bold opacity-70">
+          <p className="text-[7px] uppercase tracking-widest text-center text-[var(--text-secondary)] mb-2 font-bold opacity-70">
             ⚡ Stats auto-update every session
           </p>
 
           {/* Full Name */}
-          <div className="space-y-1">
+          <div className="">
             <label htmlFor="fullName" className={labelClass}>
               Full Name
             </label>
@@ -177,8 +207,8 @@ export function PlayerStats() {
           </div>
 
           {/* Date of Birth & Age */}
-          <div className="grid grid-cols-[1fr_auto] gap-4">
-            <div className="space-y-1">
+          <div className="grid grid-cols-[1fr_auto]">
+            <div className="">
               <label htmlFor="dateOfBirth" className={labelClass}>
                 Date of Birth
               </label>
@@ -190,7 +220,7 @@ export function PlayerStats() {
                 onChange={handleChange}
               />
             </div>
-            <div className="space-y-1">
+            {/* <div className="">
               <label htmlFor="age" className={labelClass}>
                 Age
               </label>
@@ -201,11 +231,11 @@ export function PlayerStats() {
                 value={formData.age}
                 onChange={handleChange}
               />
-            </div>
+            </div> */}
           </div>
 
           {/* Cell Phone */}
-          <div className="space-y-1">
+          <div className="">
             <label htmlFor="cellPhone" className={labelClass}>
               Cell Phone
             </label>
@@ -219,7 +249,7 @@ export function PlayerStats() {
           </div>
 
           {/* School */}
-          <div className="space-y-1">
+          <div className="">
             <label htmlFor="school" className={labelClass}>
               School
             </label>
@@ -233,7 +263,7 @@ export function PlayerStats() {
           </div>
 
           {/* Academy */}
-          <div className="space-y-1">
+          <div className="">
             <label htmlFor="academy" className={labelClass}>
               Academy
             </label>
@@ -247,7 +277,7 @@ export function PlayerStats() {
           </div>
 
           {/* Club */}
-          <div className="space-y-1">
+          <div className="">
             <label htmlFor="club" className={labelClass}>
               Club
             </label>
@@ -261,7 +291,7 @@ export function PlayerStats() {
           </div>
 
           {/* Team */}
-          <div className="space-y-1">
+          <div className="">
             <label htmlFor="team" className={labelClass}>
               Team
             </label>
@@ -275,8 +305,8 @@ export function PlayerStats() {
           </div>
 
           {/* Position Selector */}
-          <div className="space-y-1 pb-4 border-b-2 border-[var(--border-color)]">
-            <label className={`${labelClass} mb-2 block`}>Position:</label>
+          <div className="pb-2">
+            <label className={`${labelClass} mb-1 block`}>Position:</label>
             <div
               className="flex justify-between items-center p-1"
               style={{ backgroundColor: "var(--bg-input)" }}
@@ -311,7 +341,7 @@ export function PlayerStats() {
           </div>
 
           {/* Right/Left Footer */}
-          <div className="flex justify-between gap-8 pb-4 border-b-2 border-[var(--border-color)] mb-4">
+          <div className="flex justify-between gap-8 pb-2 border-b-2 border-[var(--border-color)] mb-2">
             <button
               onClick={() =>
                 setFormData((prev) => ({ ...prev, activeFooter: "left" }))
@@ -369,7 +399,8 @@ export function PlayerStats() {
                 alt="Right Footer"
                 className="w-16 h-16 object-contain"
                 style={{
-                  transform: formData.activeFooter === "right" ? "scaleX(-1)" : "none",
+                  transform:
+                    formData.activeFooter === "right" ? "scaleX(-1)" : "none",
                   // opacity: formData.activeFooter === "right" ? 1 : 0.4,
                   filter:
                     formData.activeFooter === "right"
@@ -396,7 +427,7 @@ export function PlayerStats() {
           </div>
 
           {/* ═══ PLAYER STATS Details Heading ═══ */}
-          <div className="pt-4 pb-2 px-1">
+          <div className="pt-2 pb-1 px-1">
             <h3 className="text-center text-lg font-black uppercase tracking-widest text-[var(--text-primary)]">
               Player Stats
             </h3>
@@ -404,7 +435,7 @@ export function PlayerStats() {
           </div>
 
           {/* Stats */}
-          <div className="space-y-1">
+          <div className="">
             {/* Editable: Years Playing */}
             <div className="flex items-center justify-between py-1">
               <label htmlFor="totalYearsPlaying" className={labelClass}>

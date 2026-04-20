@@ -197,41 +197,41 @@ export function PlayerReflection({ isPdf, pdfPart }) {
         {(!isPdf || !pdfPart || pdfPart === 1) && (
           <>
             {/* Header */}
-            <div className="mb-6 border-b-2 border-black dark:border-white pb-2">
+            <div className="mb-3 border-b-2 border-black dark:border-white pb-2">
               <h2 className="text-xl font-black uppercase text-football-text text-center">
                 PLAYER REFLECTION
               </h2>
-              <div className="flex gap-4 mb-1 mt-2">
-                <div className="flex-1 flex items-center gap-3">
-                  <label
-                    htmlFor="playerName"
-                    className="text-xs font-black uppercase text-football-text whitespace-nowrap"
-                  >
-                    NAME:
-                  </label>
-                  <input
-                    id="playerName"
-                    type="text"
-                    value={formData.playerName}
-                    onChange={handleTextChange}
-                    className="w-full bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-[4px] text-sm font-bold uppercase border-none focus:outline-none focus:ring-1 focus:ring-football-accent"
-                  />
-                </div>
-                <div className="flex items-center gap-3">
-                  <label
-                    htmlFor="playerAge"
-                    className="text-xs font-black uppercase text-football-text whitespace-nowrap"
-                  >
-                    AGE:
-                  </label>
-                  <input
-                    id="playerAge"
-                    type="text"
-                    value={formData.playerAge}
-                    onChange={handleTextChange}
-                    className="w-20 bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-[4px] text-sm font-bold uppercase border-none focus:outline-none focus:ring-1 focus:ring-football-accent"
-                  />
-                </div>
+            </div>
+            <div className="flex gap-4 mb-3 mt-2">
+              <div className="flex-1 flex items-center gap-3">
+                <label
+                  htmlFor="playerName"
+                  className="text-xs font-black uppercase text-football-text whitespace-nowrap"
+                >
+                  NAME:
+                </label>
+                <input
+                  id="playerName"
+                  type="text"
+                  value={formData.playerName}
+                  onChange={handleTextChange}
+                  className="w-full bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-[4px] text-sm font-bold uppercase border-none focus:outline-none focus:ring-1 focus:ring-football-accent"
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <label
+                  htmlFor="playerAge"
+                  className="text-xs font-black uppercase text-football-text whitespace-nowrap"
+                >
+                  AGE:
+                </label>
+                <input
+                  id="playerAge"
+                  type="text"
+                  value={formData.playerAge}
+                  onChange={handleTextChange}
+                  className="w-20 bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-[4px] text-sm font-bold uppercase border-none focus:outline-none focus:ring-1 focus:ring-football-accent"
+                />
               </div>
             </div>
 
@@ -247,21 +247,22 @@ export function PlayerReflection({ isPdf, pdfPart }) {
                     className="flex items-center gap-2 cursor-pointer group"
                   >
                     <div
-                      className="w-4 h-4 border-2 flex items-center justify-center transition-all bg-football-card border-football-subtle"
+                      className="w-5 h-5 rounded-full border-2 transition-colors flex items-center justify-center shrink-0"
+                      data-pdf-checkmark="true"
                       style={{
-                        borderColor: "var(--text-primary)",
+                        borderColor: formData.wellDoneTags.includes(tag)
+                          ? "var(--checkbox-checked-bg)"
+                          : "var(--text-primary)",
                         backgroundColor: formData.wellDoneTags.includes(tag)
                           ? "var(--checkbox-checked-bg)"
                           : "transparent",
                       }}
                     >
                       {formData.wellDoneTags.includes(tag) && (
-                        <span
-                          className="font-bold text-[12px]"
-                          style={{ color: "var(--checkbox-check-color)" }}
-                        >
-                          ✓
-                        </span>
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: "var(--checkbox-check-color)" }}
+                        />
                       )}
                     </div>
                     <input
@@ -279,11 +280,11 @@ export function PlayerReflection({ isPdf, pdfPart }) {
             </div>
 
             {/* Text Inputs */}
-            <div className="space-y-4 mb-8">
+            <div className="space-y-2 mb-4">
               <div>
                 <label
                   htmlFor="achievedGoal"
-                  className="block text-sm font-black uppercase mb-1 text-football-text"
+                  className="block text-xs font-black uppercase mb-1 text-football-text"
                 >
                   DID YOU ACHIEVE YOUR GOAL?
                 </label>
@@ -292,13 +293,13 @@ export function PlayerReflection({ isPdf, pdfPart }) {
                   type="text"
                   value={formData.achievedGoal}
                   onChange={handleTextChange}
-                  className="w-full bg-[var(--bg-input)] text-[var(--text-input)] border-none px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-football-accent h-8"
+                  className="w-full bg-[var(--bg-input)] text-[var(--text-input)] border-none px-3 py-2 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-football-accent h-8"
                 />
               </div>
               <div>
                 <label
                   htmlFor="whatLearned"
-                  className="block text-sm font-black uppercase mb-1 text-football-text"
+                  className="block text-xs font-black uppercase mb-1 text-football-text"
                 >
                   WHAT DID YOU LEARN?
                 </label>
@@ -307,13 +308,13 @@ export function PlayerReflection({ isPdf, pdfPart }) {
                   type="text"
                   value={formData.whatLearned}
                   onChange={handleTextChange}
-                  className="w-full bg-[var(--bg-input)] text-[var(--text-input)] border-none px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-football-accent h-8"
+                  className="w-full bg-[var(--bg-input)] text-[var(--text-input)] border-none px-3 py-2 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-football-accent h-8"
                 />
               </div>
               <div>
                 <label
                   htmlFor="whatWouldChange"
-                  className="block text-sm font-black uppercase mb-1 text-football-text"
+                  className="block text-xs font-black uppercase mb-1 text-football-text"
                 >
                   WHAT WOULD YOU CHANGE?
                 </label>
@@ -322,7 +323,7 @@ export function PlayerReflection({ isPdf, pdfPart }) {
                   type="text"
                   value={formData.whatWouldChange}
                   onChange={handleTextChange}
-                  className="w-full bg-[var(--bg-input)] text-[var(--text-input)] border-none px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-football-accent h-8"
+                  className="w-full bg-[var(--bg-input)] text-[var(--text-input)] border-none px-3 py-2 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-football-accent h-8"
                 />
               </div>
             </div>
@@ -366,7 +367,7 @@ export function PlayerReflection({ isPdf, pdfPart }) {
                       }}
                     />
                     {/* Value - fixed width */}
-                    <span className="text-[9px] font-bold text-white w-3 text-right shrink-0">
+                    <span className="text-[9px] font-bold text-[var(--text-primary)] w-3 text-right shrink-0">
                       {value}
                     </span>
                   </div>

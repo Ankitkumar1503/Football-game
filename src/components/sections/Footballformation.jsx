@@ -10,7 +10,7 @@ function useDebounce(value, delay) {
   return debouncedValue;
 }
 
-export function FootballFormation() {
+export function FootballFormation({ isPdf = false }) {
   const { reflection, updateReflection } = useActiveSession();
   const [hydrated, setHydrated] = useState(false);
 
@@ -155,7 +155,7 @@ export function FootballFormation() {
 
       {/* ── Football Field ── */}
       <div
-        className="football-field relative aspect-[3/4] w-full max-w-md mx-auto overflow-hidden"
+        className="football-field relative aspect-[3/4] w-full max-w-md mx-auto overflow-visible"
         style={{
           backgroundColor: "var(--field-bg)",
           border: "2px solid var(--field-line)",
@@ -227,31 +227,37 @@ export function FootballFormation() {
           number={9}
           name={formData.players[9]}
           onChange={(v) => handlePlayerChange(9, v)}
-          style={{ top: "4%", left: "50%", transform: "translateX(-50%)" }}
+          // style={{ top: "4%", left: "50%", transform: "translateX(-50%)" }}
+          style={{ top: "6%", left: "50%", transform: "translateX(-50%)" }}
+          isPdf={isPdf}
         />
         <PlayerPosition
           number={11}
           name={formData.players[11]}
           onChange={(v) => handlePlayerChange(11, v)}
           style={{ top: "10%", left: "10%" }}
+          isPdf={isPdf}
         />
         <PlayerPosition
           number={7}
           name={formData.players[7]}
           onChange={(v) => handlePlayerChange(7, v)}
           style={{ top: "10%", right: "10%" }}
+          isPdf={isPdf}
         />
         <PlayerPosition
           number={10}
           name={formData.players[10]}
           onChange={(v) => handlePlayerChange(10, v)}
           style={{ top: "29%", left: "18%" }}
+          isPdf={isPdf}
         />
         <PlayerPosition
           number={8}
           name={formData.players[8]}
           onChange={(v) => handlePlayerChange(8, v)}
           style={{ top: "29%", right: "18%" }}
+          isPdf={isPdf}
         />
         <PlayerPosition
           number={6}
@@ -262,43 +268,87 @@ export function FootballFormation() {
             left: "50%",
             transform: "translate(-50%, -50%)",
           }}
+          isPdf={isPdf}
         />
         <PlayerPosition
           number={3}
           name={formData.players[3]}
           onChange={(v) => handlePlayerChange(3, v)}
           style={{ top: "48%", left: "10%" }}
+          isPdf={isPdf}
         />
         <PlayerPosition
           number={2}
           name={formData.players[2]}
           onChange={(v) => handlePlayerChange(2, v)}
           style={{ top: "48%", right: "10%" }}
+          isPdf={isPdf}
         />
         <PlayerPosition
           number={5}
           name={formData.players[5]}
           onChange={(v) => handlePlayerChange(5, v)}
           style={{ top: "67%", left: "22%" }}
+          isPdf={isPdf}
         />
         <PlayerPosition
           number={4}
           name={formData.players[4]}
           onChange={(v) => handlePlayerChange(4, v)}
           style={{ top: "67%", right: "22%" }}
+          isPdf={isPdf}
         />
         <PlayerPosition
           number={1}
           name={formData.players[1]}
           onChange={(v) => handlePlayerChange(1, v)}
-          style={{ bottom: "2%", left: "50%", transform: "translateX(-50%)" }}
+          // style={{ bottom: "2%", left: "50%", transform: "translateX(-50%)" }}
+          style={{ bottom: "4%", left: "50%", transform: "translateX(-50%)" }}
+          isPdf={isPdf}
         />
       </div>
     </div>
   );
 }
 
-function PlayerPosition({ number, name, onChange, style, className = "" }) {
+// function PlayerPosition({ number, name, onChange, style, className = "" }) {
+//   const [line1, line2, line3] = (name || ",,").split(",");
+
+//   const handleLineChange = (lineIndex, value) => {
+//     const lines = (name || ",,").split(",");
+//     lines[lineIndex] = value;
+//     onChange(lines.join(","));
+//   };
+
+//   return (
+//     <div
+//       className={`absolute z-10 ${className}`}
+//       style={{ ...style, width: "21.4%" }}
+//     >
+//       <div className="flex flex-col items-center gap-[3px]">
+//         {/* Number badge */}
+//         <div className="w-6 h-6 rounded-full flex items-center justify-center border-2 border-white bg-black mb-1">
+//           <span className="text-white text-[10px] font-black">{number}</span>
+//         </div>
+
+//         {/* 3 input lines */}
+//         {[line1, line2, line3].map((lineVal, i) => (
+//           <input
+//             key={i}
+//             type="text"
+//             value={lineVal || ""}
+//             onChange={(e) => handleLineChange(i, e.target.value)}
+//             className="w-full bg-white/95 text-black px-[2px] py-[2px] text-[8px] font-black text-center focus:outline-none focus:ring-1 focus:ring-black h-4"
+//             style={{ border: "1px solid black" }}
+//             placeholder=""
+//           />
+//         ))}
+//       </div>
+//     </div>
+//   );
+// }
+
+function PlayerPosition({ number, name, onChange, style, className = "", isPdf }) {
   const [line1, line2, line3] = (name || ",,").split(",");
 
   const handleLineChange = (lineIndex, value) => {
@@ -314,22 +364,65 @@ function PlayerPosition({ number, name, onChange, style, className = "" }) {
     >
       <div className="flex flex-col items-center gap-[3px]">
         {/* Number badge */}
-        <div className="w-6 h-6 rounded-full flex items-center justify-center border-2 border-white bg-black mb-1">
-          <span className="text-white text-[10px] font-black">{number}</span>
+        <div
+          className="border-2 border-white bg-black mb-1 mx-auto"
+          style={{
+            width: "28px",
+            height: "28px",
+            borderRadius: "50%",
+            flexShrink: 0,
+            overflow: "hidden",
+          }}
+        >
+          <div style={{ display: "table", width: "100%", height: "100%" }}>
+            <span
+              style={{
+                display: "table-cell",
+                verticalAlign: "middle",
+                textAlign: "center",
+                color: "white",
+                fontSize: "11px",
+                fontWeight: "900",
+                lineHeight: 1,
+              }}
+            >
+              {number}
+            </span>
+          </div>
         </div>
 
         {/* 3 input lines */}
-        {[line1, line2, line3].map((lineVal, i) => (
-          <input
-            key={i}
-            type="text"
-            value={lineVal || ""}
-            onChange={(e) => handleLineChange(i, e.target.value)}
-            className="w-full bg-white/95 text-black px-[2px] py-[2px] text-[8px] font-black text-center focus:outline-none focus:ring-1 focus:ring-black h-4"
-            style={{ border: "1px solid black" }}
-            placeholder=""
-          />
-        ))}
+        {[line1, line2, line3].map((lineVal, i) => {
+          if (isPdf) {
+            return (
+              <div
+                key={i}
+                className="w-full bg-white text-black text-center font-black"
+                style={{ 
+                  border: "1px solid black",
+                  height: "16px",
+                  fontSize: "8px",
+                  lineHeight: "8px",
+                  paddingTop: "2.5px", // Force exact centering
+                  boxSizing: "border-box"
+                }}
+              >
+                {lineVal || ""}
+              </div>
+            );
+          }
+          return (
+            <input
+              key={i}
+              type="text"
+              value={lineVal || ""}
+              onChange={(e) => handleLineChange(i, e.target.value)}
+              className="w-full bg-white/95 text-black px-[2px] py-[2px] text-[8px] font-black text-center focus:outline-none focus:ring-1 focus:ring-black h-4"
+              style={{ border: "1px solid black" }}
+              placeholder=""
+            />
+          );
+        })}
       </div>
     </div>
   );

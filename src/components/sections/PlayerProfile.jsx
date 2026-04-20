@@ -160,9 +160,9 @@ export function PlayerProfile() {
   return (
     <div className="mb-8">
       <Card className="bg-transparent border-none shadow-none">
-        <CardContent className="p-1 space-y-4">
+        <CardContent className="p-1 space-y-2">
           {/* ═══ REGISTER Heading ═══ */}
-          <h2 className="text-center text-2xl font-black uppercase text-[var(--text-primary)] tracking-widest border-b-2 border-[var(--text-primary)] pb-2 mb-2">
+          <h2 className="text-center text-2xl font-black uppercase text-[var(--text-primary)] tracking-widest border-b-2 border-[var(--text-primary)] pb-2 mb-1">
             Register
           </h2>
 
@@ -397,7 +397,7 @@ export function PlayerProfile() {
           </div>
 
           {/* ═══ GAME TYPE ═══ */}
-          <div className="space-y-1 pb-4 border-b-2 border-[var(--border-color)]">
+          <div className="space-y-1 pb-2 border-b-2 border-[var(--border-color)]">
             <div
               className="flex justify-between items-center p-1"
               style={{ backgroundColor: "var(--bg-input)" }}

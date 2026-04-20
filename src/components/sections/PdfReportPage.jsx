@@ -72,9 +72,33 @@ function prepareInputsForCapture(container) {
       } catch (e) {}
     });
 
-    // ✅ FIX: Proper layout (NO flex — prevents misalignment)
-    div.style.display = "block";
+    // ✅ Set strict exact dimensions from original
+    div.style.width = `${rect.width}px`;
+    div.style.height = `${rect.height}px`;
+    div.style.minHeight = `${rect.height}px`;
+    div.style.maxHeight = `${rect.height}px`;
     div.style.boxSizing = "border-box";
+
+    // ✅ Handle specific element types for proper alignment
+    if (el.tagName === "INPUT" || el.tagName === "SELECT") {
+      div.style.display = "flex";
+      div.style.alignItems = "center";
+      if (computed.textAlign === "center") {
+        div.style.justifyContent = "center";
+      } else if (computed.textAlign === "right") {
+        div.style.justifyContent = "flex-end";
+      } else {
+        div.style.justifyContent = "flex-start";
+      }
+      div.style.whiteSpace = "nowrap"; // strict single-line
+      div.style.overflow = "hidden"; // clip any weird overflow
+    } else {
+      // TEXTAREA
+      div.style.display = "block";
+      div.style.whiteSpace = "pre-wrap";
+      div.style.wordBreak = "break-word";
+      div.style.overflow = "hidden";
+    }
 
     // ✅ Preserve padding exactly like input
     div.style.paddingTop = computed.paddingTop;
@@ -82,18 +106,9 @@ function prepareInputsForCapture(container) {
     div.style.paddingLeft = computed.paddingLeft;
     div.style.paddingRight = computed.paddingRight;
 
-    // ✅ Text behavior (multi-line safe)
-    div.style.whiteSpace = "pre-wrap";
-    div.style.wordBreak = "break-word";
-
     // ✅ CRITICAL: Correct text alignment & spacing
     div.style.lineHeight = computed.lineHeight;
     div.style.textAlign = computed.textAlign;
-
-    // ✅ FIX: Prevent clipping / overlapping
-    div.style.height = "auto";
-    div.style.minHeight = `${rect.height}px`;
-    div.style.overflow = "visible";
 
     // ✅ Ensure fonts match exactly
     div.style.fontFamily = computed.fontFamily;
@@ -180,8 +195,6 @@ function trimCanvasBottom(canvas, threshold = 245) {
   return trimmed;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-
 export function PdfReportPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -232,156 +245,6 @@ export function PdfReportPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  //   // ── 1. Force light theme before any capture ──────────────────────────────
-  //   const root = document.documentElement;
-  //   const prevClass = root.className;
-  //   root.classList.remove("theme-dark");
-  //   root.classList.add("theme-light");
-
-  //   const styleOverride = document.createElement("style");
-  //   styleOverride.id = "pdf-theme-override";
-  //   styleOverride.textContent = `
-  //     :root, .theme-light {
-  //       --bg-primary: #ffffff !important;
-  //       --bg-secondary: #f5f5f5 !important;
-  //       --bg-card: #ffffff !important;
-  //       --bg-input: #f0f0f0 !important;
-  //       --text-primary: #000000 !important;
-  //       --text-secondary: #333333 !important;
-  //       --text-input: #000000 !important;
-  //       --border-color: #000000 !important;
-  //       --color-accent: #000000 !important;
-  //       --color-accent-new: #000000 !important;
-  //       --color-accent-hover: #333333 !important;
-  //       --category-header-bg: #000000 !important;
-  //       --category-header-text: #ffffff !important;
-  //       --ball-fill: #000000 !important;
-  //       --ball-stroke: #000000 !important;
-  //       --ball-stroke-width: 3 !important;
-  //       --field-bg: #ffffff !important;
-  //       --field-line: #000000 !important;
-  //       --slider-filled: #000000 !important;
-  //       --slider-unfilled: #cccccc !important;
-  //       --slider-thumb: #000000 !important;
-  //       --checkbox-checked-bg: #000000 !important;
-  //       --checkbox-check-color: #ffffff !important;
-  //     }
-  //     /* Force field-specific elements for html2canvas */
-  //     .football-field {
-  //       background-color: #ffffff !important;
-  //       border-color: #000000 !important;
-  //     }
-  //     .football-field div {
-  //       border-color: #000000 !important;
-  //     }
-  //     .football-field input {
-  //       border: 1px solid #000000 !important;
-  //       background-color: #ffffff !important;
-  //       color: #000000 !important;
-  //     }
-  //   `;
-  //   document.head.appendChild(styleOverride);
-
-  //   // Small delay so styles apply before capture
-  //   await new Promise((r) => setTimeout(r, 400));
-
-  //   try {
-  //     const pdf = new jsPDF("p", "mm", "a4");
-  //     const pageW = pdf.internal.pageSize.getWidth();
-  //     const pageH = pdf.internal.pageSize.getHeight();
-  //     const margin = 8;
-  //     const contentW = pageW - margin * 2;
-
-  //     let currentY = margin;
-
-  //     for (let i = 0; i < SECTIONS.length; i++) {
-  //       const { id, label } = SECTIONS[i];
-  //       const sectionEl = document.getElementById(id);
-
-  //       setStatus(`Capturing ${label}…`);
-  //       setProgress(Math.round(((i + 0.5) / SECTIONS.length) * 90));
-
-  //       if (!sectionEl) {
-  //         console.warn(`Section #${id} not found, skipping`);
-  //         continue;
-  //       }
-
-  //       const cleanup = prepareInputsForCapture(sectionEl);
-
-  //       const canvas = await html2canvas(sectionEl, {
-  //         scale: 2,
-  //         useCORS: true,
-  //         backgroundColor: "#ffffff",
-  //         logging: false,
-  //         imageTimeout: 0,
-  //       });
-
-  //       cleanup();
-
-  //       const trimmed = trimCanvasBottom(canvas);
-
-  //       currentY = addCanvasToPdf(
-  //         pdf,
-  //         trimmed,
-  //         currentY,
-  //         margin,
-  //         pageW,
-  //         pageH,
-  //         contentW,
-  //       );
-
-  //       // Small gap between sections if still on the same page
-  //       if (currentY + 4 < pageH - margin) {
-  //         currentY += 4;
-  //       }
-
-  //       setProgress(Math.round(((i + 1) / SECTIONS.length) * 90));
-  //     }
-
-  //     setStatus("Finalizing PDF…");
-  //     setProgress(100);
-
-  //     const blob = pdf.output("blob");
-
-  //     if (action === "share" && navigator.share) {
-  //       setStatus("Report Ready!");
-  //       const fileName = `player-report-${new Date().toISOString().split("T")[0]}.pdf`;
-  //       const pdfFile = new File([blob], fileName, {
-  //         type: "application/pdf",
-  //         lastModified: new Date().getTime(),
-  //       });
-
-  //       setShareFile(pdfFile);
-  //       return; // Wait for user to click the share button manually
-  //     } else {
-  //       setStatus("Downloading PDF…");
-  //       const url = URL.createObjectURL(blob);
-  //       const a = document.createElement("a");
-  //       a.href = url;
-  //       a.download = `player-report-${new Date().toISOString().split("T")[0]}.pdf`;
-  //       document.body.appendChild(a);
-  //       a.click();
-  //       document.body.removeChild(a);
-  //       URL.revokeObjectURL(url);
-  //     }
-
-  //     await new Promise((r) => setTimeout(r, 800));
-  //     navigate(-1);
-  //   } catch (err) {
-  //     console.error("PDF generation error:", err);
-  //     setStatus("Error — going back…");
-  //     await new Promise((r) => setTimeout(r, 2000));
-  //     navigate(-1);
-  //   } finally {
-  //     // ── Always restore original theme ─────────────────────────────────────
-  //     root.className = prevClass;
-  //     document.getElementById("pdf-theme-override")?.remove();
-  //   }
-  // };
-
-  // ── Light-theme CSS variable overrides applied inline so every child
-  //    component inherits white backgrounds regardless of :root defaults ──
-
   const generatePDF = async () => {
     const root = document.documentElement;
     const prevClass = root.className;
@@ -394,7 +257,7 @@ export function PdfReportPage() {
     styleOverride.textContent = `:root { --bg-primary:#fff !important; }`;
     document.head.appendChild(styleOverride);
 
-    await new Promise((r) => setTimeout(r, 400));
+    await new Promise((r) => setTimeout(r, 1000));
 
     try {
       let pdf = null;
@@ -421,11 +284,31 @@ export function PdfReportPage() {
           <strong class="font-black">FOOTBALLER</strong> <span class="font-normal">ATHLETICS</span>
         </span>`;
         sectionEl.appendChild(footer);
+        sectionEl.style.transform = "scale(1)";
+        sectionEl.offsetHeight; // force reflow
 
         const canvas = await html2canvas(sectionEl, {
-          scale: 2,
+          scale: 2, // Higher scale for better text clarity
           useCORS: true,
           backgroundColor: "#ffffff",
+          letterRendering: true,
+          removeContainer: true, // Helps with layout shifting
+          onclone: (clonedDoc) => {
+            const elements = clonedDoc.getElementsByTagName("*");
+            for (let el of elements) {
+              if (el.getAttribute("data-pdf-replacement") === "true") {
+                el.style.color = "black";
+              }
+            }
+            // Number badges fix - force white text on black circle
+            clonedDoc
+              .querySelectorAll(".football-field .bg-black span")
+              .forEach((span) => {
+                span.style.color = "#ffffff";
+                span.style.display = "block";
+                span.style.textAlign = "center";
+              });
+          },
         });
 
         sectionEl.removeChild(footer);
@@ -664,7 +547,7 @@ export function PdfReportPage() {
             id="pdf-section-formation"
             style={{ background: "#fff", marginBottom: "8px", padding: "16px" }}
           >
-            <FootballFormation />
+            <FootballFormation isPdf={true} />
           </div>
         )}
 

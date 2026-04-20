@@ -106,8 +106,12 @@ export function NoteToCoach({ isPdf, pdfPart }) {
   const inputClass =
     "w-full bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-1.5 text-sm font-bold border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
+  // const labelClass =
+  //   "block text-[10px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest";
+
+  // Change this line in your section components:
   const labelClass =
-    "block text-[10px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest";
+    "block text-[9px] font-black uppercase text-[var(--text-primary)] tracking-widest mb-1 relative z-10";
 
   const textareaClass =
     "w-full bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-2 text-sm font-medium border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)] resize-none";
@@ -117,14 +121,14 @@ export function NoteToCoach({ isPdf, pdfPart }) {
       {/* ── Header ── */}
       {(!isPdf || !pdfPart || pdfPart === 1) && (
         <>
-          <div className="text-center mb-4 border-b-2 border-[var(--text-primary)] pb-2">
+          <div className="text-center mb-2 border-b-2 border-[var(--text-primary)] pb-2">
             <h2 className="text-2xl font-black uppercase text-[var(--text-primary)] tracking-widest">
               NOTE TO COACH
             </h2>
           </div>
 
           {/* ── NAME / DATE ── */}
-          <div className="grid grid-cols-1 gap-3 mb-2">
+          <div className="grid grid-cols-1 gap-3 mb-1">
             <div>
               <label className={labelClass}>NAME</label>
               <input
@@ -146,7 +150,7 @@ export function NoteToCoach({ isPdf, pdfPart }) {
           </div>
 
           {/* ── CLUB ── */}
-          <div className="mb-2">
+          <div className="mb-1">
             <label className={labelClass}>CLUB</label>
             <input
               type="text"
@@ -157,7 +161,7 @@ export function NoteToCoach({ isPdf, pdfPart }) {
           </div>
 
           {/* ── TEAM ── */}
-          <div className="mb-4">
+          <div className="mb-2">
             <label className={labelClass}>TEAM</label>
             <input
               type="text"
@@ -168,7 +172,7 @@ export function NoteToCoach({ isPdf, pdfPart }) {
           </div>
 
           {/* ── WHAT I LIKED ABOUT THE SESSION/GAME ── */}
-          <div className="mb-4">
+          <div className="mb-2">
             <label className={labelClass}>
               WHAT I LIKED ABOUT THE SESSION/GAME
             </label>
@@ -185,7 +189,7 @@ export function NoteToCoach({ isPdf, pdfPart }) {
       {(!isPdf || !pdfPart || pdfPart === 2) && (
         <>
           {/* ── WHAT I WOULD CHANGE ── */}
-          <div className="mb-4">
+          <div className="mb-2">
             <label className={labelClass}>WHAT I WOULD CHANGE</label>
             <textarea
               rows={3}
@@ -196,7 +200,7 @@ export function NoteToCoach({ isPdf, pdfPart }) {
           </div>
 
           {/* ── I WOULD LIKE TO DO MORE ── */}
-          <div className="mb-4">
+          <div className="mb-2">
             <label className={labelClass}>I WOULD LIKE TO DO MORE</label>
             <textarea
               rows={3}
@@ -224,21 +228,22 @@ export function NoteToCoach({ isPdf, pdfPart }) {
                   className="flex items-center gap-1.5 cursor-pointer"
                 >
                   <div
-                    className="w-4 h-4 border-2 flex items-center justify-center transition-all shrink-0"
+                    className="w-5 h-5 rounded-full border-2 transition-colors flex items-center justify-center shrink-0"
+                    data-pdf-checkmark="true"
                     style={{
-                      borderColor: "var(--text-primary)",
+                      borderColor: formData.teachMeTags.includes(tag)
+                        ? "var(--checkbox-checked-bg)"
+                        : "var(--text-primary)",
                       backgroundColor: formData.teachMeTags.includes(tag)
                         ? "var(--checkbox-checked-bg)"
                         : "transparent",
                     }}
                   >
                     {formData.teachMeTags.includes(tag) && (
-                      <span
-                        className="font-bold text-[10px]"
-                        style={{ color: "var(--checkbox-check-color)" }}
-                      >
-                        ✓
-                      </span>
+                      <div
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: "var(--checkbox-check-color)" }}
+                      />
                     )}
                   </div>
                   <input
@@ -280,7 +285,7 @@ export function NoteToCoach({ isPdf, pdfPart }) {
                         var(--slider-unfilled) 100%)`,
                     }}
                   />
-                  <span className="text-xs font-bold text-white w-5 text-right shrink-0">
+                  <span className="text-xs font-bold text-[var(--text-primary)] w-5 text-right shrink-0">
                     {value}
                   </span>
                 </div>

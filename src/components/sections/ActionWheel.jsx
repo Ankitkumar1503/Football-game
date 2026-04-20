@@ -44,7 +44,7 @@ export function ActionWheel() {
 
   return (
     <>
-      <div className="pt-2 flex flex-col items-center w-full max-w-5xl mx-auto mb-4">
+      <div className="pt-2 flex flex-col items-center w-full max-w-5xl mx-auto mb-2">
         {/* Top Header Section */}
         <h3 className="text-2xl font-black uppercase text-football-accent mb-4 font-display tracking-widest">
           TOUCH COUNTER
@@ -67,7 +67,7 @@ export function ActionWheel() {
           </div>
         </div>
       </div>
-      <div className="w-full max-w-5xl mx-auto mb-12 select-none flex flex-col items-center">
+      <div className="w-full max-w-5xl mx-auto mb-6 select-none flex flex-col items-center">
         <div className="relative w-full aspect-square max-w-[420px] md:max-w-[540px] bg-[var(--bg-primary)] rounded-full">
           {/* Overlay Menu */}
           {selectedAction ? (

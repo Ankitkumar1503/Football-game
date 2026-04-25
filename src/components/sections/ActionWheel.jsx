@@ -72,11 +72,9 @@ export function ActionWheel() {
           {/* Overlay Menu */}
           {selectedAction ? (
             <div
-              className="absolute z-20 rounded-full animate-in fade-in zoom-in duration-200 flex flex-col items-center justify-center border-4 border-solid"
+              className="absolute z-20 rounded-full animate-in fade-in zoom-in duration-200 flex flex-col items-center justify-center border-4 border-solid w-[65%] h-[65%] md:w-[55%] md:h-[55%]"
               style={{
                 backgroundColor: "var(--bg-action-overlay)",
-                width: "55%",
-                height: "55%",
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
@@ -84,24 +82,24 @@ export function ActionWheel() {
               }}
             >
               <h3
-                className="text-2xl md:text-xl font-black mb-3 uppercase text-white font-display tracking-wider text-center px-2"
+                className="text-base sm:text-lg md:text-xl font-black mb-1 md:mb-3 uppercase text-white font-display tracking-wider text-center px-4 leading-tight"
                 style={{ textShadow: "0 2px 6px rgba(0,0,0,0.3)" }}
               >
                 {selectedAction}
               </h3>
-              <div className="flex gap-5">
+              <div className="flex gap-3 md:gap-5">
                 <button
                   onClick={() => handleRating("positive")}
                   className="flex flex-col items-center gap-1 group transition-transform hover:scale-110 active:scale-95"
                 >
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[var(--color-accent)] flex items-center justify-center border-2 border-white shadow-lg">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-[var(--color-accent)] flex items-center justify-center border-2 border-white shadow-lg">
                     <Check
-                      className="size-7 md:size-8 stroke-[4]"
+                      className="size-6 sm:size-7 md:size-8 stroke-[4]"
                       style={{ color: "var(--color-accent-new)" }}
                     />
                   </div>
                   <span
-                    className="text-white font-black text-xs md:text-sm tracking-widest"
+                    className="text-white font-black text-[10px] sm:text-xs md:text-sm tracking-widest"
                     style={{ textShadow: "0 1px 4px rgba(0,0,0,0.3)" }}
                   >
                     POS
@@ -111,14 +109,14 @@ export function ActionWheel() {
                   onClick={() => handleRating("negative")}
                   className="flex flex-col items-center gap-1 group transition-transform hover:scale-110 active:scale-95"
                 >
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-black flex items-center justify-center border-2 border-white shadow-lg">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-black flex items-center justify-center border-2 border-white shadow-lg">
                     <X
-                      className="size-7 md:size-8 text-[#333] stroke-[4]"
+                      className="size-6 sm:size-7 md:size-8 text-[#333] stroke-[4]"
                       style={{ color: "var(--color-accent)" }}
                     />
                   </div>
                   <span
-                    className="text-white font-black text-xs md:text-sm tracking-widest"
+                    className="text-white font-black text-[10px] sm:text-xs md:text-sm tracking-widest"
                     style={{ textShadow: "0 1px 4px rgba(0,0,0,0.3)" }}
                   >
                     NEG
@@ -127,7 +125,7 @@ export function ActionWheel() {
               </div>
               <button
                 onClick={resetSelection}
-                className="mt-5 px-6 py-1.5 text-xs md:text-sm text-white bg-transparent hover:bg-white hover:text-black rounded-full font-black uppercase tracking-widest transition-all border-2 border-white/60 hover:border-white active:scale-95 shadow-sm"
+                className="mt-2 sm:mt-3 md:mt-5 px-4 sm:px-5 md:px-6 py-1 sm:py-1 md:py-1.5 text-[9px] sm:text-xs md:text-sm text-white bg-transparent hover:bg-white hover:text-black rounded-full font-black uppercase tracking-widest transition-all border-2 border-white/60 hover:border-white active:scale-95 shadow-sm"
               >
                 CANCEL
               </button>

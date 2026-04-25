@@ -192,7 +192,7 @@ export function PlayerReflection({ isPdf, pdfPart }) {
   }
 
   return (
-    <Card className="mb-[24px] border-none shadow-none">
+    <Card className="mb-[12px] border-none shadow-none">
       <CardContent className="p-2">
         {(!isPdf || !pdfPart || pdfPart === 1) && (
           <>

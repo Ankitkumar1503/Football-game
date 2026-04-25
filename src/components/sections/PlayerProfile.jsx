@@ -158,7 +158,7 @@ export function PlayerProfile() {
     "w-full bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-2 text-xs font-bold uppercase border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
   return (
-    <div className="mb-8">
+    <div className="">
       <Card className="bg-transparent border-none shadow-none">
         <CardContent className="p-1 space-y-2">
           {/* ═══ REGISTER Heading ═══ */}

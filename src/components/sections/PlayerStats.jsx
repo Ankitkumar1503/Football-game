@@ -181,7 +181,7 @@ export function PlayerStats() {
     "w-20 bg-[var(--bg-input)] text-[var(--text-input)] px-2 py-1 text-xs font-bold text-center border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
   return (
-    <div className="mb-8">
+    <div className="">
       <Card className="bg-transparent border-none shadow-none">
         <CardContent className="p-1 space-y-2">
           {/* ═══ PLAYER STATS Heading ═══ */}

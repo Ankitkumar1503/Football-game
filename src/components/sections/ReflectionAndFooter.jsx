@@ -218,7 +218,7 @@ export function PlayerReflection({ isPdf, pdfPart }) {
                   className="w-full bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-[4px] text-sm font-bold uppercase border-none focus:outline-none focus:ring-1 focus:ring-football-accent"
                 />
               </div>
-              <div className="flex items-center gap-3">
+              {/* <div className="flex items-center gap-3">
                 <label
                   htmlFor="playerAge"
                   className="text-xs font-black uppercase text-football-text whitespace-nowrap"
@@ -232,7 +232,7 @@ export function PlayerReflection({ isPdf, pdfPart }) {
                   onChange={handleTextChange}
                   className="w-20 bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-[4px] text-sm font-bold uppercase border-none focus:outline-none focus:ring-1 focus:ring-football-accent"
                 />
-              </div>
+              </div> */}
             </div>
 
             {/* What did you do well? */}
@@ -261,7 +261,9 @@ export function PlayerReflection({ isPdf, pdfPart }) {
                       {formData.wellDoneTags.includes(tag) && (
                         <div
                           className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: "var(--checkbox-check-color)" }}
+                          style={{
+                            backgroundColor: "var(--checkbox-check-color)",
+                          }}
                         />
                       )}
                     </div>

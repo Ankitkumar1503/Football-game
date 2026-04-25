@@ -132,7 +132,7 @@ export function FootballFormation({ isPdf = false }) {
       </div>
 
       {/* ── TEAM / AGE ── */}
-      <div className="grid grid-cols-[1fr_80px] gap-3 mb-4">
+      <div className="grid grid-cols-1 mb-4">
         <div>
           <label className={labelClass}>TEAM</label>
           <input
@@ -142,7 +142,7 @@ export function FootballFormation({ isPdf = false }) {
             className={inputClass}
           />
         </div>
-        <div>
+        {/* <div>
           <label className={labelClass}>AGE</label>
           <input
             type="text"
@@ -150,7 +150,7 @@ export function FootballFormation({ isPdf = false }) {
             onChange={(e) => handleInputChange("age", e.target.value)}
             className={inputClass}
           />
-        </div>
+        </div> */}
       </div>
 
       {/* ── Football Field ── */}
@@ -348,7 +348,14 @@ export function FootballFormation({ isPdf = false }) {
 //   );
 // }
 
-function PlayerPosition({ number, name, onChange, style, className = "", isPdf }) {
+function PlayerPosition({
+  number,
+  name,
+  onChange,
+  style,
+  className = "",
+  isPdf,
+}) {
   const [line1, line2, line3] = (name || ",,").split(",");
 
   const handleLineChange = (lineIndex, value) => {
@@ -398,13 +405,13 @@ function PlayerPosition({ number, name, onChange, style, className = "", isPdf }
               <div
                 key={i}
                 className="w-full bg-white text-black text-center font-black"
-                style={{ 
+                style={{
                   border: "1px solid black",
                   height: "16px",
                   fontSize: "8px",
                   lineHeight: "8px",
                   paddingTop: "2.5px", // Force exact centering
-                  boxSizing: "border-box"
+                  boxSizing: "border-box",
                 }}
               >
                 {lineVal || ""}

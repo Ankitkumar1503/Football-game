@@ -186,10 +186,10 @@ export function PlayerEvaluation({ isPdf, pdfPart }) {
           </div>
 
           {/* ── Name / Age row ── */}
-          <div className="grid grid-cols-[1fr_auto] gap-3 mb-2">
+          <div className="grid grid-cols-1 mb-2">
             <div>
               <label className="block text-[9px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest">
-                NAME
+                NAME / AGE
               </label>
               <input
                 type="text"
@@ -198,7 +198,7 @@ export function PlayerEvaluation({ isPdf, pdfPart }) {
                 className={inputClass}
               />
             </div>
-            <div className="w-16">
+            {/* <div className="w-16">
               <label className="block text-[9px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest">
                 AGE
               </label>
@@ -208,11 +208,11 @@ export function PlayerEvaluation({ isPdf, pdfPart }) {
                 onChange={handleAgeChange}
                 className={inputClass}
               />
-            </div>
+            </div> */}
           </div>
 
           {/* ── Evaluation By / Date row ── */}
-          <div className="grid grid-cols-[1fr_auto] gap-3 mb-4">
+          <div className="grid grid-cols-1 mb-4">
             <div>
               <label className="block text-[9px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest">
                 EVALUATION BY
@@ -224,7 +224,7 @@ export function PlayerEvaluation({ isPdf, pdfPart }) {
                 className={inputClass}
               />
             </div>
-            <div className="w-24">
+            {/* <div className="w-24">
               <label className="block text-[9px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest">
                 DATE
               </label>
@@ -234,7 +234,7 @@ export function PlayerEvaluation({ isPdf, pdfPart }) {
                 onChange={handleDateChange}
                 className={inputClass}
               />
-            </div>
+            </div> */}
           </div>
         </>
       )}

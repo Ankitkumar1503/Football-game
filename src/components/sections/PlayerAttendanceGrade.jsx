@@ -174,7 +174,7 @@ export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
           </div>
 
           {/* ── TEAM / AGE ── */}
-          <div className="grid grid-cols-[1fr_80px] gap-3 mb-4">
+          <div className="grid grid-cols-1 mb-4">
             <div>
               <label className={labelClass}>TEAM</label>
               <input
@@ -184,7 +184,7 @@ export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
                 className={inputClass}
               />
             </div>
-            <div>
+            {/* <div>
               <label className={labelClass}>AGE</label>
               <input
                 type="text"
@@ -192,7 +192,7 @@ export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
                 onChange={(e) => handleMetadataChange("age", e.target.value)}
                 className={inputClass}
               />
-            </div>
+            </div> */}
           </div>
 
           {/* ── Session Type Radio Buttons ── */}

@@ -300,6 +300,24 @@ export function PdfReportPage() {
                 el.style.color = "black";
               }
             }
+            
+            // Fix invisible unselected footers without touching React code:
+            // Swap the white outlines for the dark touches-light.png file.
+            const images = clonedDoc.getElementsByTagName("img");
+            for (let img of images) {
+              const srcStr = img.src || "";
+              if (srcStr.includes("touches-intro.png") || srcStr.includes("touches-intro2.png")) {
+                // Ensure visibility on white pdf background
+                img.src = srcStr.replace(/touches-intro2?\.png/, "touches-light.png");
+                img.style.opacity = "0.4";
+                
+                // Flip right foot
+                if (srcStr.includes("touches-intro2.png")) {
+                  img.style.transform = "scaleX(-1)";
+                }
+              }
+            }
+
             // Number badges fix - force white text on black circle
             clonedDoc
               .querySelectorAll(".football-field .bg-black span")

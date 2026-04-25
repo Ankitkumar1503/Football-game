@@ -183,7 +183,7 @@ export function PlayerProfile() {
           </div>
 
           {/* Date of Birth + Age */}
-          <div className="grid grid-cols-[1fr_80px] gap-4">
+          <div className="grid grid-cols-1">
             <div className="space-y-1">
               <label htmlFor="dateOfBirth" className={labelClass}>
                 Date of Birth
@@ -196,7 +196,7 @@ export function PlayerProfile() {
                 onChange={handleChange}
               />
             </div>
-            <div className="space-y-1">
+            {/* <div className="space-y-1">
               <label htmlFor="age" className={labelClass}>
                 Age
               </label>
@@ -207,7 +207,7 @@ export function PlayerProfile() {
                 value={formData.age}
                 onChange={handleChange}
               />
-            </div>
+            </div> */}
           </div>
 
           {/* Place of Birth */}

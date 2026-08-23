@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Download, Share, PlusSquare, X, Smartphone, Check } from "lucide-react";
+import { Download, Share, PlusSquare, X, Smartphone, Check, Compass } from "lucide-react";
 
 let globalDeferredPrompt = null;
 
@@ -14,6 +14,7 @@ if (typeof window !== "undefined") {
 export function InstallAppBanner({ className = "" }) {
   const [deferredPrompt, setDeferredPrompt] = useState(globalDeferredPrompt);
   const [isIOS, setIsIOS] = useState(false);
+  const [isNonSafariIOS, setIsNonSafariIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [installedSuccess, setInstalledSuccess] = useState(false);
@@ -28,17 +29,38 @@ export function InstallAppBanner({ className = "" }) {
       setIsStandalone(Boolean(isStandaloneMode));
     };
 
-    // Check iOS user agent
-    const checkIOS = () => {
+    // Check iOS user agent & specific browser (Chrome CriOS vs Safari)
+    const checkBrowser = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+
+      // Testing overrides via URL params for quick verification
+      if (urlParams.get("test_ios_chrome") === "1") {
+        setIsIOS(true);
+        setIsNonSafariIOS(true);
+        return;
+      }
+      if (urlParams.get("test_ios_safari") === "1") {
+        setIsIOS(true);
+        setIsNonSafariIOS(false);
+        return;
+      }
+
       const ua = window.navigator.userAgent || "";
       const isIOSDevice =
         /iphone|ipad|ipod/i.test(ua) ||
         (window.navigator.maxTouchPoints > 0 && /macintosh/i.test(ua));
+
       setIsIOS(isIOSDevice);
+
+      if (isIOSDevice) {
+        // Chrome on iOS contains "CriOS", Firefox contains "FxiOS", Edge contains "EdgiOS", etc.
+        const isNonSafari = /crios|fxios|edgios|opios|duckduckgo|gsa/i.test(ua);
+        setIsNonSafariIOS(isNonSafari);
+      }
     };
 
     checkStandalone();
-    checkIOS();
+    checkBrowser();
 
     const handleInstallable = (e) => {
       if (e && e.preventDefault && e !== window) {
@@ -51,7 +73,6 @@ export function InstallAppBanner({ className = "" }) {
     window.addEventListener("beforeinstallprompt", handleInstallable);
     window.addEventListener("pwa-installable", handleInstallable);
 
-    // Also listen for appinstalled event
     const handleAppInstalled = () => {
       setInstalledSuccess(true);
       setDeferredPrompt(null);
@@ -116,8 +137,48 @@ export function InstallAppBanner({ className = "" }) {
     );
   }
 
-  // 1. iOS Safari Instruction Banner
-  if (isIOS) {
+  // 1. iOS + Non-Safari (e.g. Chrome / CriOS on iPhone)
+  if (isIOS && isNonSafariIOS) {
+    return (
+      <div className={`relative rounded-xl p-3.5 bg-gradient-to-r from-[#1E1711] via-[#1A1418] to-[#171220] border-2 border-amber-500/60 shadow-2xl text-white space-y-2.5 ${className}`}>
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 border border-amber-500/30">
+              <Compass size={20} />
+            </div>
+            <div>
+              <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[8px] font-black uppercase tracking-wider">
+                Safari Required on iPhone
+              </div>
+              <h3 className="text-xs font-black uppercase tracking-wider text-white">
+                Open in Safari to Install
+              </h3>
+            </div>
+          </div>
+          <button
+            onClick={() => setDismissed(true)}
+            className="p-1 text-white/40 hover:text-white transition-colors"
+            title="Close banner"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="bg-black/50 border border-amber-500/20 rounded-lg p-2.5 text-[11px] text-white/90 font-medium space-y-1.5">
+          <p className="text-white/90">
+            To install this app on iPhone, please open this link in <strong className="text-amber-400 font-bold">Safari</strong>:
+          </p>
+          <div className="text-[10px] text-white/80 space-y-1 pl-1">
+            <p>1. Tap the <strong className="text-white">...</strong> menu in Chrome → tap <strong className="text-amber-300">Open in Safari</strong> (or copy & paste URL into Safari).</p>
+            <p>2. In Safari, tap <strong className="text-[#00AEEF]">Share</strong> <Share size={11} className="inline text-[#00AEEF]" /> → <strong className="text-emerald-400">Add to Home Screen</strong>.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. iOS + Safari
+  if (isIOS && !isNonSafariIOS) {
     return (
       <div className={`relative rounded-xl p-3.5 bg-gradient-to-r from-[#141926] via-[#101420] to-[#171120] border-2 border-[#00AEEF]/50 shadow-xl text-white space-y-2 ${className}`}>
         <div className="flex items-start justify-between">
@@ -159,7 +220,7 @@ export function InstallAppBanner({ className = "" }) {
     );
   }
 
-  // 2. Android / Desktop Chrome / Edge Install Banner
+  // 3. Android / Desktop Chrome / Edge Install Banner
   return (
     <div className={`relative rounded-xl p-3.5 bg-gradient-to-r from-[#171424] via-[#121624] to-[#1E1119] border-2 border-[#FF4422]/60 shadow-2xl text-white space-y-2.5 ${className}`}>
       <div className="flex items-center justify-between">

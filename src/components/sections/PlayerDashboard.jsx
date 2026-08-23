@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useActiveSession } from "../../hooks/useActiveSession";
 import { useCumulativeStats } from "../../hooks/useCumulativeStats";
+import { useAuth } from "../../contexts/AuthContext";
 import touchesLogo from "../../assets/touches.png";
 import { InstallAppBanner } from "../InstallAppBanner";
 import {
@@ -23,6 +24,7 @@ import {
 export function PlayerDashboard() {
   const navigate = useNavigate();
   const { session } = useActiveSession();
+  const { user } = useAuth();
   const cumulativeStats = useCumulativeStats();
 
   const [currentTimeStr, setCurrentTimeStr] = useState("");
@@ -47,10 +49,41 @@ export function PlayerDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  const playerName = session?.playerName || session?.fullName || "PLAYER";
-  const activeFoot = (session?.activeFooter || "RIGHT").toUpperCase();
+  const savedProfile = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("playerProfile") || "{}");
+    } catch (e) {
+      return {};
+    }
+  })();
+
+  const savedUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch (e) {
+      return {};
+    }
+  })();
+
+  const playerName =
+    user?.name ||
+    user?.firstName ||
+    user?.fullName ||
+    user?.playerName ||
+    savedUser?.name ||
+    savedUser?.firstName ||
+    savedUser?.fullName ||
+    savedUser?.playerName ||
+    savedProfile?.fullName ||
+    savedProfile?.name ||
+    session?.playerName ||
+    session?.fullName ||
+    "Player";
+
+  const activeFoot = (session?.activeFooter || user?.footer || savedProfile?.activeFooter || "RIGHT").toUpperCase();
   const isRightFoot = activeFoot === "RIGHT";
-  const playerInitial = playerName ? playerName.charAt(0).toUpperCase() : "P";
+  const playerInitial = playerName && playerName.trim().length > 0 ? playerName.trim().charAt(0).toUpperCase() : "A";
+
 
   const totalTouches = cumulativeStats.totalTouches || 0;
   const totalSessions = cumulativeStats.totalSessions || 0;

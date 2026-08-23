@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useActiveSession } from "../../hooks/useActiveSession";
 import { useCumulativeStats } from "../../hooks/useCumulativeStats";
 import touchesLogo from "../../assets/touches.png";
+import { InstallAppBanner } from "../InstallAppBanner";
 import {
   Settings,
   Pointer,
@@ -108,6 +109,10 @@ export function PlayerDashboard() {
           </button>
         </div>
       </div>
+
+      {/* PWA INSTALL APP BANNER */}
+      <InstallAppBanner />
+
 
       {/* ════════════════════════════════
           2. GREEN STADIUM HERO BANNER

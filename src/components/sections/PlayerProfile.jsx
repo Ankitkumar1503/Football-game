@@ -1,18 +1,67 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "../ui/Card";
 import { useActiveSession } from "../../hooks/useActiveSession";
 import { useTheme } from "../../contexts/ThemeContext";
+import touchesLogo from "../../assets/touches.png";
+import {
+  ChevronDown,
+  ChevronUp,
+  Check,
+  ArrowUp,
+  ArrowRight,
+} from "lucide-react";
+
+const POSITIONS = [
+  "Select Position",
+  "Goalkeeper (GK)",
+  "Center Back (CB)",
+  "Left Back (LB)",
+  "Right Back (RB)",
+  "Defensive Midfielder (CDM)",
+  "Central Midfielder (CM)",
+  "Attacking Midfielder (CAM)",
+  "Left Winger (LW)",
+  "Right Winger (RW)",
+  "Striker / Forward (ST)",
+];
+
+const COUNTRIES = [
+  "Select country",
+  "United States",
+  "United Kingdom",
+  "Canada",
+  "Australia",
+  "Spain",
+  "Germany",
+  "France",
+  "Brazil",
+  "Argentina",
+  "Italy",
+  "Portugal",
+  "Netherlands",
+  "Mexico",
+  "Japan",
+  "South Korea",
+  "Nigeria",
+  "Ghana",
+  "Colombia",
+  "Chile",
+  "Other",
+];
 
 const GAME_TYPES = ["GRASSROOTS", "4V4", "7V7", "9V9", "11V11"];
 
 export function PlayerProfile() {
+  const navigate = useNavigate();
   const { session, updateSession } = useActiveSession();
   const { theme } = useTheme();
   const isLightTheme = theme === "light";
 
+  const [showOptionalFields, setShowOptionalFields] = useState(false);
+
   const [formData, setFormData] = useState(() => {
     const defaultState = {
-      // Existing fields
       level: "",
       date: new Date().toISOString().split("T")[0],
       time: new Date().toTimeString().slice(0, 5),
@@ -29,7 +78,6 @@ export function PlayerProfile() {
       rightFooter: "",
       leftFooter: "",
 
-      // Personal Information
       fullName: "",
       dateOfBirth: "",
       age: "",
@@ -39,7 +87,6 @@ export function PlayerProfile() {
       city: "",
       country: "",
 
-      // Contact & Social Media
       email: "",
       cellPhone: "",
       website: "",
@@ -47,14 +94,11 @@ export function PlayerProfile() {
       tiktok: "",
       facebook: "",
 
-      // Favorites
       favoriteTeam: "",
       favoritePlayer: "",
 
-      // Game Type toggles
       gameTypes: [],
 
-      // Education
       middleSchool: "",
       middleSchoolGrade: "",
       highSchool: "",
@@ -64,7 +108,6 @@ export function PlayerProfile() {
       university: "",
       universityYear: "",
 
-      // Professional
       academy: "",
       academyLevel: "",
       pro: "",
@@ -95,7 +138,6 @@ export function PlayerProfile() {
       const newData = { ...formData };
       let hasChanges = false;
 
-      // Only update fields that actually exist in the session and differ from local state
       Object.keys(newData).forEach((key) => {
         if (session[key] !== undefined && session[key] !== formData[key]) {
           newData[key] = session[key];
@@ -113,7 +155,6 @@ export function PlayerProfile() {
         }
       }
 
-      // We only merge if there's actual data in the DB to avoid wiping user unsaved local data
       const hasDbData = Object.keys(newData).some(
         (key) => session[key] !== undefined && session[key] !== "",
       );
@@ -138,6 +179,22 @@ export function PlayerProfile() {
     await updateSession(updates);
   };
 
+  const handleFootSelect = async (foot) => {
+    const footUpper = foot.toUpperCase();
+    const isLeft = footUpper === "LEFT";
+    const newLeft = isLeft ? "LEFT" : "";
+    const newRight = !isLeft ? "RIGHT" : "";
+
+    const updates = {
+      activeFooter: footUpper,
+      leftFooter: newLeft,
+      rightFooter: newRight,
+    };
+
+    setFormData((prev) => ({ ...prev, ...updates }));
+    await updateSession(updates);
+  };
+
   const handleGameTypeToggle = async (type) => {
     setFormData((prev) => {
       const current = prev.gameTypes || [];
@@ -150,484 +207,491 @@ export function PlayerProfile() {
     });
   };
 
-  // ── Shared style strings ──
-  const labelClass =
-    "block text-[9px] font-black uppercase text-[var(--text-primary)] tracking-widest";
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.activeFooter) {
+      const element = document.getElementById("foot-selection-section");
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+      return;
+    }
+    localStorage.setItem("playerProfile", JSON.stringify(formData));
+    navigate("/dashboard");
+  };
 
+  const isLeftSelected = formData.activeFooter === "LEFT";
+  const isRightSelected = formData.activeFooter === "RIGHT";
+
+  const labelClass =
+    "block text-[9px] font-black uppercase tracking-wider text-football-text/80 mb-1";
   const inputClass =
-    "w-full bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-2 text-xs font-bold uppercase border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
+    "w-full bg-[#161920]/90 text-football-text px-3 py-2 text-xs font-semibold rounded-xl border border-football-text/15 focus:outline-none focus:border-football-accent transition-all placeholder:text-football-text/30";
+  const selectClass =
+    "w-full bg-[#161920]/90 text-football-text px-3 py-2 text-xs font-semibold rounded-xl border border-football-text/15 focus:outline-none focus:border-football-accent transition-all appearance-none cursor-pointer";
 
   return (
-    <div className="">
-      <Card className="bg-transparent border-none shadow-none">
-        <CardContent className="p-1 space-y-2">
-          {/* ═══ REGISTER Heading ═══ */}
-          <h2 className="text-center text-2xl font-black uppercase text-[var(--text-primary)] tracking-widest border-b-2 border-[var(--text-primary)] pb-2 mb-1">
-            Register
-          </h2>
-
-          {/* ═══ PERSONAL INFORMATION ═══ */}
-
-          {/* Full Name */}
-          <div className="space-y-1">
-            <label htmlFor="fullName" className={labelClass}>
-              Full Name
-            </label>
-            <input
-              id="fullName"
-              type="text"
-              className={inputClass}
-              value={formData.fullName}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* Date of Birth + Age */}
-          <div className="grid grid-cols-1">
-            <div className="space-y-1">
-              <label htmlFor="dateOfBirth" className={labelClass}>
-                Date of Birth
-              </label>
-              <input
-                id="dateOfBirth"
-                type="date"
-                className={inputClass}
-                value={formData.dateOfBirth}
-                onChange={handleChange}
-              />
-            </div>
-            {/* <div className="space-y-1">
-              <label htmlFor="age" className={labelClass}>
-                Age
-              </label>
-              <input
-                id="age"
-                type="number"
-                className={inputClass}
-                value={formData.age}
-                onChange={handleChange}
-              />
-            </div> */}
-          </div>
-
-          {/* Place of Birth */}
-          <div className="space-y-1">
-            <label htmlFor="placeOfBirth" className={labelClass}>
-              Place of Birth
-            </label>
-            <input
-              id="placeOfBirth"
-              type="text"
-              className={inputClass}
-              value={formData.placeOfBirth}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* Address */}
-          <div className="space-y-1">
-            <label htmlFor="address" className={labelClass}>
-              Address
-            </label>
-            <input
-              id="address"
-              type="text"
-              className={inputClass}
-              value={formData.address}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* Zip Code / Postal Code */}
-          <div className="space-y-1">
-            <label htmlFor="zipCode" className={labelClass}>
-              Zip Code/Postal Code
-            </label>
-            <input
-              id="zipCode"
-              type="text"
-              className={inputClass}
-              value={formData.zipCode}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* City + Country */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label htmlFor="city" className={labelClass}>
-                City
-              </label>
-              <input
-                id="city"
-                type="text"
-                className={inputClass}
-                value={formData.city}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="country" className={labelClass}>
-                Country
-              </label>
-              <input
-                id="country"
-                type="text"
-                className={inputClass}
-                value={formData.country}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          {/* ═══ CONTACT & SOCIAL MEDIA ═══ */}
-
-          {/* Email */}
-          <div className="space-y-1">
-            <label htmlFor="email" className={labelClass}>
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              className={inputClass}
-              value={formData.email}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* Cell Phone */}
-          <div className="space-y-1">
-            <label htmlFor="cellPhone" className={labelClass}>
-              Cell Phone
-            </label>
-            <input
-              id="cellPhone"
-              type="tel"
-              className={inputClass}
-              value={formData.cellPhone}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* Website */}
-          <div className="space-y-1">
-            <label htmlFor="website" className={labelClass}>
-              Website
-            </label>
-            <input
-              id="website"
-              type="url"
-              className={inputClass}
-              value={formData.website}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* Instagram */}
-          <div className="space-y-1">
-            <label htmlFor="instagram" className={labelClass}>
-              Instagram
-            </label>
-            <input
-              id="instagram"
-              type="text"
-              className={inputClass}
-              value={formData.instagram}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* TikTok */}
-          <div className="space-y-1">
-            <label htmlFor="tiktok" className={labelClass}>
-              TikTok
-            </label>
-            <input
-              id="tiktok"
-              type="text"
-              className={inputClass}
-              value={formData.tiktok}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* Facebook */}
-          <div className="space-y-1">
-            <label htmlFor="facebook" className={labelClass}>
-              Facebook
-            </label>
-            <input
-              id="facebook"
-              type="text"
-              className={inputClass}
-              value={formData.facebook}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* ═══ FAVORITES ═══ */}
-
-          {/* Favorite Team */}
-          <div className="space-y-1">
-            <label htmlFor="favoriteTeam" className={labelClass}>
-              Favorite Team
-            </label>
-            <input
-              id="favoriteTeam"
-              type="text"
-              className={inputClass}
-              value={formData.favoriteTeam}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* Favorite Player */}
-          <div className="space-y-1">
-            <label htmlFor="favoritePlayer" className={labelClass}>
-              Favorite Player
-            </label>
-            <input
-              id="favoritePlayer"
-              type="text"
-              className={inputClass}
-              value={formData.favoritePlayer}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* ═══ GAME TYPE ═══ */}
-          <div className="space-y-1 pb-2 border-b-2 border-[var(--border-color)]">
-            <div
-              className="flex justify-between items-center p-1"
-              style={{ backgroundColor: "var(--bg-input)" }}
+    <div className="bg-[var(--bg-primary)] text-football-text pb-6 pt-1 px-1 sm:px-2 relative overflow-hidden">
+      <div className="max-w-md mx-auto space-y-3 relative z-10">
+        {/* ════════════════════════════════
+            TOP BRANDING & LOGOS (Tight Spacing)
+        ════════════════════════════════ */}
+        <div className="text-center space-y-1 pt-1">
+          {/* FA Logo */}
+          {/* <div className="mx-auto w-12 h-12 rounded-full border border-dashed border-football-text/30 flex flex-col items-center justify-center p-0.5 bg-black/30 backdrop-blur-sm">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              className="text-football-text/80"
             >
-              {GAME_TYPES.map((type) => {
-                const isSelected = (formData.gameTypes || []).includes(type);
-                return (
-                  <button
-                    key={type}
-                    onClick={() => handleGameTypeToggle(type)}
-                    className="px-2 py-1.5 text-[9px] font-black uppercase tracking-wider transition-colors"
-                    style={{
-                      color: isSelected
-                        ? "var(--color-accent)"
-                        : isLightTheme
-                          ? "var(--text-input)"
-                          : "var(--text-primary)",
-                      backgroundColor: isSelected
-                        ? "var(--bg-primary)"
-                        : "transparent",
-                    }}
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 3v18" />
+            </svg>
+            <span className="text-[7px] font-black tracking-widest text-football-text/60">
+              FA LOGO
+            </span>
+          </div> */}
+
+          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-football-text/70">
+            FOOTBALLER ATHLETICS
+          </p>
+
+          {/* TOUCHES Logo Container */}
+          <div className="max-w-[170px] mx-auto py-1 px-3 border border-dashed border-football-text/30 rounded-lg bg-black/20 flex items-center justify-center">
+            <img
+              src={touchesLogo}
+              alt="TOUCHES LOGO"
+              className="h-5 w-auto object-contain"
+            />
+          </div>
+
+          <p className="text-[8px] font-black uppercase tracking-[0.25em] text-football-text/50">
+            TRACK · REFLECT · EVOLVE
+          </p>
+        </div>
+
+        {/* ════════════════════════════════
+            MAIN CARD & DOMINANT FOOT SECTION
+        ════════════════════════════════ */}
+        <div
+          id="foot-selection-section"
+          className="relative bg-[var(--bg-card)]/80 border border-football-text/15 rounded-2xl p-3.5 sm:p-4 shadow-xl backdrop-blur-xl space-y-3.5 overflow-hidden"
+        >
+          {/* Background Pitch Lines */}
+          <div className="absolute inset-0 opacity-10 pointer-events-none flex items-center justify-center">
+            {/* <svg
+              width="100%"
+              height="100%"
+              viewBox="0 0 300 400"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1"
+            >
+              <rect x="20" y="20" width="260" height="360" rx="4" />
+              <line x1="20" y1="200" x2="280" y2="200" />
+              <circle cx="150" cy="200" r="45" />
+              <rect x="80" y="20" width="140" height="70" />
+              <rect x="80" y="310" width="140" height="70" />
+            </svg> */}
+          </div>
+
+          {/* Pitch Icon & Question Heading */}
+          <div className="text-center space-y-1 relative z-10">
+            {/* <div className="mx-auto w-10 h-7 border border-[#FF4422]/60 rounded flex items-center justify-center bg-black/40">
+              <div className="w-4 h-4 border border-[#FF4422]/60 rounded-full flex items-center justify-center">
+                <div className="w-1 h-1 bg-[#FF4422] rounded-full" />
+              </div>
+            </div> */}
+
+            <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-football-text leading-tight">
+              ARE YOU A <span className="text-[#FF4422]">LEFT</span> OR{" "}
+              <span className="text-[#00AEEF]">RIGHT</span> FOOTER?
+            </h1>
+
+            <p className="text-[11px] text-football-text/70 max-w-xs mx-auto leading-tight font-medium">
+              Every elite player knows their dominant foot. This is where your
+              journey begins.
+            </p>
+          </div>
+
+          {/* ── Left vs Right Foot Cards Grid ── */}
+          <div className="grid grid-cols-2 gap-2.5 relative z-10">
+            {/* LEFT FOOTER CARD */}
+            <button
+              type="button"
+              onClick={() => handleFootSelect("LEFT")}
+              className={`group relative p-3 rounded-xl border-2 text-left transition-all duration-200 flex flex-col items-center text-center space-y-1.5 ${
+                isLeftSelected
+                  ? "border-[#FF4422] bg-[#FF4422]/15 shadow-md shadow-[#FF4422]/20 scale-[1.01]"
+                  : "border-[#FF4422]/40 bg-[#161920]/80 hover:border-[#FF4422] hover:bg-[#FF4422]/10"
+              }`}
+            >
+              {isLeftSelected && (
+                <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#FF4422] text-white flex items-center justify-center shadow">
+                  <Check size={10} strokeWidth={3} />
+                </div>
+              )}
+
+              <div className="w-11 h-11 rounded-full border border-dashed border-[#FF4422]/60 flex flex-col items-center justify-center bg-black/40 p-0.5">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#FF4422"
+                  strokeWidth="2"
+                >
+                  <path d="M7 21v-4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4" />
+                  <path d="M12 3a6 6 0 0 0-6 6v3h12V9a6 6 0 0 0-6-6z" />
+                </svg>
+                <span className="text-[6px] font-black tracking-widest text-[#FF4422]/80">
+                  LEFT
+                </span>
+              </div>
+
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-wider text-[#FF4422]">
+                  LEFT FOOTER
+                </h3>
+                <p className="text-[9px] text-football-text/80 leading-tight mt-0.5 font-medium">
+                  The creative side. Legends born here.
+                </p>
+              </div>
+            </button>
+
+            {/* RIGHT FOOTER CARD */}
+            <button
+              type="button"
+              onClick={() => handleFootSelect("RIGHT")}
+              className={`group relative p-3 rounded-xl border-2 text-left transition-all duration-200 flex flex-col items-center text-center space-y-1.5 ${
+                isRightSelected
+                  ? "border-[#00AEEF] bg-[#00AEEF]/15 shadow-md shadow-[#00AEEF]/20 scale-[1.01]"
+                  : "border-[#00AEEF]/40 bg-[#161920]/80 hover:border-[#00AEEF] hover:bg-[#00AEEF]/10"
+              }`}
+            >
+              {isRightSelected && (
+                <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#00AEEF] text-white flex items-center justify-center shadow">
+                  <Check size={10} strokeWidth={3} />
+                </div>
+              )}
+
+              <div className="w-11 h-11 rounded-full border border-dashed border-[#00AEEF]/60 flex flex-col items-center justify-center bg-black/40 p-0.5">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#00AEEF"
+                  strokeWidth="2"
+                >
+                  <path d="M17 21v-4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v4" />
+                  <path d="M12 3a6 6 0 0 1 6 6v3H6V9a6 6 0 0 1 6-6z" />
+                </svg>
+                <span className="text-[6px] font-black tracking-widest text-[#00AEEF]/80">
+                  RIGHT
+                </span>
+              </div>
+
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-wider text-[#00AEEF]">
+                  RIGHT FOOTER
+                </h3>
+                <p className="text-[9px] text-football-text/80 leading-tight mt-0.5 font-medium">
+                  Power & precision. Own the pitch.
+                </p>
+              </div>
+            </button>
+          </div>
+
+          {/* ════════════════════════════════
+              PLAYER REGISTRATION FORM (Compact Spacing)
+          ════════════════════════════════ */}
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-3 pt-1 relative z-10"
+          >
+            {/* Section Divider */}
+            <div className="flex items-center gap-2 my-2">
+              <div className="h-px bg-football-text/15 flex-1" />
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-football-text/60">
+                PLAYER REGISTRATION
+              </span>
+              <div className="h-px bg-football-text/15 flex-1" />
+            </div>
+
+            {/* Row 1: First Name & Age */}
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <label htmlFor="fullName" className={labelClass}>
+                  FIRST NAME
+                </label>
+                <input
+                  id="fullName"
+                  type="text"
+                  placeholder="Your first name"
+                  className={inputClass}
+                  value={formData.fullName}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="age" className={labelClass}>
+                  AGE
+                </label>
+                <input
+                  id="age"
+                  type="number"
+                  placeholder="Age"
+                  className={inputClass}
+                  value={formData.age}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            {/* Row 2: Club/Team & Position */}
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <label htmlFor="club" className={labelClass}>
+                  CLUB / TEAM
+                </label>
+                <input
+                  id="club"
+                  type="text"
+                  placeholder="Club name"
+                  className={inputClass}
+                  value={formData.club}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="position" className={labelClass}>
+                  POSITION
+                </label>
+                <div className="relative">
+                  <select
+                    id="position"
+                    className={selectClass}
+                    value={formData.position}
+                    onChange={handleChange}
                   >
-                    {type}
-                  </button>
-                );
-              })}
+                    {POSITIONS.map((pos) => (
+                      <option
+                        key={pos}
+                        value={pos === "Select Position" ? "" : pos}
+                        className="bg-[#161920] text-white"
+                      >
+                        {pos}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-football-text/50">
+                    <ChevronDown size={13} />
+                  </div>
+                </div>
+              </div>
             </div>
+
+            {/* Row 3: Country Dropdown */}
+            <div>
+              <label htmlFor="country" className={labelClass}>
+                COUNTRY
+              </label>
+              <div className="relative">
+                <select
+                  id="country"
+                  className={selectClass}
+                  value={formData.country}
+                  onChange={handleChange}
+                >
+                  {COUNTRIES.map((cty) => (
+                    <option
+                      key={cty}
+                      value={cty === "Select country" ? "" : cty}
+                      className="bg-[#161920] text-white"
+                    >
+                      {cty}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-football-text/50">
+                  <ChevronDown size={13} />
+                </div>
+              </div>
+            </div>
+
+            {/* Submit / Action Button */}
+            <div className="pt-1">
+              <button
+                type="submit"
+                className={`w-full py-3 px-5 rounded-xl font-black text-xs uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-2 shadow-lg ${
+                  !formData.activeFooter
+                    ? "bg-[#3D1A15] border border-[#FF4422]/40 text-[#FF6B35] hover:bg-[#4D201A] cursor-pointer"
+                    : formData.activeFooter === "LEFT"
+                      ? "bg-[#FF4422] text-white hover:bg-[#FF6B35] shadow-[#FF4422]/30 cursor-pointer scale-[1.01]"
+                      : "bg-[#00AEEF] text-white hover:bg-[#38BDF8] shadow-[#00AEEF]/30 cursor-pointer scale-[1.01]"
+                }`}
+              >
+                {!formData.activeFooter ? (
+                  <>
+                    <span>CHOOSE YOUR FOOT FIRST</span>
+                    <ArrowUp size={15} className="animate-bounce" />
+                  </>
+                ) : (
+                  <>
+                    <span>CONTINUE TO TOUCH COUNTER</span>
+                    <ArrowRight size={15} />
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+
+          {/* ════════════════════════════════
+              OPTIONAL ADDITIONAL DETAILS
+          ════════════════════════════════ */}
+          <div className="border-t border-football-text/10 pt-3 relative z-10">
+            <button
+              type="button"
+              onClick={() => setShowOptionalFields(!showOptionalFields)}
+              className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg bg-black/20 hover:bg-black/40 text-[9px] font-black uppercase tracking-widest text-football-text/70 transition-colors"
+            >
+              <span>Additional Profile Information (Optional)</span>
+              {showOptionalFields ? (
+                <ChevronUp size={13} />
+              ) : (
+                <ChevronDown size={13} />
+              )}
+            </button>
+
+            {showOptionalFields && (
+              <div className="mt-3 space-y-2.5 pt-1 text-xs">
+                {/* Contact & Socials */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <label htmlFor="email" className={labelClass}>
+                      EMAIL
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      placeholder="Email address"
+                      className={inputClass}
+                      value={formData.email}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="cellPhone" className={labelClass}>
+                      PHONE
+                    </label>
+                    <input
+                      id="cellPhone"
+                      type="tel"
+                      placeholder="Phone number"
+                      className={inputClass}
+                      value={formData.cellPhone}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <label htmlFor="instagram" className={labelClass}>
+                      INSTAGRAM
+                    </label>
+                    <input
+                      id="instagram"
+                      type="text"
+                      placeholder="@handle"
+                      className={inputClass}
+                      value={formData.instagram}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="tiktok" className={labelClass}>
+                      TIKTOK
+                    </label>
+                    <input
+                      id="tiktok"
+                      type="text"
+                      placeholder="@handle"
+                      className={inputClass}
+                      value={formData.tiktok}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                {/* Favorites & Game Types */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <label htmlFor="favoriteTeam" className={labelClass}>
+                      FAVORITE TEAM
+                    </label>
+                    <input
+                      id="favoriteTeam"
+                      type="text"
+                      placeholder="e.g. Real Madrid"
+                      className={inputClass}
+                      value={formData.favoriteTeam}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="favoritePlayer" className={labelClass}>
+                      FAVORITE PLAYER
+                    </label>
+                    <input
+                      id="favoritePlayer"
+                      type="text"
+                      placeholder="e.g. Messi / CR7"
+                      className={inputClass}
+                      value={formData.favoritePlayer}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                {/* Game Types */}
+                <div>
+                  <label className={labelClass}>PREFERRED GAME FORMAT</label>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {GAME_TYPES.map((type) => {
+                      const isSelected = (formData.gameTypes || []).includes(
+                        type,
+                      );
+                      return (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => handleGameTypeToggle(type)}
+                          className={`px-2 py-0.5 text-[8px] font-black uppercase tracking-wider rounded-md border transition-all ${
+                            isSelected
+                              ? "bg-football-accent text-white border-football-accent"
+                              : "bg-[#161920] text-football-text/70 border-football-text/15 hover:border-football-text/30"
+                          }`}
+                        >
+                          {type}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-
-          {/* ═══ EDUCATION ═══ */}
-
-          {/* Middle School + Grade */}
-          <div className="grid grid-cols-[1fr_100px] gap-4">
-            <div className="space-y-1">
-              <label htmlFor="middleSchool" className={labelClass}>
-                Middle School
-              </label>
-              <input
-                id="middleSchool"
-                type="text"
-                className={inputClass}
-                value={formData.middleSchool}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="middleSchoolGrade" className={labelClass}>
-                Grade
-              </label>
-              <input
-                id="middleSchoolGrade"
-                type="text"
-                className={inputClass}
-                value={formData.middleSchoolGrade}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          {/* High School + Grade */}
-          <div className="grid grid-cols-[1fr_100px] gap-4">
-            <div className="space-y-1">
-              <label htmlFor="highSchool" className={labelClass}>
-                High School
-              </label>
-              <input
-                id="highSchool"
-                type="text"
-                className={inputClass}
-                value={formData.highSchool}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="highSchoolGrade" className={labelClass}>
-                Grade
-              </label>
-              <input
-                id="highSchoolGrade"
-                type="text"
-                className={inputClass}
-                value={formData.highSchoolGrade}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          {/* College + Year */}
-          <div className="grid grid-cols-[1fr_100px] gap-4">
-            <div className="space-y-1">
-              <label htmlFor="college" className={labelClass}>
-                College
-              </label>
-              <input
-                id="college"
-                type="text"
-                className={inputClass}
-                value={formData.college}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="collegeYear" className={labelClass}>
-                Year
-              </label>
-              <input
-                id="collegeYear"
-                type="text"
-                className={inputClass}
-                value={formData.collegeYear}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          {/* University + Year */}
-          <div className="grid grid-cols-[1fr_100px] gap-4">
-            <div className="space-y-1">
-              <label htmlFor="university" className={labelClass}>
-                University
-              </label>
-              <input
-                id="university"
-                type="text"
-                className={inputClass}
-                value={formData.university}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="universityYear" className={labelClass}>
-                Year
-              </label>
-              <input
-                id="universityYear"
-                type="text"
-                className={inputClass}
-                value={formData.universityYear}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          {/* ═══ PROFESSIONAL ═══ */}
-
-          {/* Academy + Level */}
-          <div className="grid grid-cols-[1fr_100px] gap-4">
-            <div className="space-y-1">
-              <label htmlFor="academy" className={labelClass}>
-                Academy
-              </label>
-              <input
-                id="academy"
-                type="text"
-                className={inputClass}
-                value={formData.academy}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="academyLevel" className={labelClass}>
-                Level
-              </label>
-              <input
-                id="academyLevel"
-                type="text"
-                className={inputClass}
-                value={formData.academyLevel}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          {/* Pro + League */}
-          <div className="grid grid-cols-[1fr_100px] gap-4">
-            <div className="space-y-1">
-              <label htmlFor="pro" className={labelClass}>
-                Pro
-              </label>
-              <input
-                id="pro"
-                type="text"
-                className={inputClass}
-                value={formData.pro}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="proLeague" className={labelClass}>
-                League
-              </label>
-              <input
-                id="proLeague"
-                type="text"
-                className={inputClass}
-                value={formData.proLeague}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          {/* Club */}
-          <div className="space-y-1">
-            <label htmlFor="club" className={labelClass}>
-              Club
-            </label>
-            <input
-              id="club"
-              type="text"
-              className={inputClass}
-              value={formData.club}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* Team */}
-          <div className="space-y-1">
-            <label htmlFor="team" className={labelClass}>
-              Team
-            </label>
-            <input
-              id="team"
-              type="text"
-              className={inputClass}
-              value={formData.team}
-              onChange={handleChange}
-            />
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

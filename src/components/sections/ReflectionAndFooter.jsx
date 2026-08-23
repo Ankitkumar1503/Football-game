@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "../ui/Card";
 import { Button } from "../ui/Button";
+import { SectionActionBar } from "../ui/SectionActionBar";
 import {
   MessageSquare,
+  Home,
+  Pointer,
+  BarChart3,
+  Settings,
   Save,
   RotateCcw,
   Share2,
@@ -92,7 +97,6 @@ function LoadingOverlay({ progress }) {
 export function PlayerReflection({ isPdf, pdfPart }) {
   const { sessionId, reflection, updateReflection } = useActiveSession();
 
-  // Local state with localStorage initialization
   const [formData, setFormData] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("playerReflection");
@@ -115,12 +119,10 @@ export function PlayerReflection({ isPdf, pdfPart }) {
     };
   });
 
-  // Save to localStorage on change
   useEffect(() => {
     localStorage.setItem("playerReflection", JSON.stringify(formData));
   }, [formData]);
 
-  // Sync from DB to Local state (only if DB has content and differs)
   useEffect(() => {
     if (reflection) {
       const newData = {
@@ -132,17 +134,6 @@ export function PlayerReflection({ isPdf, pdfPart }) {
         whatWouldChange: reflection.whatWouldChange || "",
         detailedPerformance: reflection.detailedPerformance || {},
       };
-
-      // Only update local state if DB has meaningful data or if local state is empty
-      // This prevents empty DB from overwriting unsaved local work on reload
-      const hasLocalData =
-        formData.wellDoneTags.length > 0 ||
-        formData.playerName ||
-        formData.playerAge ||
-        formData.achievedGoal ||
-        formData.whatLearned ||
-        formData.whatWouldChange ||
-        Object.keys(formData.detailedPerformance).length > 0;
 
       const hasDbData =
         newData.wellDoneTags.length > 0 ||
@@ -157,9 +148,8 @@ export function PlayerReflection({ isPdf, pdfPart }) {
         setFormData(newData);
       }
     }
-  }, [reflection]); // Removed formData dependency to avoid circular loops, though comparison handles it
+  }, [reflection]);
 
-  // Handlers
   const handleTagToggle = async (tag) => {
     const currentTags = formData.wellDoneTags;
     const newTags = currentTags.includes(tag)
@@ -192,194 +182,173 @@ export function PlayerReflection({ isPdf, pdfPart }) {
   }
 
   return (
-    <Card className="mb-[12px] border-none shadow-none">
-      <CardContent className="p-2">
-        {(!isPdf || !pdfPart || pdfPart === 1) && (
-          <>
-            {/* Header */}
-            <div className="mb-3 border-b-2 border-black dark:border-white pb-2">
-              <h2 className="text-xl font-black uppercase text-football-text text-center">
-                PLAYER REFLECTION
-              </h2>
-            </div>
-            <div className="flex gap-4 mb-3 mt-2">
-              <div className="flex-1 flex items-center gap-3">
-                <label
-                  htmlFor="playerName"
-                  className="text-xs font-black uppercase text-football-text whitespace-nowrap"
-                >
-                  NAME:
-                </label>
-                <input
-                  id="playerName"
-                  type="text"
-                  value={formData.playerName}
-                  onChange={handleTextChange}
-                  className="w-full bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-[4px] text-sm font-bold uppercase border-none focus:outline-none focus:ring-1 focus:ring-football-accent"
-                />
-              </div>
-              {/* <div className="flex items-center gap-3">
-                <label
-                  htmlFor="playerAge"
-                  className="text-xs font-black uppercase text-football-text whitespace-nowrap"
-                >
-                  AGE:
-                </label>
-                <input
-                  id="playerAge"
-                  type="text"
-                  value={formData.playerAge}
-                  onChange={handleTextChange}
-                  className="w-20 bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-[4px] text-sm font-bold uppercase border-none focus:outline-none focus:ring-1 focus:ring-football-accent"
-                />
-              </div> */}
+    <div className="space-y-4 pb-4 select-none">
+      {(!isPdf || !pdfPart || pdfPart === 1) && (
+        <>
+          {/* Section Header */}
+          <div className="flex items-center justify-between py-1">
+            <h2 className="text-xl font-black uppercase text-[#FF4422] tracking-wider text-glow">
+              PLAYER REFLECTION
+            </h2>
+            <span className="text-[10px] font-bold text-white/50 tracking-wider">
+              POST-MATCH REVIEW
+            </span>
+          </div>
+
+          {/* Player Info Inputs */}
+          <div className="grid grid-cols-2 gap-3 p-3.5 rounded-2xl border border-white/10 bg-[#12151D]">
+            <div>
+              <label htmlFor="playerName" className="block text-[9px] font-black uppercase tracking-wider text-white/60 mb-1">
+                PLAYER NAME
+              </label>
+              <input
+                id="playerName"
+                type="text"
+                placeholder="Player name"
+                value={formData.playerName}
+                onChange={handleTextChange}
+                className="w-full bg-black/40 text-white px-3 py-2 text-xs font-semibold rounded-xl border border-white/15 focus:outline-none focus:border-[#FF4422]"
+              />
             </div>
 
-            {/* What did you do well? */}
-            <div className="mb-8">
-              <h3 className="text-sm font-black uppercase mb-3 text-football-text">
-                WHAT DID YOU DO WELL:
-              </h3>
-              <div className="grid grid-cols-3 gap-x-1 gap-y-2">
-                {WELL_DONE_TAGS.map((tag) => (
-                  <label
-                    key={tag}
-                    className="flex items-center gap-2 cursor-pointer group"
-                  >
-                    <div
-                      className="w-5 h-5 rounded-full border-2 transition-colors flex items-center justify-center shrink-0"
-                      data-pdf-checkmark="true"
-                      style={{
-                        borderColor: formData.wellDoneTags.includes(tag)
-                          ? "var(--checkbox-checked-bg)"
-                          : "var(--text-primary)",
-                        backgroundColor: formData.wellDoneTags.includes(tag)
-                          ? "var(--checkbox-checked-bg)"
-                          : "transparent",
-                      }}
-                    >
-                      {formData.wellDoneTags.includes(tag) && (
-                        <div
-                          className="w-2 h-2 rounded-full"
-                          style={{
-                            backgroundColor: "var(--checkbox-check-color)",
-                          }}
-                        />
-                      )}
-                    </div>
-                    <input
-                      type="checkbox"
-                      className="hidden"
-                      checked={formData.wellDoneTags.includes(tag)}
-                      onChange={() => handleTagToggle(tag)}
-                    />
-                    <span className="text-[10px] font-bold uppercase text-football-text leading-tight whitespace-nowrap">
-                      {tag}
-                    </span>
-                  </label>
-                ))}
-              </div>
+            <div>
+              <label htmlFor="playerAge" className="block text-[9px] font-black uppercase tracking-wider text-white/60 mb-1">
+                AGE
+              </label>
+              <input
+                id="playerAge"
+                type="number"
+                placeholder="Age"
+                value={formData.playerAge}
+                onChange={handleTextChange}
+                className="w-full bg-black/40 text-white px-3 py-2 text-xs font-semibold rounded-xl border border-white/15 focus:outline-none focus:border-[#FF4422]"
+              />
             </div>
+          </div>
 
-            {/* Text Inputs */}
-            <div className="space-y-2 mb-4">
-              <div>
-                <label
-                  htmlFor="achievedGoal"
-                  className="block text-xs font-black uppercase mb-1 text-football-text"
-                >
-                  DID YOU ACHIEVE YOUR GOAL?
-                </label>
-                <input
-                  id="achievedGoal"
-                  type="text"
-                  value={formData.achievedGoal}
-                  onChange={handleTextChange}
-                  className="w-full bg-[var(--bg-input)] text-[var(--text-input)] border-none px-3 py-2 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-football-accent h-8"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="whatLearned"
-                  className="block text-xs font-black uppercase mb-1 text-football-text"
-                >
-                  WHAT DID YOU LEARN?
-                </label>
-                <input
-                  id="whatLearned"
-                  type="text"
-                  value={formData.whatLearned}
-                  onChange={handleTextChange}
-                  className="w-full bg-[var(--bg-input)] text-[var(--text-input)] border-none px-3 py-2 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-football-accent h-8"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="whatWouldChange"
-                  className="block text-xs font-black uppercase mb-1 text-football-text"
-                >
-                  WHAT WOULD YOU CHANGE?
-                </label>
-                <input
-                  id="whatWouldChange"
-                  type="text"
-                  value={formData.whatWouldChange}
-                  onChange={handleTextChange}
-                  className="w-full bg-[var(--bg-input)] text-[var(--text-input)] border-none px-3 py-2 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-football-accent h-8"
-                />
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Performance Metrics */}
-        {(!isPdf || !pdfPart || pdfPart === 2 || pdfPart === 3) && (
-          <div>
-            {(!isPdf || !pdfPart || pdfPart === 2) && (
-              <h3 className="text-sm font-black uppercase mb-4 text-football-text">
-                REFLECT ON YOUR GAME PERFORMANCE: 1-10
-              </h3>
-            )}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-              {metricsToRender.map((metric) => {
-                const value = Number(formData.detailedPerformance[metric] || 5);
-                const percent = ((value - 1) / 9) * 100;
+          {/* WHAT DID YOU DO WELL? Tag Chips */}
+          <div className="space-y-2 pt-1">
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white/70 px-1">
+              WHAT DID YOU DO WELL?
+            </h3>
+            <div className="flex flex-wrap gap-1.5 p-3 rounded-2xl border border-white/10 bg-[#12151D]">
+              {WELL_DONE_TAGS.map((tag) => {
+                const isSelected = formData.wellDoneTags.includes(tag);
                 return (
-                  <div key={metric} className="flex items-center gap-2">
-                    {/* Label - fixed width */}
-                    <span className="text-[9px] font-bold uppercase text-football-text tracking-wider w-20 shrink-0 leading-tight">
-                      {metric}
-                    </span>
-                    {/* Slider - grows to fill */}
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      value={value}
-                      onChange={(e) =>
-                        handleMetricChange(metric, e.target.value)
-                      }
-                      className="slider-thumb flex-1 h-2 rounded-full appearance-none cursor-pointer min-w-0"
-                      style={{
-                        background: `linear-gradient(to right,
-                          var(--slider-filled) 0%,
-                          var(--slider-filled) ${percent}%,
-                          var(--slider-unfilled) ${percent}%,
-                          var(--slider-unfilled) 100%)`,
-                      }}
-                    />
-                    {/* Value - fixed width */}
-                    <span className="text-[9px] font-bold text-[var(--text-primary)] w-3 text-right shrink-0">
-                      {value}
-                    </span>
-                  </div>
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => handleTagToggle(tag)}
+                    className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${
+                      isSelected
+                        ? "bg-[#FF4422] text-white border border-[#FF4422] shadow-md shadow-[#FF4422]/25 scale-[1.02]"
+                        : "bg-black/30 text-white/60 border border-white/10 hover:border-white/20 hover:text-white"
+                    }`}
+                  >
+                    {tag}
+                  </button>
                 );
               })}
             </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+
+          {/* Question Textareas */}
+          <div className="space-y-3 pt-1">
+            <div>
+              <label htmlFor="achievedGoal" className="block text-[9px] font-black uppercase tracking-wider text-white/70 mb-1 px-1">
+                DID YOU ACHIEVE YOUR GOAL?
+              </label>
+              <textarea
+                id="achievedGoal"
+                rows={2}
+                placeholder="Describe your match goal and outcome..."
+                value={formData.achievedGoal}
+                onChange={handleTextChange}
+                className="w-full bg-[#12151D] text-white px-3.5 py-2.5 text-xs font-medium rounded-xl border border-white/15 focus:outline-none focus:border-[#FF4422] resize-none"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="whatLearned" className="block text-[9px] font-black uppercase tracking-wider text-white/70 mb-1 px-1">
+                WHAT DID YOU LEARN?
+              </label>
+              <textarea
+                id="whatLearned"
+                rows={2}
+                placeholder="Your key takeaway from today..."
+                value={formData.whatLearned}
+                onChange={handleTextChange}
+                className="w-full bg-[#12151D] text-white px-3.5 py-2.5 text-xs font-medium rounded-xl border border-white/15 focus:outline-none focus:border-[#FF4422] resize-none"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="whatWouldChange" className="block text-[9px] font-black uppercase tracking-wider text-white/70 mb-1 px-1">
+                WHAT WOULD YOU CHANGE?
+              </label>
+              <textarea
+                id="whatWouldChange"
+                rows={2}
+                placeholder="Be honest with yourself..."
+                value={formData.whatWouldChange}
+                onChange={handleTextChange}
+                className="w-full bg-[#12151D] text-white px-3.5 py-2.5 text-xs font-medium rounded-xl border border-white/15 focus:outline-none focus:border-[#FF4422] resize-none"
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Performance Sliders */}
+      {(!isPdf || !pdfPart || pdfPart === 2 || pdfPart === 3) && (
+        <div className="space-y-2 pt-2">
+          {(!isPdf || !pdfPart || pdfPart === 2) && (
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white/70 px-1">
+              GAME PERFORMANCE RATING (1–10)
+            </h3>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-3.5 rounded-2xl border border-white/10 bg-[#12151D]">
+            {metricsToRender.map((metric) => {
+              const value = Number(formData.detailedPerformance[metric] || 7);
+              const percent = ((value - 1) / 9) * 100;
+
+              return (
+                <div key={metric} className="p-2 rounded-xl bg-black/25 border border-white/5 space-y-1">
+                  <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider">
+                    <span className="text-white/80">{metric}</span>
+                    <span className="text-[#FF4422] font-black">{value}/10</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="10"
+                    value={value}
+                    onChange={(e) => handleMetricChange(metric, e.target.value)}
+                    className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-white/20 accent-[#FF4422]"
+                    style={{
+                      background: `linear-gradient(to right, #FF4422 0%, #FF4422 ${percent}%, rgba(255,255,255,0.15) ${percent}%, rgba(255,255,255,0.15) 100%)`,
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Action Buttons Bar ── */}
+      <SectionActionBar
+        onReset={() => {
+          if (confirm("Reset Reflection data?")) {
+            localStorage.removeItem("playerReflection");
+            window.location.reload();
+          }
+        }}
+        sectionKey="reflection"
+      />
+
+    </div>
   );
 }
 
@@ -594,84 +563,43 @@ export function BottomBar() {
 
       <div
         id="bottom-bar-container"
-        className={`fixed bottom-0 left-0 right-0 p-4 ${isLightTheme ? "bg-[var(--bg-primary)]" : "bg-black/95"} backdrop-blur-lg z-[100]`}
+        className="fixed bottom-0 left-0 right-0 py-2.5 px-3 bg-[#0C0E14]/95 backdrop-blur-xl border-t border-white/10 z-[100] shadow-2xl"
       >
-        <div className="max-w-md mx-auto grid grid-cols-4 gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            className={`flex-col gap-1 py-3 h-auto rounded-xl transition-all ${
-              isLightTheme
-                ? "bg-transparent text-white border-2 border-white hover:bg-white/10"
-                : "bg-black text-white border border-white/20 hover:bg-white/10"
-            }`}
-            onClick={handleReset}
-            disabled={isGenerating}
-          >
-            <RotateCcw className="size-4" />
-            <span className="text-[10px] font-bold">Reset</span>
-          </Button>
-          {navigator.share && (
-            <Button
-              variant="secondary"
-              size="sm"
-              className={`flex-col gap-1 py-3 h-auto rounded-xl transition-all ${
-                isLightTheme
-                  ? "bg-transparent text-white border-2 border-white hover:bg-white/10"
-                  : "bg-black text-white border border-white/20 hover:bg-white/10"
-              }`}
-              onClick={handleNativeShare}
-              disabled={isGenerating}
-            >
-              <Share2 className="size-4" />
-              <span className="text-[10px] font-bold">Share</span>
-            </Button>
-          )}
-          {/* <Button
-                        variant="secondary"
-                        size="sm"
-                        className="flex-col gap-1 py-3 h-auto bg-[#1A1A1A] hover:bg-[#2A2A2A] text-gray-300 border-[#FF4422]/20 hover:border-[#FF4422]/40 transition-all"
-                        onClick={handleShare}
-                        disabled={isGenerating}
-                    >
-                        <Share2 className="size-4" />
-                        <span className="text-[10px]">Share</span>
-                    </Button> */}
-          <Button
-            variant="secondary"
-            size="sm"
-            className={`flex-col gap-1 py-3 h-auto rounded-xl transition-all ${
-              isLightTheme
-                ? "bg-transparent text-white border-2 border-white hover:bg-white/10"
-                : "bg-black text-white border border-white/20 hover:bg-white/10"
-            }`}
-            onClick={handleDownloadPDF}
-            disabled={isGenerating}
-          >
-            <Download className="size-4" />
-            <span className="text-[10px] font-bold">
-              {isGenerating ? "..." : "PDF"}
-            </span>
-          </Button>
-          <Button
-            variant="primary"
-            className={`flex-col gap-1 py-3 h-auto rounded-xl transition-all ${
-              isLightTheme
-                ? "bg-[#111111] text-white border-2 border-white hover:bg-black/90 shadow-none"
-                : "bg-[var(--color-accent)] text-white border-none shadow-lg shadow-[var(--color-accent)]/60 hover:bg-[var(--color-accent-hover)]"
-            }`}
-            onClick={handleSave}
-            disabled={isGenerating}
-          >
-            <Save className="size-4" />
-            <span className="text-[10px] font-bold">Save</span>
-          </Button>
-        </div>
-        <div className="text-center mt-3">
-          <span className="text-[11px] tracking-[0.15em] text-white">
-            <span className="font-black">FOOTBALLER</span>{" "}
-            <span className="font-normal">ATHLETICS</span>
-          </span>
+        <div className="max-w-md mx-auto flex items-center justify-around">
+          {[
+            { id: "home", label: "Home", icon: Home, path: "/dashboard", isHome: true },
+            { id: "counter", label: "Counter", icon: Pointer, path: "/touch-counter" },
+            { id: "stats", label: "Stats", icon: BarChart3, path: "/stats" },
+            { id: "coach", label: "Coach", icon: MessageSquare, path: "/note-to-coach" },
+            { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
+          ].map((item) => {
+            const Icon = item.icon;
+            const isActive = item.isHome
+              ? location.pathname === "/dashboard" || location.pathname === "/"
+              : location.pathname === item.path;
+
+            return (
+              <button
+                key={item.id}
+                onClick={() => navigate(item.path)}
+                className="flex flex-col items-center gap-1 min-w-[56px] py-1 transition-all duration-200 group"
+              >
+                <Icon
+                  size={20}
+                  className={`transition-colors duration-200 ${
+                    isActive ? "text-[#FF4422]" : "text-white/50 group-hover:text-white/80"
+                  }`}
+                />
+                <span
+                  className={`text-[10px] font-bold tracking-tight transition-colors duration-200 ${
+                    isActive ? "text-[#FF4422]" : "text-white/50"
+                  }`}
+                >
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </>

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Layout } from "./components/Layout";
 import { IntroSequence } from "./components/IntroSequence";
 import { PlayerProfile } from "./components/sections/PlayerProfile";
@@ -16,6 +18,8 @@ import { UsagePolicy } from "./components/sections/UsagePolicy";
 import { Settings } from "./components/sections/Settings";
 import { Account } from "./components/sections/Account";
 import { PdfReportPage } from "./components/sections/PdfReportPage";
+import { PaymentSuccess } from "./components/sections/PaymentSuccess";
+import { PlayerDashboard } from "./components/sections/PlayerDashboard";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { useActiveSession } from "./hooks/useActiveSession";
 
@@ -28,14 +32,33 @@ function TouchCounterPage() {
   );
 }
 
+function IndexRedirect() {
+  const { isAuthenticated } = useAuth();
+  const hasProfile = typeof window !== "undefined" && Boolean(localStorage.getItem("playerProfile"));
+  const hasToken = typeof window !== "undefined" && Boolean(localStorage.getItem("authToken"));
+
+  if (isAuthenticated || hasToken || hasProfile) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <Navigate to="/register" replace />;
+}
+
 function AppContent() {
   useActiveSession();
 
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<Navigate to="/register" replace />} />
+        <Route index element={<IndexRedirect />} />
         <Route path="register" element={<PlayerProfile />} />
+        <Route
+          path="dashboard"
+          element={
+            <ProtectedRoute>
+              <PlayerDashboard />
+            </ProtectedRoute>
+          }
+        />
         <Route path="stats" element={<PlayerStats />} />
         <Route path="touch-counter" element={<TouchCounterPage />} />
         <Route path="reflection" element={<PlayerReflection />} />
@@ -47,25 +70,32 @@ function AppContent() {
         <Route path="settings" element={<Settings />} />
         <Route path="account" element={<Account />} />
         <Route path="pdf-report" element={<PdfReportPage />} />
+        <Route path="payment-success" element={<PaymentSuccess />} />
       </Route>
     </Routes>
   );
 }
 
 function App() {
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(() => {
+    // If URL contains login_token parameter, bypass intro sequence completely
+    if (typeof window === "undefined") return true;
+    const params = new URLSearchParams(window.location.search);
+    return !params.has("login_token");
+  });
 
   return (
     <ErrorBoundary>
-      {/* ThemeProvider wraps everything — all components share the same theme state */}
       <ThemeProvider>
-        {showIntro ? (
-          <IntroSequence onComplete={() => setShowIntro(false)} />
-        ) : (
-          <BrowserRouter>
-            <AppContent />
-          </BrowserRouter>
-        )}
+        <BrowserRouter>
+          <AuthProvider>
+            {showIntro ? (
+              <IntroSequence onComplete={() => setShowIntro(false)} />
+            ) : (
+              <AppContent />
+            )}
+          </AuthProvider>
+        </BrowserRouter>
       </ThemeProvider>
     </ErrorBoundary>
   );

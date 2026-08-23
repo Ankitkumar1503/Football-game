@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent } from "../ui/Card";
 import { useActiveSession } from "../../hooks/useActiveSession";
+import { SectionActionBar } from "../ui/SectionActionBar";
+import { Star, ShieldCheck, UserCheck, Calendar, Trophy, ChevronRight } from "lucide-react";
 
 const EVALUATION_CATEGORIES = {
   TECHNIQUE: [
@@ -8,19 +9,19 @@ const EVALUATION_CATEGORIES = {
     "Passing",
     "Controlling and releasing",
     "Feinting and dribbling",
-    "Shooting finishing",
+    "Shooting / finishing",
     "Heading",
     "Tackling",
     "Playing without the ball",
   ],
   "PHYSICAL ATTRIBUTES": [
-    "Strength (Explosiveness)",
+    "Strength (explosiveness)",
     "Speed",
     "Endurance",
-    "Suppleness (Mobility)",
-    "Core Muscles",
+    "Suppleness (mobility)",
+    "Core muscles",
   ],
-  "TACTICAL AWARENESS SKILLS": [
+  "TACTICAL AWARENESS": [
     "Reading the game",
     "Attacking one-on-one",
     "Defending one-on-one",
@@ -36,7 +37,7 @@ const EVALUATION_CATEGORIES = {
   ],
   "MENTAL STRENGTHS": [
     "Concentration",
-    "Willpower will to win",
+    "Willpower / will to win",
     "Perseverance",
     "Confidence",
     "Willingness to take risks",
@@ -45,42 +46,41 @@ const EVALUATION_CATEGORIES = {
   ],
   "SOCIAL SKILLS": [
     "Communication",
-    "Behavior positive attitude",
-    "Charisma / Personality",
+    "Behaviour / positive attitude",
+    "Charisma / personality",
     "Conscientiousness",
-    "Team Player",
+    "Team player",
   ],
   "PHYSICAL STATE": ["General state of health"],
 };
+
+const RATING_OPTIONS = [
+  { value: 1, label: "Very Good", color: "bg-emerald-500 text-white border-emerald-400" },
+  { value: 2, label: "Good", color: "bg-[#00AEEF] text-white border-[#00AEEF]" },
+  { value: 3, label: "Average", color: "bg-[#F59E0B] text-white border-[#F59E0B]" },
+  { value: 4, label: "Poor", color: "bg-[#EF4444] text-white border-[#EF4444]" },
+];
 
 export function PlayerEvaluation({ isPdf, pdfPart }) {
   const { reflection, updateReflection } = useActiveSession();
 
   const [evaluatedBy, setEvaluatedBy] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("playerEvaluationBy") || "";
-    }
+    if (typeof window !== "undefined") return localStorage.getItem("playerEvaluationBy") || "";
     return "";
   });
 
   const [playerName, setPlayerName] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("playerEvaluationName") || "";
-    }
+    if (typeof window !== "undefined") return localStorage.getItem("playerEvaluationName") || "";
     return "";
   });
 
   const [playerAge, setPlayerAge] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("playerEvaluationAge") || "";
-    }
+    if (typeof window !== "undefined") return localStorage.getItem("playerEvaluationAge") || "";
     return "";
   });
 
   const [evaluationDate, setEvaluationDate] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("playerEvaluationDate") || "";
-    }
+    if (typeof window !== "undefined") return localStorage.getItem("playerEvaluationDate") || "";
     return "";
   });
 
@@ -88,11 +88,7 @@ export function PlayerEvaluation({ isPdf, pdfPart }) {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("playerEvaluation");
       if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          console.error("Error parsing localStorage data:", e);
-        }
+        try { return JSON.parse(saved); } catch (e) {}
       }
     }
     return {};
@@ -100,33 +96,19 @@ export function PlayerEvaluation({ isPdf, pdfPart }) {
 
   useEffect(() => {
     if (reflection) {
-      if (reflection.detailedEvaluation)
-        setRatings(reflection.detailedEvaluation);
+      if (reflection.detailedEvaluation) setRatings(reflection.detailedEvaluation);
       if (reflection.evaluatedBy) setEvaluatedBy(reflection.evaluatedBy);
-      if (reflection.playerEvaluationName)
-        setPlayerName(reflection.playerEvaluationName);
-      if (reflection.playerEvaluationAge)
-        setPlayerAge(reflection.playerEvaluationAge);
-      if (reflection.playerEvaluationDate)
-        setEvaluationDate(reflection.playerEvaluationDate);
+      if (reflection.playerEvaluationName) setPlayerName(reflection.playerEvaluationName);
+      if (reflection.playerEvaluationAge) setPlayerAge(reflection.playerEvaluationAge);
+      if (reflection.playerEvaluationDate) setEvaluationDate(reflection.playerEvaluationDate);
     }
   }, [reflection]);
 
-  useEffect(() => {
-    localStorage.setItem("playerEvaluation", JSON.stringify(ratings));
-  }, [ratings]);
-  useEffect(() => {
-    localStorage.setItem("playerEvaluationBy", evaluatedBy);
-  }, [evaluatedBy]);
-  useEffect(() => {
-    localStorage.setItem("playerEvaluationName", playerName);
-  }, [playerName]);
-  useEffect(() => {
-    localStorage.setItem("playerEvaluationAge", playerAge);
-  }, [playerAge]);
-  useEffect(() => {
-    localStorage.setItem("playerEvaluationDate", evaluationDate);
-  }, [evaluationDate]);
+  useEffect(() => { localStorage.setItem("playerEvaluation", JSON.stringify(ratings)); }, [ratings]);
+  useEffect(() => { localStorage.setItem("playerEvaluationBy", evaluatedBy); }, [evaluatedBy]);
+  useEffect(() => { localStorage.setItem("playerEvaluationName", playerName); }, [playerName]);
+  useEffect(() => { localStorage.setItem("playerEvaluationAge", playerAge); }, [playerAge]);
+  useEffect(() => { localStorage.setItem("playerEvaluationDate", evaluationDate); }, [evaluationDate]);
 
   const handleRatingChange = async (category, skill, rating) => {
     const newRatings = {
@@ -152,162 +134,156 @@ export function PlayerEvaluation({ isPdf, pdfPart }) {
     await updateReflection({ playerEvaluationAge: e.target.value });
   };
 
-  const handleDateChange = async (e) => {
-    setEvaluationDate(e.target.value);
-    await updateReflection({ playerEvaluationDate: e.target.value });
-  };
-
-  // Shared input style — theme-aware
-  const inputClass =
-    "w-full bg-[var(--bg-input)] text-[var(--text-input)] px-2 py-1 text-xs font-bold uppercase border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
-
   let categoriesToRender = Object.entries(EVALUATION_CATEGORIES);
   if (isPdf) {
-    if (pdfPart === 1)
-      categoriesToRender = categoriesToRender.slice(0, 1); // Technique
-    else if (pdfPart === 2)
-      categoriesToRender = categoriesToRender.slice(1, 3); // Physical Attr, Tactical
-    else if (pdfPart === 3)
-      categoriesToRender = categoriesToRender.slice(3, 4); // Co-ordination
-    else if (pdfPart === 4)
-      categoriesToRender = categoriesToRender.slice(4, 5); // Mental Strengths
-    else if (pdfPart === 5) categoriesToRender = categoriesToRender.slice(5, 7); // Social, Physical State
+    if (pdfPart === 1) categoriesToRender = categoriesToRender.slice(0, 1);
+    else if (pdfPart === 2) categoriesToRender = categoriesToRender.slice(1, 3);
+    else if (pdfPart === 3) categoriesToRender = categoriesToRender.slice(3, 4);
+    else if (pdfPart === 4) categoriesToRender = categoriesToRender.slice(4, 5);
+    else if (pdfPart === 5) categoriesToRender = categoriesToRender.slice(5, 7);
   }
 
   return (
-    <div className={!isPdf ? "mb-6" : ""}>
+    <div className="space-y-4 pb-4 select-none">
       {(!isPdf || !pdfPart || pdfPart === 1) && (
         <>
-          {/* ── Header ── */}
-          <div className="text-center mb-4 border-b-2 border-[var(--text-primary)] pb-2">
-            <h2 className="text-2xl font-black uppercase text-[var(--text-primary)] tracking-widest">
+          {/* Section Header */}
+          <div className="flex items-center justify-between py-1">
+            <h2 className="text-xl font-black uppercase text-[#FF4422] tracking-wider text-glow">
               PLAYER EVALUATION
             </h2>
+            <span className="text-[10px] font-bold text-white/50 tracking-wider">
+              COACH & PARENT GRADE
+            </span>
           </div>
 
-          {/* ── Name / Age row ── */}
-          <div className="grid grid-cols-1 mb-2">
-            <div>
-              <label className="block text-[9px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest">
-                NAME / AGE
-              </label>
-              <input
-                type="text"
-                value={playerName}
-                onChange={handleNameChange}
-                className={inputClass}
-              />
+          {/* Player & Evaluator Info Inputs */}
+          <div className="p-3.5 rounded-2xl border border-white/10 bg-[#12151D] space-y-2.5">
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <label className="block text-[9px] font-black uppercase tracking-wider text-white/60 mb-1">
+                  PLAYER NAME
+                </label>
+                <input
+                  type="text"
+                  placeholder="Player Name"
+                  value={playerName}
+                  onChange={handleNameChange}
+                  className="w-full bg-black/40 text-white px-3 py-2 text-xs font-semibold rounded-xl border border-white/15 focus:outline-none focus:border-[#FF4422]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-black uppercase tracking-wider text-white/60 mb-1">
+                  AGE
+                </label>
+                <input
+                  type="number"
+                  placeholder="Age"
+                  value={playerAge}
+                  onChange={handleAgeChange}
+                  className="w-full bg-black/40 text-white px-3 py-2 text-xs font-semibold rounded-xl border border-white/15 focus:outline-none focus:border-[#FF4422]"
+                />
+              </div>
             </div>
-            {/* <div className="w-16">
-              <label className="block text-[9px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest">
-                AGE
-              </label>
-              <input
-                type="text"
-                value={playerAge}
-                onChange={handleAgeChange}
-                className={inputClass}
-              />
-            </div> */}
-          </div>
 
-          {/* ── Evaluation By / Date row ── */}
-          <div className="grid grid-cols-1 mb-4">
             <div>
-              <label className="block text-[9px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest">
+              <label className="block text-[9px] font-black uppercase tracking-wider text-white/60 mb-1">
                 EVALUATION BY
               </label>
               <input
                 type="text"
+                placeholder="Coach / Parent Name"
                 value={evaluatedBy}
                 onChange={handleEvaluatedByChange}
-                className={inputClass}
+                className="w-full bg-black/40 text-white px-3 py-2 text-xs font-semibold rounded-xl border border-white/15 focus:outline-none focus:border-[#FF4422]"
               />
             </div>
-            {/* <div className="w-24">
-              <label className="block text-[9px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest">
-                DATE
-              </label>
-              <input
-                type="date"
-                value={evaluationDate}
-                onChange={handleDateChange}
-                className={inputClass}
-              />
-            </div> */}
+          </div>
+
+          {/* Rating Scale Legend */}
+          <div className="p-2.5 rounded-xl border border-white/10 bg-black/30 flex items-center justify-around">
+            <div className="flex items-center gap-1.5 text-[9px] font-black uppercase">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="text-emerald-400">1 = Very Good</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[9px] font-black uppercase">
+              <span className="w-2 h-2 rounded-full bg-[#00AEEF]" />
+              <span className="text-[#00AEEF]">2 = Good</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[9px] font-black uppercase">
+              <span className="w-2 h-2 rounded-full bg-[#F59E0B]" />
+              <span className="text-[#F59E0B]">3 = Average</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[9px] font-black uppercase">
+              <span className="w-2 h-2 rounded-full bg-[#EF4444]" />
+              <span className="text-[#EF4444]">4 = Poor</span>
+            </div>
           </div>
         </>
       )}
 
-      {/* ── Legend ── */}
-      <div className="flex flex-wrap items-end gap-[8px] mb-[16px] mt-[4px] justify-between">
-        <span className="text-[16px] font-black text-[var(--text-primary)] tracking-wider">
-          EVALUATION:
-        </span>
-        <div className="flex gap-[7px] pb-[1px]">
-          {["1 : VERY GOOD", "2 : GOOD", "3 : AVERAGE", "4 : POOR"].map(
-            (label) => (
-              <span
-                key={label}
-                className="text-[11px] font-bold uppercase text-[var(--text-primary)]"
-              >
-                {label}
-              </span>
-            ),
-          )}
-        </div>
+      {/* Evaluation Skill Categories */}
+      <div className="space-y-4 pt-1">
+        {categoriesToRender.map(([category, skills]) => (
+          <div key={category} className="space-y-2">
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white/70 px-1 border-l-2 border-[#FF4422] pl-2">
+              {category}
+            </h3>
+
+            <div className="space-y-1.5 p-3 rounded-2xl border border-white/10 bg-[#12151D]">
+              {skills.map((skill) => {
+                const currentRating = ratings[category]?.[skill] || 1;
+
+                return (
+                  <div
+                    key={skill}
+                    className="p-2 rounded-xl bg-black/25 border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                  >
+                    <span className="text-[10px] font-bold text-white/90 uppercase tracking-wider">
+                      {skill}
+                    </span>
+
+                    {/* Rating Pill Buttons */}
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {RATING_OPTIONS.map((opt) => {
+                        const isSelected = currentRating === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => handleRatingChange(category, skill, opt.value)}
+                            className={`py-1 px-2.5 rounded-lg text-[9px] font-black uppercase transition-all duration-150 flex items-center justify-center gap-1 ${
+                              isSelected
+                                ? `${opt.color} shadow-md scale-[1.05]`
+                                : "bg-white/5 text-white/50 border border-white/10 hover:bg-white/10 hover:text-white"
+                            }`}
+                          >
+                            <span>{opt.value}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* ── Categories & Skills ── */}
-      <div className="space-y-[6px]">
-        {Object.entries(EVALUATION_CATEGORIES)
-          .flatMap(([category, skills]) =>
-            skills.map((skill) => ({ category, skill })),
-          )
-          .map(({ category, skill }) => {
-            const currentRating = ratings[category]?.[skill];
-            const value = currentRating || 4;
-            const percent = ((value - 1) / 3) * 100;
+      {/* ── Action Buttons Bar ── */}
+      <SectionActionBar
+        onReset={() => {
+          if (confirm("Reset Evaluation data?")) {
+            setRatings({});
+            localStorage.removeItem("playerEvaluation");
+          }
+        }}
+        onSave={() => updateReflection({ detailedEvaluation: ratings })}
+        sectionKey="evaluation"
+      />
 
-            return (
-              <div
-                key={skill}
-                className="flex justify-between items-center px-1"
-              >
-                <span className="text-[12px] font-bold uppercase text-[var(--text-primary)] pr-2 leading-tight flex-1">
-                  {skill}
-                </span>
-
-                <div className="flex items-center gap-[4px] w-[140px] shrink-0">
-                  <input
-                    type="range"
-                    min="1"
-                    max="4"
-                    value={value}
-                    onChange={(e) =>
-                      handleRatingChange(
-                        category,
-                        skill,
-                        Number(e.target.value),
-                      )
-                    }
-                    className="slider-thumb w-[116px] h-2.5 rounded-full appearance-none cursor-pointer shrink-0"
-                    style={{
-                      background: `linear-gradient(to right,
-                  var(--slider-filled) 0%,
-                  var(--slider-filled) ${percent}%,
-                  var(--slider-unfilled) ${percent}%,
-                  var(--slider-unfilled) 100%)`,
-                    }}
-                  />
-                  <span className="text-[13px] font-black text-[var(--text-primary)] w-[20px] text-right shrink-0">
-                    {currentRating || ""}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-      </div>
     </div>
   );
 }

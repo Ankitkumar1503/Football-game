@@ -1,26 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent } from "../ui/Card";
 import { useActiveSession } from "../../hooks/useActiveSession";
+import { SectionActionBar } from "../ui/SectionActionBar";
+import { MessageSquare, Calendar, Star, Sparkles } from "lucide-react";
 
 const TEACH_ME_TAGS = [
-  "PASS",
-  "TACKLE",
-  "ATTACK",
-  "LEARN",
-  "SHOOT",
-  "HEAD",
-  "SCAN",
-  "PLAY",
-  "DRIBBLE",
-  "DEFEND",
-  "IMPROVE",
-  "RECOVER",
+  "Pass", "Shoot", "Dribble", "Tackle", "Head", "Defend",
+  "Attack", "Scan", "Improve", "Learn", "Play", "Recover",
 ];
 
 const GRADE_ITEMS = [
-  { key: "coach", label: "GRADE  COACH" },
-  { key: "assistantCoach", label: "GRADE  ASSISTANT COACH" },
-  { key: "trainer", label: "GRADE  TRAINER" },
+  { key: "coach", label: "Coach" },
+  { key: "assistantCoach", label: "Asst. Coach" },
+  { key: "trainer", label: "Trainer" },
 ];
 
 function useDebounce(value, delay) {
@@ -49,18 +40,17 @@ export function NoteToCoach({ isPdf, pdfPart }) {
     }
     return {
       name: "",
-      date: "",
+      date: new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" }),
       club: "",
       team: "",
       whatILiked: "",
       whatIWouldChange: "",
       wouldLikeToDoMore: "",
       teachMeTags: [],
-      grades: { coach: 5, assistantCoach: 5, trainer: 5 },
+      grades: { coach: 10, assistantCoach: 10, trainer: 10 },
     };
   });
 
-  // Hydrate from DB once
   useEffect(() => {
     if (!hydrated && reflection?.noteToCoach) {
       setFormData(reflection.noteToCoach);
@@ -68,20 +58,17 @@ export function NoteToCoach({ isPdf, pdfPart }) {
     }
   }, [reflection, hydrated]);
 
-  // Persist to localStorage
   useEffect(() => {
     localStorage.setItem("noteToCoach", JSON.stringify(formData));
   }, [formData]);
 
-  // Debounced DB sync
-  const debouncedData = useDebounce(formData, 1000);
+  const debouncedData = useDebounce(formData, 800);
   useEffect(() => {
     if (debouncedData) {
       updateReflection({ noteToCoach: debouncedData });
     }
   }, [debouncedData, updateReflection]);
 
-  // Handlers
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -98,202 +85,164 @@ export function NoteToCoach({ isPdf, pdfPart }) {
   const handleGradeChange = (key, value) => {
     setFormData((prev) => ({
       ...prev,
-      grades: { ...prev.grades, [key]: parseInt(value) },
+      grades: { ...prev.grades, [key]: Number(value) },
     }));
   };
 
-  // Shared styles
-  const inputClass =
-    "w-full bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-1.5 text-sm font-bold border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
-
-  // const labelClass =
-  //   "block text-[10px] font-black uppercase text-[var(--text-primary)] mb-1 tracking-widest";
-
-  // Change this line in your section components:
-  const labelClass =
-    "block text-[9px] font-black uppercase text-[var(--text-primary)] tracking-widest mb-1 relative z-10";
-
-  const textareaClass =
-    "w-full bg-[var(--bg-input)] text-[var(--text-input)] px-3 py-2 text-sm font-medium border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)] resize-none";
+  const handleReset = () => {
+    if (confirm("Reset Note to Coach feedback?")) {
+      setFormData((prev) => ({
+        ...prev,
+        whatILiked: "",
+        whatIWouldChange: "",
+        wouldLikeToDoMore: "",
+        teachMeTags: [],
+        grades: { coach: 10, assistantCoach: 10, trainer: 10 },
+      }));
+    }
+  };
 
   return (
-    <div className={!isPdf ? "mb-6" : ""}>
-      {/* ── Header ── */}
-      {(!isPdf || !pdfPart || pdfPart === 1) && (
-        <>
-          <div className="text-center mb-2 border-b-2 border-[var(--text-primary)] pb-2">
-            <h2 className="text-2xl font-black uppercase text-[var(--text-primary)] tracking-widest">
-              NOTE TO COACH
-            </h2>
-          </div>
+    <div className="space-y-3 pb-1 select-none">
+      {/* ── Title Bar ── */}
+      <div className="flex items-center justify-between py-1">
+        <h2 className="text-xl font-black uppercase text-[#FF4422] tracking-wider text-glow">
+          NOTE TO COACH
+        </h2>
+        <span className="text-[10px] font-bold text-white/50 tracking-wider">
+          FEEDBACK & REQUESTS
+        </span>
+      </div>
 
-          {/* ── NAME / DATE ── */}
-          <div className="grid grid-cols-1 gap-3 mb-1">
-            <div>
-              <label className={labelClass}>NAME</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-                className={inputClass}
-              />
-            </div>
-            {/* <div>
-              <label className={labelClass}>DATE</label>
-              <input
-                type="date"
-                value={formData.date}
-                onChange={(e) => handleChange("date", e.target.value)}
-                className={inputClass}
-              />
-            </div> */}
+      {/* ── Date Badge Header ── */}
+      <div className="p-3 rounded-2xl border border-white/10 bg-[#12151D] flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-[#10B981]/20 text-[#10B981] flex items-center justify-center">
+            <MessageSquare size={16} />
           </div>
-
-          {/* ── CLUB ── */}
-          <div className="mb-1">
-            <label className={labelClass}>CLUB</label>
-            <input
-              type="text"
-              value={formData.club}
-              onChange={(e) => handleChange("club", e.target.value)}
-              className={inputClass}
-            />
-          </div>
-
-          {/* ── TEAM ── */}
-          <div className="mb-2">
-            <label className={labelClass}>TEAM</label>
-            <input
-              type="text"
-              value={formData.team}
-              onChange={(e) => handleChange("team", e.target.value)}
-              className={inputClass}
-            />
-          </div>
-
-          {/* ── WHAT I LIKED ABOUT THE SESSION/GAME ── */}
-          <div className="mb-2">
-            <label className={labelClass}>
-              WHAT I LIKED ABOUT THE SESSION/GAME
-            </label>
-            <textarea
-              rows={3}
-              value={formData.whatILiked}
-              onChange={(e) => handleChange("whatILiked", e.target.value)}
-              className={textareaClass}
-            />
-          </div>
-        </>
-      )}
-
-      {(!isPdf || !pdfPart || pdfPart === 2) && (
-        <>
-          {/* ── WHAT I WOULD CHANGE ── */}
-          <div className="mb-2">
-            <label className={labelClass}>WHAT I WOULD CHANGE</label>
-            <textarea
-              rows={3}
-              value={formData.whatIWouldChange}
-              onChange={(e) => handleChange("whatIWouldChange", e.target.value)}
-              className={textareaClass}
-            />
-          </div>
-
-          {/* ── I WOULD LIKE TO DO MORE ── */}
-          <div className="mb-2">
-            <label className={labelClass}>I WOULD LIKE TO DO MORE</label>
-            <textarea
-              rows={3}
-              value={formData.wouldLikeToDoMore}
-              onChange={(e) =>
-                handleChange("wouldLikeToDoMore", e.target.value)
-              }
-              className={textareaClass}
-            />
-          </div>
-        </>
-      )}
-
-      {(!isPdf || !pdfPart || pdfPart === 3) && (
-        <>
-          {/* ── TEACH ME HOW TO ── */}
-          <div className="mb-6">
-            <h3 className="text-[10px] font-black uppercase text-[var(--text-primary)] mb-3 tracking-widest">
-              TEACH ME HOW TO:
+          <div>
+            <h3 className="text-xs font-black uppercase tracking-wider text-white">
+              DIRECT COACHING FEEDBACK
             </h3>
-            <div className="grid grid-cols-4 gap-x-2 gap-y-2">
-              {TEACH_ME_TAGS.map((tag) => (
-                <label
-                  key={tag}
-                  className="flex items-center gap-1.5 cursor-pointer"
-                >
-                  <div
-                    className="w-5 h-5 rounded-full border-2 transition-colors flex items-center justify-center shrink-0"
-                    data-pdf-checkmark="true"
-                    style={{
-                      borderColor: formData.teachMeTags.includes(tag)
-                        ? "var(--checkbox-checked-bg)"
-                        : "var(--text-primary)",
-                      backgroundColor: formData.teachMeTags.includes(tag)
-                        ? "var(--checkbox-checked-bg)"
-                        : "transparent",
-                    }}
-                  >
-                    {formData.teachMeTags.includes(tag) && (
-                      <div
-                        className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: "var(--checkbox-check-color)" }}
-                      />
-                    )}
-                  </div>
-                  <input
-                    type="checkbox"
-                    className="hidden"
-                    checked={formData.teachMeTags.includes(tag)}
-                    onChange={() => handleTagToggle(tag)}
-                  />
-                  <span className="text-[9px] font-bold uppercase text-[var(--text-primary)] leading-tight whitespace-nowrap">
-                    {tag}
-                  </span>
-                </label>
-              ))}
-            </div>
+            <p className="text-[9px] text-white/50 font-medium">
+              Recorded live for post-match analysis
+            </p>
           </div>
+        </div>
+        <div className="text-[9px] font-bold text-white/60 bg-black/40 px-2.5 py-1 rounded-full border border-white/10">
+          {formData.date || "Today"}
+        </div>
+      </div>
 
-          {/* ── GRADE SLIDERS ── */}
-          <div className="space-y-3">
-            {GRADE_ITEMS.map(({ key, label }) => {
-              const value = Number(formData.grades[key] || 5);
-              const percent = ((value - 1) / 9) * 100;
-              return (
-                <div key={key} className="flex items-center gap-3">
-                  <span className="text-[10px] font-black uppercase text-[var(--text-primary)] tracking-wider w-44 shrink-0 leading-tight">
-                    {label}
-                  </span>
-                  <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    value={value}
-                    onChange={(e) => handleGradeChange(key, e.target.value)}
-                    className="slider-thumb flex-1 h-2 rounded-full appearance-none cursor-pointer min-w-0"
-                    style={{
-                      background: `linear-gradient(to right,
-                        var(--slider-filled) 0%,
-                        var(--slider-filled) ${percent}%,
-                        var(--slider-unfilled) ${percent}%,
-                        var(--slider-unfilled) 100%)`,
-                    }}
-                  />
-                  <span className="text-xs font-bold text-[var(--text-primary)] w-5 text-right shrink-0">
-                    {value}
-                  </span>
+      {/* ── Feedback Textareas ── */}
+      <div className="space-y-3">
+        <div>
+          <label className="block text-[9px] font-black uppercase tracking-wider text-white/70 mb-1 px-1">
+            WHAT I LIKED ABOUT THE SESSION / GAME
+          </label>
+          <textarea
+            rows={2.5}
+            placeholder="Share what went well..."
+            value={formData.whatILiked}
+            onChange={(e) => handleChange("whatILiked", e.target.value)}
+            className="w-full bg-[#12151D] text-white px-3.5 py-2.5 text-xs font-medium rounded-xl border border-white/15 focus:outline-none focus:border-[#FF4422] resize-none"
+          />
+        </div>
+
+        <div>
+          <label className="block text-[9px] font-black uppercase tracking-wider text-white/70 mb-1 px-1">
+            WHAT I WOULD CHANGE
+          </label>
+          <textarea
+            rows={2.5}
+            placeholder="Honest feedback..."
+            value={formData.whatIWouldChange}
+            onChange={(e) => handleChange("whatIWouldChange", e.target.value)}
+            className="w-full bg-[#12151D] text-white px-3.5 py-2.5 text-xs font-medium rounded-xl border border-white/15 focus:outline-none focus:border-[#FF4422] resize-none"
+          />
+        </div>
+
+        <div>
+          <label className="block text-[9px] font-black uppercase tracking-wider text-white/70 mb-1 px-1">
+            I WOULD LIKE TO DO MORE
+          </label>
+          <textarea
+            rows={2.5}
+            placeholder="More drills, games, scrimmage..."
+            value={formData.wouldLikeToDoMore}
+            onChange={(e) => handleChange("wouldLikeToDoMore", e.target.value)}
+            className="w-full bg-[#12151D] text-white px-3.5 py-2.5 text-xs font-medium rounded-xl border border-white/15 focus:outline-none focus:border-[#FF4422] resize-none"
+          />
+        </div>
+      </div>
+
+      {/* ── TEACH ME HOW TO Tag Chips ── */}
+      <div className="space-y-2 pt-1">
+        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white/70 px-1">
+          TEACH ME HOW TO:
+        </h3>
+        <div className="flex flex-wrap gap-1.5 p-3.5 rounded-2xl border border-white/10 bg-[#12151D]">
+          {TEACH_ME_TAGS.map((tag) => {
+            const isSelected = formData.teachMeTags.includes(tag);
+            return (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => handleTagToggle(tag)}
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 ${
+                  isSelected
+                    ? "bg-[#10B981] text-white border border-[#10B981] shadow-md shadow-[#10B981]/25 scale-[1.02]"
+                    : "bg-black/30 text-white/60 border border-white/10 hover:border-white/20 hover:text-white"
+                }`}
+              >
+                {tag}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── GRADE YOUR COACHING STAFF Sliders ── */}
+      <div className="space-y-2 pt-1">
+        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white/70 px-1">
+          GRADE YOUR COACHING STAFF (1–10)
+        </h3>
+
+        <div className="space-y-2 p-3.5 rounded-2xl border border-white/10 bg-[#12151D]">
+          {GRADE_ITEMS.map((item) => {
+            const val = formData.grades[item.key] ?? 10;
+            const percent = ((val - 1) / 9) * 100;
+
+            return (
+              <div key={item.key} className="p-2.5 rounded-xl bg-black/25 border border-white/5 space-y-1">
+                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider">
+                  <span className="text-white">{item.label}</span>
+                  <span className="text-[#FF4422] text-sm font-black">{val}</span>
                 </div>
-              );
-            })}
-          </div>
-        </>
-      )}
+
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  value={val}
+                  onChange={(e) => handleGradeChange(item.key, e.target.value)}
+                  className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-white/20 accent-[#FF4422]"
+                  style={{
+                    background: `linear-gradient(to right, #FF4422 0%, #FF4422 ${percent}%, rgba(255,255,255,0.15) ${percent}%, rgba(255,255,255,0.15) 100%)`,
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Action Buttons Bar ── */}
+      <SectionActionBar
+        onReset={handleReset}
+        onSave={() => updateReflection({ noteToCoach: formData })}
+        sectionKey="note-to-coach"
+      />
     </div>
   );
 }

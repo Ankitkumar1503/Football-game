@@ -20,7 +20,6 @@ import { useTheme } from "../hooks/useTheme";
 
 // NAV_ITEMS paths match EXACTLY the routes defined in app.jsx
 const NAV_ITEMS = [
-  { label: "REGISTER", icon: User, path: "/register" },
   { label: "PLAYER STATS", icon: Activity, path: "/stats" },
   { label: "TOUCH COUNTER", icon: Timer, path: "/touch-counter" },
   { label: "PLAYER REFLECTION", icon: MessageSquare, path: "/reflection" },

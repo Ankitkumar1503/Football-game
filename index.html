@@ -12,6 +12,15 @@
   <meta name="apple-mobile-web-app-title" content="TOUCHES" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>TOUCHES</title>
+  <script>
+    window.deferredInstallPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      window.deferredInstallPrompt = e;
+      console.log('[PWA INSTALL] Global beforeinstallprompt event captured!', e);
+      window.dispatchEvent(new CustomEvent('pwa-installable', { detail: e }));
+    });
+  </script>
 </head>
 
 

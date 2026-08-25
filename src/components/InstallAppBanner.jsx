@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { Download, Share, PlusSquare, X, Smartphone, Check, Compass } from "lucide-react";
+import { isMobileDevice } from "../lib/utils";
 
-let globalDeferredPrompt = null;
+let globalDeferredPrompt = typeof window !== "undefined" ? window.deferredInstallPrompt || null : null;
 
 if (typeof window !== "undefined") {
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     globalDeferredPrompt = e;
-    window.dispatchEvent(new CustomEvent("pwa-installable"));
+    window.deferredInstallPrompt = e;
+    console.log("[PWA INSTALL] Global beforeinstallprompt event captured in InstallAppBanner listener!", e);
+    window.dispatchEvent(new CustomEvent("pwa-installable", { detail: e }));
   });
 }
 
 export function InstallAppBanner({ className = "" }) {
-  const [deferredPrompt, setDeferredPrompt] = useState(globalDeferredPrompt);
+  const [deferredPrompt, setDeferredPrompt] = useState(() => (typeof window !== "undefined" ? window.deferredInstallPrompt || globalDeferredPrompt : null));
+  const [isMobile, setIsMobile] = useState(isMobileDevice);
   const [isIOS, setIsIOS] = useState(false);
   const [isNonSafariIOS, setIsNonSafariIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
@@ -20,8 +24,9 @@ export function InstallAppBanner({ className = "" }) {
   const [installedSuccess, setInstalledSuccess] = useState(false);
 
   useEffect(() => {
-    // Check if running as standalone PWA
-    const checkStandalone = () => {
+    // Check mobile status and standalone mode
+    const checkStatus = () => {
+      setIsMobile(isMobileDevice());
       const isStandaloneMode =
         window.matchMedia("(display-mode: standalone)").matches ||
         window.navigator.standalone === true ||
@@ -59,55 +64,76 @@ export function InstallAppBanner({ className = "" }) {
       }
     };
 
-    checkStandalone();
+    checkStatus();
     checkBrowser();
 
     const handleInstallable = (e) => {
+      console.log("[PWA INSTALL] InstallAppBanner received beforeinstallprompt/pwa-installable event:", e);
       if (e && e.preventDefault && e !== window) {
         e.preventDefault();
         globalDeferredPrompt = e;
+        window.deferredInstallPrompt = e;
       }
-      setDeferredPrompt(globalDeferredPrompt);
+      const activePrompt = window.deferredInstallPrompt || globalDeferredPrompt;
+      setDeferredPrompt(activePrompt);
     };
+
+    // Sync state if prompt was already captured prior to component mounting
+    if (window.deferredInstallPrompt || globalDeferredPrompt) {
+      const activePrompt = window.deferredInstallPrompt || globalDeferredPrompt;
+      console.log("[PWA INSTALL] InstallAppBanner mounted with pre-captured prompt:", activePrompt);
+      setDeferredPrompt(activePrompt);
+    }
 
     window.addEventListener("beforeinstallprompt", handleInstallable);
     window.addEventListener("pwa-installable", handleInstallable);
+    window.addEventListener("resize", checkStatus);
 
     const handleAppInstalled = () => {
+      console.log("[PWA INSTALL] Appinstalled event received!");
       setInstalledSuccess(true);
       setDeferredPrompt(null);
       globalDeferredPrompt = null;
+      if (typeof window !== "undefined") window.deferredInstallPrompt = null;
     };
     window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handleInstallable);
       window.removeEventListener("pwa-installable", handleInstallable);
+      window.removeEventListener("resize", checkStatus);
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
 
   const handleInstallClick = async () => {
-    const promptEvent = deferredPrompt || globalDeferredPrompt;
-    if (!promptEvent) return;
+    const promptEvent = deferredPrompt || window.deferredInstallPrompt || globalDeferredPrompt;
+    console.log("[PWA INSTALL] Install button clicked. deferredPrompt state:", promptEvent);
+
+    if (!promptEvent) {
+      console.warn("[PWA INSTALL] Install button clicked but no deferredPrompt event is stored!");
+      return;
+    }
 
     try {
+      console.log("[PWA INSTALL] Triggering prompt()...");
       promptEvent.prompt();
-      const { outcome } = await promptEvent.userChoice;
-      console.log(`[PWA INSTALL] User response outcome: ${outcome}`);
-      if (outcome === "accepted") {
+      const choiceResult = await promptEvent.userChoice;
+      console.log(`[PWA INSTALL] User prompt choice outcome: ${choiceResult?.outcome}`);
+      if (choiceResult?.outcome === "accepted") {
         setInstalledSuccess(true);
       }
     } catch (err) {
-      console.error("[PWA INSTALL] Error prompting install:", err);
+      console.error("[PWA INSTALL] Error triggering install prompt:", err);
     } finally {
       setDeferredPrompt(null);
       globalDeferredPrompt = null;
+      if (typeof window !== "undefined") window.deferredInstallPrompt = null;
     }
   };
 
-  // If already running in standalone PWA mode or dismissed, don't display
-  if (isStandalone || dismissed) {
+  // Requirement FIX 1: NEVER render on desktop. ONLY render on mobile devices.
+  if (!isMobile || isStandalone || dismissed) {
     return null;
   }
 

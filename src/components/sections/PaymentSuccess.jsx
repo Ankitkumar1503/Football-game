@@ -14,6 +14,8 @@ import {
   Sparkles
 } from "lucide-react";
 
+import { isMobileDevice } from "../../lib/utils";
+
 export function PaymentSuccess() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -23,8 +25,9 @@ export function PaymentSuccess() {
   const isPaid = rawStatus ? rawStatus === "paid" || rawStatus === "success" : true;
 
   const [copied, setCopied] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [deferredPrompt, setDeferredPrompt] = useState(() => (typeof window !== "undefined" ? window.deferredInstallPrompt || null : null));
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isMobile, setIsMobile] = useState(isMobileDevice);
 
   // APP_PUBLIC_URL configuration: use VITE_APP_PUBLIC_URL if present, otherwise window.location.origin
   const appPublicUrl = import.meta.env.VITE_APP_PUBLIC_URL || window.location.origin;
@@ -32,17 +35,34 @@ export function PaymentSuccess() {
   // Listen for browser's native beforeinstallprompt event
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
+      console.log("[PWA INSTALL] PaymentSuccess captured beforeinstallprompt event:", e);
+      if (e && e.preventDefault && e !== window) {
+        e.preventDefault();
+        window.deferredInstallPrompt = e;
+      }
+      setDeferredPrompt(window.deferredInstallPrompt || e);
     };
 
     const handleAppInstalled = () => {
+      console.log("[PWA INSTALL] PaymentSuccess appinstalled event received!");
       setIsInstalled(true);
       setDeferredPrompt(null);
+      if (typeof window !== "undefined") window.deferredInstallPrompt = null;
     };
 
+    const checkMobile = () => {
+      setIsMobile(isMobileDevice());
+    };
+
+    if (window.deferredInstallPrompt) {
+      console.log("[PWA INSTALL] PaymentSuccess mounted with pre-captured prompt:", window.deferredInstallPrompt);
+      setDeferredPrompt(window.deferredInstallPrompt);
+    }
+
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("pwa-installable", handleBeforeInstallPrompt);
     window.addEventListener("appinstalled", handleAppInstalled);
+    window.addEventListener("resize", checkMobile);
 
     if (window.matchMedia("(display-mode: standalone)").matches) {
       setIsInstalled(true);
@@ -50,7 +70,9 @@ export function PaymentSuccess() {
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("pwa-installable", handleBeforeInstallPrompt);
       window.removeEventListener("appinstalled", handleAppInstalled);
+      window.removeEventListener("resize", checkMobile);
     };
   }, []);
 
@@ -75,13 +97,26 @@ export function PaymentSuccess() {
   };
 
   const handleNativeInstall = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === "accepted") {
-      setIsInstalled(true);
+    const promptEvent = deferredPrompt || window.deferredInstallPrompt;
+    console.log("[PWA INSTALL] PaymentSuccess install button clicked. deferredPrompt state:", promptEvent);
+    if (!promptEvent) {
+      console.warn("[PWA INSTALL] PaymentSuccess install clicked but no prompt event stored!");
+      return;
     }
-    setDeferredPrompt(null);
+    try {
+      console.log("[PWA INSTALL] PaymentSuccess triggering prompt()...");
+      promptEvent.prompt();
+      const choiceResult = await promptEvent.userChoice;
+      console.log(`[PWA INSTALL] PaymentSuccess user choice outcome: ${choiceResult?.outcome}`);
+      if (choiceResult?.outcome === "accepted") {
+        setIsInstalled(true);
+      }
+    } catch (err) {
+      console.error("[PWA INSTALL] Error in PaymentSuccess install:", err);
+    } finally {
+      setDeferredPrompt(null);
+      if (typeof window !== "undefined") window.deferredInstallPrompt = null;
+    }
   };
 
   if (!isPaid) {
@@ -190,7 +225,7 @@ export function PaymentSuccess() {
               )}
             </button>
 
-            {deferredPrompt && !isInstalled && (
+            {isMobile && deferredPrompt && !isInstalled && (
               <button
                 onClick={handleNativeInstall}
                 className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-black text-xs uppercase tracking-wider bg-football-accent text-white hover:bg-football-accent-hover shadow-lg transition-all"

@@ -13,6 +13,15 @@ import {
   Share2,
   Download,
   Loader2,
+  Bot,
+  User,
+  Contact2,
+  Calendar,
+  Flame,
+  Award,
+  Users,
+  Star,
+  StickyNote,
 } from "lucide-react";
 import { useActiveSession } from "../../hooks/useActiveSession";
 import { db } from "../../lib/db";
@@ -336,7 +345,6 @@ export function PlayerReflection({ isPdf, pdfPart }) {
           </div>
         </div>
       )}
-
       {/* ── Action Buttons Bar ── */}
       <SectionActionBar
         onReset={() => {
@@ -365,214 +373,40 @@ const ROUTE_PAGE_NAMES = {
 };
 
 export function BottomBar() {
-  const { sessionId } = useActiveSession();
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [pdfChoiceModal, setPdfChoiceModal] = useState({
-    open: false,
-    action: null,
-  });
+  const { session } = useActiveSession();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [isLightTheme, setIsLightTheme] = useState(
-    document.documentElement.classList.contains("theme-light"),
-  );
+  const isRightFoot = (session?.activeFooter || "RIGHT").toUpperCase() === "RIGHT";
 
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      setIsLightTheme(
-        document.documentElement.classList.contains("theme-light"),
-      );
-    });
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-    return () => observer.disconnect();
-  }, []);
+  const topRow = [
+    { id: "home", label: "Home", icon: Home, path: "/dashboard", isHome: true },
+    { id: "counter", label: "Counter", icon: Pointer, path: "/touch-counter" },
+    { id: "stats", label: "Stats", icon: BarChart3, path: "/stats" },
+    { id: "agent", label: "Agent", icon: Bot, path: "/ai-agent" },
+    { id: "register", label: "Register", icon: User, path: "/register" },
+    { id: "passport", label: "Passport", icon: Contact2, path: "/passport" },
+  ];
 
-  const handleReset = async () => {
-    if (
-      confirm(
-        "Are you sure you want to reset this session? This will delete all touches and reflections and start a fresh match.",
-      )
-    ) {
-      try {
-        // Clear session data in DB if session exists
-        if (sessionId) {
-          // Delete the session entirely so a fresh one is created on reload
-          await db.sessions.delete(sessionId);
-
-          // Delete related data
-          await db.touches.where("sessionId").equals(sessionId).delete();
-          await db.reflections.where("sessionId").equals(sessionId).delete();
-        }
-
-        // Clear localStorage (ALWAYS do this, even if no session ID)
-        localStorage.removeItem("playerReflection");
-        localStorage.removeItem("playerProfile");
-        localStorage.removeItem("footballFormation");
-        localStorage.removeItem("playerAttendance");
-        localStorage.removeItem("playerEvaluation");
-        localStorage.removeItem("playerEvaluationBy");
-        localStorage.removeItem("noteToCoach");
-
-        // Small delay to ensure DB ops are committed and UI has resolved
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
-      } catch (error) {
-        console.error("Error resetting session:", error);
-        alert("Error resetting session: " + error.message);
-      }
-    }
-  };
-
-  const handleDownloadPDF = () => {
-    setPdfChoiceModal({ open: true, action: "download" });
-  };
-
-  const handleSave = async () => {
-    alert("Session saved successfully!");
-  };
-
-  const shareUrl = `${window.location.origin}/session/${sessionId}`;
-  const shareTitle = "Check out my football performance report!";
-  const shareText = `I just completed my football training session. Check out my performance metrics and reflections!`;
-
-  // const handleNativeShare = async () => {
-  //     if (navigator.share) {
-  //         try {
-  //             await navigator.share({
-  //                 title: shareTitle,
-  //                 text: shareText,
-  //                 url: shareUrl,
-  //             });
-  //         } catch (error) {
-  //             if (error.name !== 'AbortError') {
-  //                 console.error('Error sharing:', error);
-  //             }
-  //         }
-  //     }
-  // };
-
-  // const handleNativeShare = async () => {
-  //     if (navigator.share) {
-  //         setIsGenerating(true);
-  //         try {
-  //             // Generate PDF blob
-  //             const pdfBlob = await generatePDFBlob();
-  //             c
-
-  //             // Create a File object from the blob
-  //             const fileName = `player-report-${new Date().toISOString().split('T')[0]}.pdf`;
-  //             const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
-
-  //             console.log("pdfFile", pdfFile);
-
-  //             await navigator.share({
-  //                 title: shareTitle,
-  //                 text: shareText,
-  //                 files: [pdfFile],
-  //             });
-  //         } catch (error) {
-  //             if (error.name !== 'AbortError') {
-  //                 console.error('Error sharing:', error);
-  //             }
-  //         } finally {
-  //             setIsGenerating(false);
-  //             setProgress(0);
-  //         }
-  //     }
-  // };
-
-  const handleNativeShare = async () => {
-    if (navigator.share) {
-      setPdfChoiceModal({ open: true, action: "share" });
-    } else {
-      console.warn("navigator.share not available on this device/browser");
-      alert("Sharing is not supported on this device/browser.");
-    }
-  };
-
-  const handlePdfChoice = (scope) => {
-    const { action } = pdfChoiceModal;
-    setPdfChoiceModal({ open: false, action: null });
-
-    let url = "/pdf-report";
-    const params = new URLSearchParams();
-
-    if (scope === "current") {
-      // Get the current route path (e.g. "/lineup")
-      const currentPath = location.pathname;
-      // Strip leading slash for the param value
-      const sectionKey = currentPath.startsWith("/")
-        ? currentPath.slice(1)
-        : currentPath;
-      if (sectionKey) params.set("section", sectionKey);
-    }
-
-    if (action === "share") params.set("action", "share");
-
-    const qs = params.toString();
-    navigate(qs ? `${url}?${qs}` : url);
-  };
-
-  const currentPageName = ROUTE_PAGE_NAMES[location.pathname] || "Current Page";
+  const bottomRow = [
+    { id: "match-prep", label: "Match Prep", icon: Calendar, path: "/match-prep" },
+    { id: "challenge", label: "30-Day", icon: Flame, path: "/challenge" },
+    { id: "roster", label: "Roster", icon: Award, path: "/roster" },
+    { id: "lineup", label: "Line Up", icon: Users, path: "/lineup" },
+    { id: "evaluation", label: "Evaluation", icon: Star, path: "/evaluation" },
+    { id: "reflection", label: "Reflection", icon: MessageSquare, path: "/reflection" },
+    { id: "note-to-coach", label: "Coach Note", icon: StickyNote, path: "/note-to-coach" },
+  ];
 
   return (
-    <>
-      {/* Loading Overlay */}
-      {isGenerating && <LoadingOverlay progress={progress} />}
-
-      {/* PDF Choice Modal */}
-      {pdfChoiceModal.open && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="bg-[#111] rounded-xl p-6 max-w-xs w-full mx-4 shadow-2xl border border-white/10">
-            <h3 className="text-lg font-black uppercase text-white text-center mb-1">
-              {pdfChoiceModal.action === "share" ? "Share PDF" : "Download PDF"}
-            </h3>
-            <p className="text-xs text-gray-400 text-center mb-5">
-              What would you like to export?
-            </p>
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={() => handlePdfChoice("current")}
-                className="w-full bg-[var(--color-accent-modal)] hover:bg-[var(--color-accent-modal-hover)] text-white font-black uppercase py-3 rounded-lg tracking-wider transition-colors text-sm"
-              >
-                This Page Only ({currentPageName})
-              </button>
-              <button
-                onClick={() => handlePdfChoice("all")}
-                className="w-full bg-white/10 hover:bg-white/20 text-white font-bold uppercase py-3 rounded-lg tracking-wider transition-colors text-sm border border-white/20"
-              >
-                All Sections
-              </button>
-              <button
-                onClick={() => setPdfChoiceModal({ open: false, action: null })}
-                className="w-full text-gray-400 hover:text-white text-xs uppercase py-2 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div
-        id="bottom-bar-container"
-        className="fixed bottom-0 left-0 right-0 py-2.5 px-3 bg-[#0C0E14]/95 backdrop-blur-xl border-t border-white/10 z-[100] shadow-2xl"
-      >
-        <div className="max-w-md mx-auto flex items-center justify-around">
-          {[
-            { id: "home", label: "Home", icon: Home, path: "/dashboard", isHome: true },
-            { id: "counter", label: "Counter", icon: Pointer, path: "/touch-counter" },
-            { id: "stats", label: "Stats", icon: BarChart3, path: "/stats" },
-            { id: "coach", label: "Coach", icon: MessageSquare, path: "/note-to-coach" },
-            { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
-          ].map((item) => {
+    <div
+      id="bottom-bar-container"
+      className="fixed bottom-0 left-0 right-0 pt-2 pb-1.5 px-2 bg-[#0C0E14] border-t border-white/10 z-[100] shadow-2xl select-none"
+    >
+      <div className="max-w-md mx-auto space-y-2">
+        {/* Top Row: 6 Icon & Label Buttons */}
+        <div className="grid grid-cols-6 gap-1 text-center">
+          {topRow.map((item) => {
             const Icon = item.icon;
             const isActive = item.isHome
               ? location.pathname === "/dashboard" || location.pathname === "/"
@@ -582,17 +416,17 @@ export function BottomBar() {
               <button
                 key={item.id}
                 onClick={() => navigate(item.path)}
-                className="flex flex-col items-center gap-1 min-w-[56px] py-1 transition-all duration-200 group"
+                className="flex flex-col items-center justify-center py-0.5 group active:scale-95 transition-transform"
               >
                 <Icon
-                  size={20}
+                  size={18}
                   className={`transition-colors duration-200 ${
-                    isActive ? "text-[#FF4422]" : "text-white/50 group-hover:text-white/80"
+                    isActive ? "text-[#FF4422]" : "text-white/50 group-hover:text-white/90"
                   }`}
                 />
                 <span
-                  className={`text-[10px] font-bold tracking-tight transition-colors duration-200 ${
-                    isActive ? "text-[#FF4422]" : "text-white/50"
+                  className={`text-[8.5px] font-bold tracking-tight mt-0.5 transition-colors duration-200 ${
+                    isActive ? "text-[#FF4422] font-black" : "text-white/50 group-hover:text-white/80"
                   }`}
                 >
                   {item.label}
@@ -601,7 +435,47 @@ export function BottomBar() {
             );
           })}
         </div>
+
+        {/* Second Row: 7 Icon & Label Buttons (Identical Layout & Styling as First Row!) */}
+        <div className="grid grid-cols-7 gap-0.5 text-center">
+          {bottomRow.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
+
+            return (
+              <button
+                key={item.id}
+                onClick={() => navigate(item.path)}
+                className="flex flex-col items-center justify-center py-0.5 group active:scale-95 transition-transform"
+              >
+                <Icon
+                  size={16}
+                  className={`transition-colors duration-200 ${
+                    isActive ? "text-[#FF4422]" : "text-white/50 group-hover:text-white/90"
+                  }`}
+                />
+                <span
+                  className={`text-[7.5px] font-bold uppercase tracking-tight leading-tight mt-0.5 text-center transition-colors duration-200 ${
+                    isActive ? "text-[#FF4422] font-black" : "text-white/50 group-hover:text-white/80"
+                  }`}
+                >
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Bottom Branding Row */}
+        <div className="flex items-center justify-center gap-1.5 pt-1 text-[8px] font-black uppercase tracking-[0.25em] text-white/40 border-t border-white/5">
+          <img
+            src={isRightFoot ? "/right_foot.png" : "/left_foot.png"}
+            alt="Icon"
+            className="w-3.5 h-3.5 object-contain"
+          />
+          <span>FOOTBALLER ATHLETICS</span>
+        </div>
       </div>
-    </>
+    </div>
   );
 }

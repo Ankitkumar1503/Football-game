@@ -15,7 +15,7 @@ export function Layout({ defaultMenuOpen = false }) {
   return (
     <div
       id="printable-dashboard"
-      className={`min-h-[100dvh] ${isRegisterPage ? "pb-2" : "pb-14"} font-sans transition-colors duration-300`}
+      className={`min-h-[100dvh] ${isRegisterPage ? "pb-2" : "pb-28"} font-sans transition-colors duration-300`}
       style={{
         backgroundColor: "var(--bg-primary)",
         color: "var(--text-primary)",

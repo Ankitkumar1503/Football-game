@@ -11,6 +11,9 @@ import {
   Users,
   FileText,
   StickyNote,
+  Flame,
+  Bot,
+  Calendar,
 } from "lucide-react";
 import touches from "../assets/touches.png";
 // import touchesLight from "../assets/touches-light.png";
@@ -20,6 +23,10 @@ import { useTheme } from "../hooks/useTheme";
 
 // NAV_ITEMS paths match EXACTLY the routes defined in app.jsx
 const NAV_ITEMS = [
+  { label: "MATCH DAY PREP", icon: Calendar, path: "/match-prep" },
+  { label: "AI PLAYER AGENT", icon: Bot, path: "/ai-agent" },
+  { label: "PLAYER PASSPORT", icon: User, path: "/passport" },
+  { label: "30-DAY CHALLENGE", icon: Flame, path: "/challenge" },
   { label: "PLAYER STATS", icon: Activity, path: "/stats" },
   { label: "TOUCH COUNTER", icon: Timer, path: "/touch-counter" },
   { label: "PLAYER REFLECTION", icon: MessageSquare, path: "/reflection" },

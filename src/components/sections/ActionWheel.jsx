@@ -1,12 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useActiveSession } from "../../hooks/useActiveSession";
 import { db } from "../../lib/db";
 import { SectionActionBar } from "../ui/SectionActionBar";
 import {
   ThumbsUp,
   ThumbsDown,
-  RotateCcw,
-  Undo2,
   ArrowRight,
   Target,
   Zap,
@@ -15,7 +14,6 @@ import {
   Shield,
   Flag,
   RotateCw,
-  AlertTriangle
 } from "lucide-react";
 
 const ACTIONS_CONFIG = [
@@ -28,15 +26,51 @@ const ACTIONS_CONFIG = [
   { id: "Free Kick", label: "FREE KICK", icon: RotateCw },
   { id: "Corner Kick", label: "CORNER", icon: Flag },
   { id: "Throw-In", label: "THROW-IN", icon: ArrowRight },
-  { id: "Penalty Kick", label: "PENALTY", icon: Target },
-  { id: "Yellow Card", label: "YELLOW CARD", icon: AlertTriangle },
-  { id: "Red Card", label: "RED CARD", icon: AlertTriangle },
+];
+
+const MATCH_EVENTS_CONFIG = [
+  { id: "Yellow Card", label: "YELLOW CARD" },
+  { id: "Red Card", label: "RED CARD" },
+  { id: "Missed Game", label: "MISSED GAME" },
+  { id: "Sub In", label: "SUB IN" },
+  { id: "Sub Out", label: "SUB OUT" },
+  { id: "Injury", label: "INJURY" },
 ];
 
 export function ActionWheel() {
+  const navigate = useNavigate();
   const { stats, sessionId, addTouch, undoLastTouch } = useActiveSession();
   const [selectedQuality, setSelectedQuality] = useState("Positive");
   const [lastLoggedAction, setLastLoggedAction] = useState(null);
+
+  const [trainingLocation, setTrainingLocation] = useState(() => {
+    return localStorage.getItem("trainingLocation") || "";
+  });
+  const [gameLocation, setGameLocation] = useState(() => {
+    return localStorage.getItem("gameLocation") || "";
+  });
+  const [timeInTraining, setTimeInTraining] = useState(() => {
+    return Number(localStorage.getItem("timeInTraining")) || 60;
+  });
+  const [minutesPlayed, setMinutesPlayed] = useState(() => {
+    return Number(localStorage.getItem("minutesPlayed")) || 120;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("trainingLocation", trainingLocation);
+  }, [trainingLocation]);
+
+  useEffect(() => {
+    localStorage.setItem("gameLocation", gameLocation);
+  }, [gameLocation]);
+
+  useEffect(() => {
+    localStorage.setItem("timeInTraining", timeInTraining);
+  }, [timeInTraining]);
+
+  useEffect(() => {
+    localStorage.setItem("minutesPlayed", minutesPlayed);
+  }, [minutesPlayed]);
 
   const handleActionTap = async (actionId) => {
     await addTouch(actionId, selectedQuality);
@@ -63,50 +97,51 @@ export function ActionWheel() {
   const negativePercent = total > 0 ? Math.round((negativeCount / total) * 100) : 0;
 
   return (
-    <div className="space-y-3 pb-1 select-none">
-      
-      {/* ── Page Title Bar ── */}
+    <div className="space-y-4 pb-6 select-none">
+      {/* ── Page Header Bar ── */}
       <div className="flex items-center justify-between py-1">
-        <h2 className="text-xl font-black uppercase text-[#FF4422] tracking-wider text-glow flex items-center gap-2">
-          <span>TOUCH COUNTER</span>
+        <h2 className="text-xl font-black uppercase text-white tracking-wider">
+          TOUCH COUNTER
         </h2>
 
-        <div className="flex items-center gap-2">
-          {/* Undo Button */}
-          <button
-            onClick={undoLastTouch}
-            disabled={total === 0}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 hover:bg-white/15 text-white/80 disabled:opacity-40 disabled:pointer-events-none text-xs font-bold transition-all"
-            title="Undo last touch"
-          >
-            <Undo2 size={14} />
-            <span className="text-[10px] font-black uppercase">UNDO</span>
-          </button>
-
-          {/* Reset Button */}
-          <button
-            onClick={handleResetSessionTouches}
-            disabled={total === 0}
-            className="p-1.5 rounded-xl bg-white/5 border border-white/10 hover:bg-red-500/20 hover:text-red-400 text-white/60 disabled:opacity-40 disabled:pointer-events-none transition-all"
-            title="Reset touches"
-          >
-            <RotateCcw size={15} />
-          </button>
+        <div className="px-2.5 py-0.5 rounded-full border border-red-500 text-red-500 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+          <span>LIVE</span>
         </div>
       </div>
 
-      {/* ── Central Circular Gauge Counter ── */}
-      <div className="relative py-2 flex flex-col items-center justify-center">
-        <div className="relative w-44 h-44 rounded-full border-4 border-[#FF4422]/30 bg-gradient-to-b from-[#161922] to-[#0D0F16] shadow-2xl flex flex-col items-center justify-center space-y-0.5 border-t-[#FF4422] border-r-[#FF4422]/60">
-          
-          {/* Neon Ring Glow */}
-          <div className="absolute inset-0 rounded-full border-2 border-[#FF4422]/20 blur-md pointer-events-none" />
+      {/* ── GREEN SOCCER PITCH HERO CARD WITH YELLOW CIRCLE COUNTER ── */}
+      <div className="relative rounded-2xl p-6 shadow-2xl overflow-hidden border border-emerald-500/30 bg-gradient-to-b from-[#14532D] via-[#0F3E22] to-[#0A2916] flex flex-col items-center justify-center min-h-[220px]">
+        {/* Soccer Pitch Vector Markings */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none flex items-center justify-center">
+          <svg
+            width="100%"
+            height="100%"
+            viewBox="0 0 400 240"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            className="text-white"
+          >
+            <rect x="15" y="15" width="370" height="210" rx="6" />
+            <line x1="200" y1="15" x2="200" y2="225" />
+            <circle cx="200" cy="120" r="45" />
+            <circle cx="200" cy="120" r="2" fill="currentColor" />
+            <rect x="15" y="60" width="70" height="120" />
+            <rect x="315" y="60" width="70" height="120" />
+          </svg>
+        </div>
 
-          <span className="text-4xl sm:text-5xl font-black text-white drop-shadow-lg tracking-tight">
+        {/* Central Yellow Ring Counter Gauge */}
+        <div className="relative z-10 w-36 h-36 sm:w-40 sm:h-40 rounded-full border-4 border-yellow-400 bg-black/40 backdrop-blur-md shadow-[0_0_20px_rgba(250,204,21,0.3)] flex flex-col items-center justify-center space-y-0.5">
+          <span className="text-4xl sm:text-5xl font-black text-yellow-400 tracking-tight drop-shadow-md">
             {total}
           </span>
-          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#FF4422] pt-0.5">
+          <span className="text-[8px] font-black uppercase tracking-widest text-white/70">
             TOTAL TOUCHES
+          </span>
+          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-yellow-400">
+            TOUCHES
           </span>
 
           {lastLoggedAction && (
@@ -117,7 +152,7 @@ export function ActionWheel() {
         </div>
       </div>
 
-      {/* ── Positive vs Negative Summary Cards ── */}
+      {/* ── POSITIVE vs NEGATIVE SUMMARY CARDS ── */}
       <div className="grid grid-cols-2 gap-3">
         {/* Positive Card */}
         <div className="p-3.5 rounded-2xl border border-emerald-500/30 bg-[#0E1A14] space-y-1.5 shadow-lg">
@@ -130,7 +165,10 @@ export function ActionWheel() {
             <span className="text-[10px] font-bold text-emerald-400/80">{positivePercent}%</span>
           </div>
           <div className="w-full bg-black/40 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-emerald-400 h-full transition-all duration-300" style={{ width: `${positivePercent}%` }} />
+            <div
+              className="bg-emerald-400 h-full transition-all duration-300"
+              style={{ width: `${positivePercent}%` }}
+            />
           </div>
         </div>
 
@@ -145,41 +183,50 @@ export function ActionWheel() {
             <span className="text-[10px] font-bold text-rose-400/80">{negativePercent}%</span>
           </div>
           <div className="w-full bg-black/40 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-rose-400 h-full transition-all duration-300" style={{ width: `${negativePercent}%` }} />
+            <div
+              className="bg-rose-400 h-full transition-all duration-300"
+              style={{ width: `${negativePercent}%` }}
+            />
           </div>
         </div>
       </div>
 
-      {/* ── Quality Selector Mode Buttons ── */}
-      <div className="grid grid-cols-2 gap-2 pt-1">
-        <button
-          type="button"
-          onClick={() => setSelectedQuality("Positive")}
-          className={`py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
-            selectedQuality === "Positive"
-              ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25 scale-[1.02]"
-              : "bg-[#141720] text-white/60 border border-white/10 hover:bg-white/5"
-          }`}
-        >
-          <ThumbsUp size={15} />
-          <span>Positive Mode</span>
-        </button>
+      {/* ── QUALITY SELECTOR BANNER ── */}
+      <div className="space-y-2 pt-1 text-center">
+        <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-yellow-400">
+          HOW WAS THE PLAYERS FIRST TOUCH?
+        </h3>
 
-        <button
-          type="button"
-          onClick={() => setSelectedQuality("Negative")}
-          className={`py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
-            selectedQuality === "Negative"
-              ? "bg-rose-500 text-white shadow-lg shadow-rose-500/25 scale-[1.02]"
-              : "bg-[#141720] text-white/60 border border-white/10 hover:bg-white/5"
-          }`}
-        >
-          <ThumbsDown size={15} />
-          <span>Negative Mode</span>
-        </button>
+        <div className="grid grid-cols-2 gap-2.5">
+          <button
+            type="button"
+            onClick={() => setSelectedQuality("Positive")}
+            className={`py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+              selectedQuality === "Positive"
+                ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25 scale-[1.02]"
+                : "bg-[#141720] text-white/60 border border-white/10 hover:bg-white/5"
+            }`}
+          >
+            <ThumbsUp size={15} />
+            <span>Positive</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedQuality("Negative")}
+            className={`py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+              selectedQuality === "Negative"
+                ? "bg-rose-500 text-white shadow-lg shadow-rose-500/25 scale-[1.02]"
+                : "bg-[#141720] text-white/60 border border-white/10 hover:bg-white/5"
+            }`}
+          >
+            <ThumbsDown size={15} />
+            <span>Negative</span>
+          </button>
+        </div>
       </div>
 
-      {/* ── 3-Column Action Grid ── */}
+      {/* ── 3-COLUMN MAIN ACTIONS GRID ── */}
       <div className="grid grid-cols-3 gap-2.5 pt-1">
         {ACTIONS_CONFIG.map((item) => {
           const Icon = item.icon;
@@ -206,12 +253,125 @@ export function ActionWheel() {
         })}
       </div>
 
+      {/* ── 3-COLUMN MATCH EVENTS GRID (YELLOW LABELS & SQUARE ICONS) ── */}
+      <div className="grid grid-cols-3 gap-2.5 pt-1">
+        {MATCH_EVENTS_CONFIG.map((item) => {
+          const count = stats[item.id] || 0;
+
+          return (
+            <button
+              key={item.id}
+              onClick={() => handleActionTap(item.id)}
+              className="group p-3 rounded-2xl border border-yellow-400/40 bg-[#12151D] hover:bg-yellow-400/10 active:scale-95 transition-all text-center flex flex-col items-center justify-between h-24 relative shadow-[0_0_8px_rgba(250,204,21,0.1)]"
+            >
+              {/* Yellow Square Box Icon */}
+              <div className="w-5 h-5 rounded border-2 border-yellow-400 flex items-center justify-center bg-black/40">
+                <div className="w-1.5 h-1.5 bg-yellow-400 rounded-sm" />
+              </div>
+
+              <div className="space-y-0.5">
+                <div className="text-base font-black text-yellow-400">{count}</div>
+                <div className="text-[8px] font-black uppercase tracking-wider text-yellow-400">
+                  {item.label}
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── LOCATIONS & TIME SLIDERS SECTION (YELLOW LABELS & BORDERS) ── */}
+      <div className="space-y-3.5 pt-2">
+        {/* TRAINING LOCATION */}
+        <div className="space-y-1">
+          <label className="block text-[10px] font-black uppercase tracking-wider text-yellow-400">
+            TRAINING LOCATION
+          </label>
+          <input
+            type="text"
+            placeholder="Enter training location"
+            value={trainingLocation}
+            onChange={(e) => setTrainingLocation(e.target.value)}
+            className="w-full bg-[#12151D] border border-yellow-400/80 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-yellow-400 placeholder:text-white/30"
+          />
+        </div>
+
+        {/* GAME LOCATION */}
+        <div className="space-y-1">
+          <label className="block text-[10px] font-black uppercase tracking-wider text-yellow-400">
+            GAME LOCATION
+          </label>
+          <input
+            type="text"
+            placeholder="Enter game location"
+            value={gameLocation}
+            onChange={(e) => setGameLocation(e.target.value)}
+            className="w-full bg-[#12151D] border border-yellow-400/80 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-yellow-400 placeholder:text-white/30"
+          />
+        </div>
+
+        {/* TIME IN TRAINING SLIDER */}
+        {(() => {
+          const timePercent = Math.min(100, Math.max(0, (timeInTraining / 180) * 100));
+          const minutesPercent = Math.min(100, Math.max(0, (minutesPlayed / 180) * 100));
+          return (
+            <>
+              <div className="space-y-1.5 pt-1">
+                <label className="block text-xs font-black uppercase tracking-wider text-yellow-400">
+                  TIME IN TRAINING
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min="0"
+                    max="180"
+                    step="5"
+                    value={timeInTraining}
+                    onChange={(e) => setTimeInTraining(Number(e.target.value))}
+                    style={{
+                      background: `linear-gradient(to right, #facc15 0%, #facc15 ${timePercent}%, rgba(255, 255, 255, 0.15) ${timePercent}%, rgba(255, 255, 255, 0.15) 100%)`,
+                    }}
+                    className="yellow-range-slider flex-1"
+                  />
+                  <span className="text-yellow-400 font-black text-sm whitespace-nowrap min-w-[85px] text-right">
+                    {timeInTraining} Minutes
+                  </span>
+                </div>
+              </div>
+
+              {/* MINUTES PLAYED SLIDER */}
+              <div className="space-y-1.5 pt-1">
+                <label className="block text-xs font-black uppercase tracking-wider text-yellow-400">
+                  MINUTES PLAYED
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min="0"
+                    max="180"
+                    step="5"
+                    value={minutesPlayed}
+                    onChange={(e) => setMinutesPlayed(Number(e.target.value))}
+                    style={{
+                      background: `linear-gradient(to right, #facc15 0%, #facc15 ${minutesPercent}%, rgba(255, 255, 255, 0.15) ${minutesPercent}%, rgba(255, 255, 255, 0.15) 100%)`,
+                    }}
+                    className="yellow-range-slider flex-1"
+                  />
+                  <span className="text-yellow-400 font-black text-sm whitespace-nowrap min-w-[85px] text-right">
+                    {minutesPlayed} Minutes
+                  </span>
+                </div>
+              </div>
+            </>
+          );
+        })()}
+      </div>
+
       {/* ── Action Buttons Bar ── */}
       <SectionActionBar
         onReset={handleResetSessionTouches}
         sectionKey="touch-counter"
       />
-
     </div>
   );
 }

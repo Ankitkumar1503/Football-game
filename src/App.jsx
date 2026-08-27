@@ -23,13 +23,13 @@ import { PlayerDashboard } from "./components/sections/PlayerDashboard";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { useActiveSession } from "./hooks/useActiveSession";
 
+import { PlayerPassport } from "./components/sections/PlayerPassport";
+import { ThirtyDayChallenge } from "./components/sections/ThirtyDayChallenge";
+import { AiPlayerAgent } from "./components/sections/AiPlayerAgent";
+import { MatchDayPrep } from "./components/sections/MatchDayPrep";
+
 function TouchCounterPage() {
-  return (
-    <>
-      <ActionWheel />
-      <LiveStats />
-    </>
-  );
+  return <ActionWheel />;
 }
 
 function IndexRedirect() {
@@ -61,6 +61,10 @@ function AppContent() {
         />
         <Route path="stats" element={<PlayerStats />} />
         <Route path="touch-counter" element={<TouchCounterPage />} />
+        <Route path="passport" element={<PlayerPassport />} />
+        <Route path="challenge" element={<ThirtyDayChallenge />} />
+        <Route path="ai-agent" element={<AiPlayerAgent />} />
+        <Route path="match-prep" element={<MatchDayPrep />} />
         <Route path="reflection" element={<PlayerReflection />} />
         <Route path="evaluation" element={<PlayerEvaluation />} />
         <Route path="roster" element={<PlayerAttendanceGrade />} />

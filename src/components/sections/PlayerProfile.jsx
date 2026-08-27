@@ -234,44 +234,33 @@ export function PlayerProfile() {
     <div className="bg-[var(--bg-primary)] text-football-text pb-6 pt-1 px-1 sm:px-2 relative overflow-hidden">
       <div className="max-w-md mx-auto space-y-3 relative z-10">
         {/* ════════════════════════════════
-            TOP BRANDING & LOGOS (Tight Spacing)
+            TOP BRANDING & LOGOS
         ════════════════════════════════ */}
-        <div className="text-center space-y-1 pt-1">
-          {/* FA Logo */}
-          {/* <div className="mx-auto w-12 h-12 rounded-full border border-dashed border-football-text/30 flex flex-col items-center justify-center p-0.5 bg-black/30 backdrop-blur-sm">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              className="text-football-text/80"
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 3v18" />
-            </svg>
-            <span className="text-[7px] font-black tracking-widest text-football-text/60">
-              FA LOGO
-            </span>
-          </div> */}
-
-          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-football-text/70">
-            FOOTBALLER ATHLETICS
-          </p>
-
-          {/* TOUCHES Logo Container */}
-          <div className="max-w-[170px] mx-auto py-1 px-3 border border-dashed border-football-text/30 rounded-lg bg-black/20 flex items-center justify-center">
+        <div className="text-center space-y-1.5 pt-2 flex flex-col items-center justify-center">
+          {/* Top Stick Figure Icon */}
+          <div className="w-14 h-14 mx-auto flex items-center justify-center">
             <img
-              src={touchesLogo}
-              alt="TOUCHES LOGO"
-              className="h-5 w-auto object-contain"
+              src="/right_foot.png"
+              alt="Footballer Athletics Icon"
+              className="w-full h-full object-contain"
             />
           </div>
 
-          <p className="text-[8px] font-black uppercase tracking-[0.25em] text-football-text/50">
-            TRACK · REFLECT · EVOLVE
+          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-football-text/70">
+            FOOTBALLER ATHLETICS
+          </p>
+
+          {/* TOUCHES Logo */}
+          <div className="py-1 flex items-center justify-center">
+            <img
+              src="/touches_logo.png"
+              alt="TOUCHES LOGO"
+              className="h-14 w-auto object-contain"
+            />
+          </div>
+
+          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-yellow-400">
+            TRACK • REFLECT • IMPROVE
           </p>
         </div>
 
@@ -280,34 +269,13 @@ export function PlayerProfile() {
         ════════════════════════════════ */}
         <div
           id="foot-selection-section"
-          className="relative bg-[var(--bg-card)]/80 border border-football-text/15 rounded-2xl p-3.5 sm:p-4 shadow-xl backdrop-blur-xl space-y-3.5 overflow-hidden"
+          className="relative bg-[var(--bg-card)]/80 rounded-2xl p-3.5 sm:p-4 shadow-xl backdrop-blur-xl space-y-3.5 overflow-hidden"
         >
           {/* Background Pitch Lines */}
-          <div className="absolute inset-0 opacity-10 pointer-events-none flex items-center justify-center">
-            {/* <svg
-              width="100%"
-              height="100%"
-              viewBox="0 0 300 400"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1"
-            >
-              <rect x="20" y="20" width="260" height="360" rx="4" />
-              <line x1="20" y1="200" x2="280" y2="200" />
-              <circle cx="150" cy="200" r="45" />
-              <rect x="80" y="20" width="140" height="70" />
-              <rect x="80" y="310" width="140" height="70" />
-            </svg> */}
-          </div>
+          <div className="absolute inset-0 opacity-10 pointer-events-none flex items-center justify-center"></div>
 
           {/* Pitch Icon & Question Heading */}
-          <div className="text-center space-y-1 relative z-10">
-            {/* <div className="mx-auto w-10 h-7 border border-[#FF4422]/60 rounded flex items-center justify-center bg-black/40">
-              <div className="w-4 h-4 border border-[#FF4422]/60 rounded-full flex items-center justify-center">
-                <div className="w-1 h-1 bg-[#FF4422] rounded-full" />
-              </div>
-            </div> */}
-
+          <div className="text-center relative z-10">
             <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-football-text leading-tight">
               ARE YOU A <span className="text-[#FF4422]">LEFT</span> OR{" "}
               <span className="text-[#00AEEF]">RIGHT</span> FOOTER?
@@ -325,33 +293,25 @@ export function PlayerProfile() {
             <button
               type="button"
               onClick={() => handleFootSelect("LEFT")}
-              className={`group relative p-3 rounded-xl border-2 text-left transition-all duration-200 flex flex-col items-center text-center space-y-1.5 ${
+              className={`group relative p-3 rounded-xl border-2 text-left transition-all duration-200 flex flex-col items-center text-center space-y-2 ${
                 isLeftSelected
                   ? "border-[#FF4422] bg-[#FF4422]/15 shadow-md shadow-[#FF4422]/20 scale-[1.01]"
                   : "border-[#FF4422]/40 bg-[#161920]/80 hover:border-[#FF4422] hover:bg-[#FF4422]/10"
               }`}
             >
               {isLeftSelected && (
-                <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#FF4422] text-white flex items-center justify-center shadow">
+                <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#FF4422] text-white flex items-center justify-center shadow z-20">
                   <Check size={10} strokeWidth={3} />
                 </div>
               )}
 
-              <div className="w-11 h-11 rounded-full border border-dashed border-[#FF4422]/60 flex flex-col items-center justify-center bg-black/40 p-0.5">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#FF4422"
-                  strokeWidth="2"
-                >
-                  <path d="M7 21v-4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4" />
-                  <path d="M12 3a6 6 0 0 0-6 6v3h12V9a6 6 0 0 0-6-6z" />
-                </svg>
-                <span className="text-[6px] font-black tracking-widest text-[#FF4422]/80">
-                  LEFT
-                </span>
+              {/* Left Foot Icon */}
+              <div className="w-14 h-14 rounded-full flex items-center justify-center">
+                <img
+                  src="/left_foot.png"
+                  alt="Left Footer Icon"
+                  className="w-full h-full object-contain"
+                />
               </div>
 
               <div>
@@ -368,33 +328,25 @@ export function PlayerProfile() {
             <button
               type="button"
               onClick={() => handleFootSelect("RIGHT")}
-              className={`group relative p-3 rounded-xl border-2 text-left transition-all duration-200 flex flex-col items-center text-center space-y-1.5 ${
+              className={`group relative p-3 rounded-xl border-2 text-left transition-all duration-200 flex flex-col items-center text-center space-y-2 ${
                 isRightSelected
                   ? "border-[#00AEEF] bg-[#00AEEF]/15 shadow-md shadow-[#00AEEF]/20 scale-[1.01]"
                   : "border-[#00AEEF]/40 bg-[#161920]/80 hover:border-[#00AEEF] hover:bg-[#00AEEF]/10"
               }`}
             >
               {isRightSelected && (
-                <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#00AEEF] text-white flex items-center justify-center shadow">
+                <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#00AEEF] text-white flex items-center justify-center shadow z-20">
                   <Check size={10} strokeWidth={3} />
                 </div>
               )}
 
-              <div className="w-11 h-11 rounded-full border border-dashed border-[#00AEEF]/60 flex flex-col items-center justify-center bg-black/40 p-0.5">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#00AEEF"
-                  strokeWidth="2"
-                >
-                  <path d="M17 21v-4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v4" />
-                  <path d="M12 3a6 6 0 0 1 6 6v3H6V9a6 6 0 0 1 6-6z" />
-                </svg>
-                <span className="text-[6px] font-black tracking-widest text-[#00AEEF]/80">
-                  RIGHT
-                </span>
+              {/* Right Foot Icon */}
+              <div className="w-14 h-14 rounded-full flex items-center justify-center">
+                <img
+                  src="/right_foot.png"
+                  alt="Right Footer Icon"
+                  className="w-full h-full object-contain"
+                />
               </div>
 
               <div>

@@ -45,3 +45,9 @@ jobs:
             -sdk iphonesimulator \
             -configuration Debug \
             -derivedDataPath build
+
+      - name: Upload iOS Simulator Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-app
+          path: build/Build/Products/Debug-iphonesimulator/App.app

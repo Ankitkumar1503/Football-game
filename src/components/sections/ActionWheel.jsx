@@ -26,11 +26,28 @@ const ACTIONS_CONFIG = [
   { id: "Free Kick", label: "FREE KICK", icon: RotateCw },
   { id: "Corner Kick", label: "CORNER", icon: Flag },
   { id: "Throw-In", label: "THROW-IN", icon: ArrowRight },
+  { id: "Penalty", label: "PENALTY", icon: Target },
+  { id: "Keep-Up-Feet", label: "KEEP-UP-FEET", icon: Zap },
+  { id: "Keep-Up-Head", label: "KEEP-UP-HEAD", icon: CircleDot },
+];
+
+const POSITIONS = [
+  "Select Position",
+  "Goalkeeper (GK)",
+  "Center Back (CB)",
+  "Left Back (LB)",
+  "Right Back (RB)",
+  "Defensive Midfielder (CDM)",
+  "Central Midfielder (CM)",
+  "Attacking Midfielder (CAM)",
+  "Left Winger (LW)",
+  "Right Winger (RW)",
+  "Striker / Forward (ST)",
 ];
 
 const MATCH_EVENTS_CONFIG = [
-  { id: "Yellow Card", label: "YELLOW CARD" },
-  { id: "Red Card", label: "RED CARD" },
+  { id: "Yellow Card", label: "YELLOW CARD", type: "yellow-card" },
+  { id: "Red Card", label: "RED CARD", type: "red-card" },
   { id: "Missed Game", label: "MISSED GAME" },
   { id: "Sub In", label: "SUB IN" },
   { id: "Sub Out", label: "SUB OUT" },
@@ -39,9 +56,33 @@ const MATCH_EVENTS_CONFIG = [
 
 export function ActionWheel() {
   const navigate = useNavigate();
-  const { stats, sessionId, addTouch, undoLastTouch } = useActiveSession();
+  const { stats, sessionId, addTouch, removeTouch, updateSession } = useActiveSession();
   const [selectedQuality, setSelectedQuality] = useState("Positive");
   const [lastLoggedAction, setLastLoggedAction] = useState(null);
+
+  const getSavedProfile = () => {
+    try {
+      const raw = localStorage.getItem("playerProfile");
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const initialProfile = getSavedProfile();
+
+  const [playerName, setPlayerName] = useState(() => {
+    return localStorage.getItem("touch_playerName") || initialProfile?.fullName || initialProfile?.playerName || "";
+  });
+  const [age, setAge] = useState(() => {
+    return localStorage.getItem("touch_age") || (initialProfile?.age ? String(initialProfile.age) : "");
+  });
+  const [position, setPosition] = useState(() => {
+    return localStorage.getItem("touch_position") || initialProfile?.position || "Select Position";
+  });
+  const [playerNumber, setPlayerNumber] = useState(() => {
+    return localStorage.getItem("touch_number") || (initialProfile?.number || initialProfile?.jerseyNumber ? String(initialProfile?.number || initialProfile?.jerseyNumber) : "");
+  });
 
   const [trainingLocation, setTrainingLocation] = useState(() => {
     return localStorage.getItem("trainingLocation") || "";
@@ -55,6 +96,22 @@ export function ActionWheel() {
   const [minutesPlayed, setMinutesPlayed] = useState(() => {
     return Number(localStorage.getItem("minutesPlayed")) || 120;
   });
+
+  useEffect(() => {
+    localStorage.setItem("touch_playerName", playerName);
+  }, [playerName]);
+
+  useEffect(() => {
+    localStorage.setItem("touch_age", age);
+  }, [age]);
+
+  useEffect(() => {
+    localStorage.setItem("touch_position", position);
+  }, [position]);
+
+  useEffect(() => {
+    localStorage.setItem("touch_number", playerNumber);
+  }, [playerNumber]);
 
   useEffect(() => {
     localStorage.setItem("trainingLocation", trainingLocation);
@@ -73,9 +130,59 @@ export function ActionWheel() {
   }, [minutesPlayed]);
 
   const handleActionTap = async (actionId) => {
-    await addTouch(actionId, selectedQuality);
-    setLastLoggedAction({ action: actionId, quality: selectedQuality });
+    const isIndependent = [
+      "Penalty",
+      "Keep-Up-Feet",
+      "Keep-Up-Head",
+      "Yellow Card",
+      "Red Card",
+      "Missed Game",
+      "Sub In",
+      "Sub Out",
+      "Injury",
+    ].includes(actionId);
+
+    const quality = isIndependent ? "Event" : selectedQuality;
+    await addTouch(actionId, quality);
+    setLastLoggedAction({ action: actionId, quality });
     setTimeout(() => setLastLoggedAction(null), 1200);
+  };
+
+  const handleEventTap = async (eventId) => {
+    await addTouch(eventId, "Event");
+    setLastLoggedAction({ action: eventId, quality: "Event" });
+    setTimeout(() => setLastLoggedAction(null), 1200);
+  };
+
+  const handleEventDecrement = async (e, eventId) => {
+    e.stopPropagation();
+    if (removeTouch) {
+      await removeTouch(eventId);
+    }
+  };
+
+  const handleSaveSession = async () => {
+    localStorage.setItem("touch_playerName", playerName);
+    localStorage.setItem("touch_age", age);
+    localStorage.setItem("touch_position", position);
+    localStorage.setItem("touch_number", playerNumber);
+    localStorage.setItem("trainingLocation", trainingLocation);
+    localStorage.setItem("gameLocation", gameLocation);
+    localStorage.setItem("timeInTraining", timeInTraining);
+    localStorage.setItem("minutesPlayed", minutesPlayed);
+
+    if (updateSession) {
+      await updateSession({
+        playerName,
+        age,
+        position,
+        playerNumber,
+        trainingLocation,
+        gameLocation,
+        timeInTraining,
+        minutesPlayed,
+      });
+    }
   };
 
   const handleResetSessionTouches = async () => {
@@ -253,61 +360,163 @@ export function ActionWheel() {
         })}
       </div>
 
-      {/* ── 3-COLUMN MATCH EVENTS GRID (YELLOW LABELS & SQUARE ICONS) ── */}
+      {/* ── 3-COLUMN INDEPENDENT EVENT COUNTERS GRID (CLEAN DARK/NEUTRAL CARDS) ── */}
       <div className="grid grid-cols-3 gap-2.5 pt-1">
         {MATCH_EVENTS_CONFIG.map((item) => {
           const count = stats[item.id] || 0;
+          const isYellow = item.type === "yellow-card";
+          const isRed = item.type === "red-card";
 
           return (
-            <button
+            <div
               key={item.id}
-              onClick={() => handleActionTap(item.id)}
-              className="group p-3 rounded-2xl border border-yellow-400/40 bg-[#12151D] hover:bg-yellow-400/10 active:scale-95 transition-all text-center flex flex-col items-center justify-between h-24 relative shadow-[0_0_8px_rgba(250,204,21,0.1)]"
+              onClick={() => handleEventTap(item.id)}
+              className="group p-3 rounded-2xl border border-white/10 bg-[#12151D] hover:bg-white/[0.07] hover:border-white/20 active:scale-95 transition-all text-center flex flex-col items-center justify-between h-24 relative cursor-pointer select-none"
             >
-              {/* Yellow Square Box Icon */}
-              <div className="w-5 h-5 rounded border-2 border-yellow-400 flex items-center justify-center bg-black/40">
-                <div className="w-1.5 h-1.5 bg-yellow-400 rounded-sm" />
-              </div>
+              {/* Optional Decrement button when count > 0 */}
+              {count > 0 && (
+                <button
+                  type="button"
+                  title={`Decrease ${item.label}`}
+                  onClick={(e) => handleEventDecrement(e, item.id)}
+                  className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center text-[10px] font-bold z-10 transition-colors"
+                >
+                  -
+                </button>
+              )}
+
+              {/* Minimalist Icon / Badge */}
+              {isYellow ? (
+                <div className="w-5 h-5 rounded border border-yellow-400/80 bg-yellow-400/20 flex items-center justify-center">
+                  <div className="w-2 h-2.5 bg-yellow-400 rounded-sm" />
+                </div>
+              ) : isRed ? (
+                <div className="w-5 h-5 rounded border border-red-500/80 bg-red-500/20 flex items-center justify-center">
+                  <div className="w-2 h-2.5 bg-red-500 rounded-sm" />
+                </div>
+              ) : (
+                <div className="w-5 h-5 rounded border border-white/20 bg-white/5 flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 bg-white/60 rounded-sm" />
+                </div>
+              )}
 
               <div className="space-y-0.5">
-                <div className="text-base font-black text-yellow-400">{count}</div>
-                <div className="text-[8px] font-black uppercase tracking-wider text-yellow-400">
+                <div
+                  className={`text-base font-black ${
+                    isYellow ? "text-yellow-400" : isRed ? "text-red-400" : "text-white"
+                  }`}
+                >
+                  {count}
+                </div>
+                <div
+                  className={`text-[8px] font-black uppercase tracking-wider ${
+                    isYellow
+                      ? "text-yellow-400/90"
+                      : isRed
+                      ? "text-red-400/90"
+                      : "text-white/60 group-hover:text-white/90"
+                  }`}
+                >
                   {item.label}
                 </div>
               </div>
-            </button>
+            </div>
           );
         })}
       </div>
 
-      {/* ── LOCATIONS & TIME SLIDERS SECTION (YELLOW LABELS & BORDERS) ── */}
-      <div className="space-y-3.5 pt-2">
-        {/* TRAINING LOCATION */}
-        <div className="space-y-1">
-          <label className="block text-[10px] font-black uppercase tracking-wider text-yellow-400">
-            TRAINING LOCATION
-          </label>
-          <input
-            type="text"
-            placeholder="Enter training location"
-            value={trainingLocation}
-            onChange={(e) => setTrainingLocation(e.target.value)}
-            className="w-full bg-[#12151D] border border-yellow-400/80 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-yellow-400 placeholder:text-white/30"
-          />
-        </div>
+      {/* ── PLAYER & SESSION INFORMATION (4 NEW FIELDS + EXISTING LOCATIONS) ── */}
+      <div className="space-y-3 pt-2">
+        <div className="space-y-2">
+          {/* Row 1: PLAYER NAME & AGE */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="space-y-1">
+              <label className="block text-[10px] font-black uppercase tracking-wider text-white/70">
+                PLAYER NAME
+              </label>
+              <input
+                type="text"
+                placeholder="Enter player name"
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                className="w-full bg-[#12151D] border border-white/10 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-yellow-400/70 placeholder:text-white/30"
+              />
+            </div>
 
-        {/* GAME LOCATION */}
-        <div className="space-y-1">
-          <label className="block text-[10px] font-black uppercase tracking-wider text-yellow-400">
-            GAME LOCATION
-          </label>
-          <input
-            type="text"
-            placeholder="Enter game location"
-            value={gameLocation}
-            onChange={(e) => setGameLocation(e.target.value)}
-            className="w-full bg-[#12151D] border border-yellow-400/80 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-yellow-400 placeholder:text-white/30"
-          />
+            <div className="space-y-1">
+              <label className="block text-[10px] font-black uppercase tracking-wider text-white/70">
+                AGE
+              </label>
+              <input
+                type="number"
+                placeholder="Age"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                className="w-full bg-[#12151D] border border-white/10 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-yellow-400/70 placeholder:text-white/30"
+              />
+            </div>
+          </div>
+
+          {/* Row 2: PLAYER POSITION & NUMBER */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="space-y-1">
+              <label className="block text-[10px] font-black uppercase tracking-wider text-white/70">
+                PLAYER POSITION
+              </label>
+              <select
+                value={position}
+                onChange={(e) => setPosition(e.target.value)}
+                className="w-full bg-[#12151D] border border-white/10 rounded-xl px-2.5 py-2 text-white text-xs font-semibold focus:outline-none focus:border-yellow-400/70"
+              >
+                {POSITIONS.map((pos) => (
+                  <option key={pos} value={pos} className="bg-[#12151D] text-white">
+                    {pos}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-[10px] font-black uppercase tracking-wider text-white/70">
+                NUMBER
+              </label>
+              <input
+                type="number"
+                placeholder="Jersey Number"
+                value={playerNumber}
+                onChange={(e) => setPlayerNumber(e.target.value)}
+                className="w-full bg-[#12151D] border border-white/10 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-yellow-400/70 placeholder:text-white/30"
+              />
+            </div>
+          </div>
+
+          {/* Row 3: TRAINING LOCATION (EXISTING) */}
+          <div className="space-y-1">
+            <label className="block text-[10px] font-black uppercase tracking-wider text-white/70">
+              TRAINING LOCATION
+            </label>
+            <input
+              type="text"
+              placeholder="Enter training location"
+              value={trainingLocation}
+              onChange={(e) => setTrainingLocation(e.target.value)}
+              className="w-full bg-[#12151D] border border-white/10 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-yellow-400/70 placeholder:text-white/30"
+            />
+          </div>
+
+          {/* Row 4: GAME LOCATION (EXISTING) */}
+          <div className="space-y-1">
+            <label className="block text-[10px] font-black uppercase tracking-wider text-white/70">
+              GAME LOCATION
+            </label>
+            <input
+              type="text"
+              placeholder="Enter game location"
+              value={gameLocation}
+              onChange={(e) => setGameLocation(e.target.value)}
+              className="w-full bg-[#12151D] border border-white/10 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-yellow-400/70 placeholder:text-white/30"
+            />
+          </div>
         </div>
 
         {/* TIME IN TRAINING SLIDER */}
@@ -317,7 +526,7 @@ export function ActionWheel() {
           return (
             <>
               <div className="space-y-1.5 pt-1">
-                <label className="block text-xs font-black uppercase tracking-wider text-yellow-400">
+                <label className="block text-xs font-black uppercase tracking-wider text-white/70">
                   TIME IN TRAINING
                 </label>
                 <div className="flex items-center gap-3">
@@ -341,7 +550,7 @@ export function ActionWheel() {
 
               {/* MINUTES PLAYED SLIDER */}
               <div className="space-y-1.5 pt-1">
-                <label className="block text-xs font-black uppercase tracking-wider text-yellow-400">
+                <label className="block text-xs font-black uppercase tracking-wider text-white/70">
                   MINUTES PLAYED
                 </label>
                 <div className="flex items-center gap-3">
@@ -370,6 +579,7 @@ export function ActionWheel() {
       {/* ── Action Buttons Bar ── */}
       <SectionActionBar
         onReset={handleResetSessionTouches}
+        onSave={handleSaveSession}
         sectionKey="touch-counter"
       />
     </div>

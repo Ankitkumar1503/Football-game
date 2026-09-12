@@ -1,29 +1,36 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "Touches",
+    "slug": "touches-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "icon": "./assets/touches_icon.png",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
+    "scheme": "touches",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#07090E"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/touches_icon_foreground.png",
+        "backgroundColor": "#07090E"
       },
+      "package": "com.touches.footballapp",
       "edgeToEdgeEnabled": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "80cfce83-8212-4ed4-9aab-5ae503ba7cc8"
+      }
     }
   }
 }

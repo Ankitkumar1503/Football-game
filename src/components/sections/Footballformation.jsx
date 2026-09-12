@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useActiveSession } from "../../hooks/useActiveSession";
 import { SectionActionBar } from "../ui/SectionActionBar";
-import { ShieldCheck, Calendar, Users, Trophy } from "lucide-react";
 
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -12,26 +11,226 @@ function useDebounce(value, delay) {
   return debouncedValue;
 }
 
-const FORMATION_POSITIONS = [
-  // ATTACK
-  { number: 11, label: "L WING", group: "ATTACK" },
-  { number: 9, label: "STRIKER", group: "ATTACK" },
-  { number: 7, label: "R WING", group: "ATTACK" },
-
-  // MIDFIELD
-  { number: 10, label: "L MID", group: "MIDFIELD" },
-  { number: 6, label: "CENTRE", group: "MIDFIELD" },
-  { number: 8, label: "R MID", group: "MIDFIELD" },
-
-  // DEFENCE
-  { number: 3, label: "L BACK", group: "DEFENCE" },
-  { number: 5, label: "CB", group: "DEFENCE" },
-  { number: 4, label: "CB", group: "DEFENCE" },
-  { number: 2, label: "R BACK", group: "DEFENCE" },
-
-  // GOALKEEPER
-  { number: 1, label: "GOALKEEPER", group: "GOALKEEPER" },
-];
+export const FORMATIONS_DATA = {
+  "4-3-3": {
+    name: "4-3-3",
+    pitchPositions: [
+      { number: 9, label: "ST", top: 25, left: 50 },
+      { number: 11, label: "LW", top: 32, left: 24 },
+      { number: 7, label: "RW", top: 32, left: 76 },
+      { number: 10, label: "CM", top: 52, left: 30 },
+      { number: 6, label: "DM", top: 54, left: 50 },
+      { number: 8, label: "CM", top: 52, left: 70 },
+      { number: 3, label: "LB", top: 72, left: 21 },
+      { number: 5, label: "CB", top: 74, left: 41 },
+      { number: 4, label: "CB", top: 74, left: 59 },
+      { number: 2, label: "RB", top: 72, left: 79 },
+      { number: 1, label: "GK", top: 86, left: 50 },
+    ],
+    tacticalGroups: [
+      {
+        id: "attack",
+        title: "⚽ ATTACK",
+        positions: [
+          { number: 11, label: "L WING" },
+          { number: 9, label: "STRIKER" },
+          { number: 7, label: "R WING" },
+        ],
+      },
+      {
+        id: "midfield",
+        title: "🎯 MIDFIELD",
+        positions: [
+          { number: 10, label: "L MID" },
+          { number: 6, label: "CENTRE" },
+          { number: 8, label: "R MID" },
+        ],
+      },
+      {
+        id: "defence",
+        title: "🛡️ DEFENCE",
+        positions: [
+          { number: 3, label: "L BACK" },
+          { number: 5, label: "CB" },
+          { number: 4, label: "CB" },
+          { number: 2, label: "R BACK" },
+        ],
+      },
+      {
+        id: "goalkeeper",
+        title: "🧤 GOALKEEPER",
+        positions: [
+          { number: 1, label: "GOALKEEPER", isGk: true },
+        ],
+      },
+    ],
+  },
+  "4-4-2": {
+    name: "4-4-2",
+    pitchPositions: [
+      { number: 11, label: "ST", top: 25, left: 40 },
+      { number: 9, label: "ST", top: 25, left: 60 },
+      { number: 10, label: "LM", top: 50, left: 20 },
+      { number: 6, label: "CM", top: 52, left: 40 },
+      { number: 8, label: "CM", top: 52, left: 60 },
+      { number: 7, label: "RM", top: 50, left: 80 },
+      { number: 3, label: "LB", top: 72, left: 21 },
+      { number: 5, label: "CB", top: 74, left: 41 },
+      { number: 4, label: "CB", top: 74, left: 59 },
+      { number: 2, label: "RB", top: 72, left: 79 },
+      { number: 1, label: "GK", top: 86, left: 50 },
+    ],
+    tacticalGroups: [
+      {
+        id: "attack",
+        title: "⚽ ATTACK",
+        positions: [
+          { number: 11, label: "STRIKER" },
+          { number: 9, label: "STRIKER" },
+        ],
+      },
+      {
+        id: "midfield",
+        title: "🎯 MIDFIELD",
+        positions: [
+          { number: 10, label: "L MID" },
+          { number: 6, label: "CM" },
+          { number: 8, label: "CM" },
+          { number: 7, label: "R MID" },
+        ],
+      },
+      {
+        id: "defence",
+        title: "🛡️ DEFENCE",
+        positions: [
+          { number: 3, label: "L BACK" },
+          { number: 5, label: "CB" },
+          { number: 4, label: "CB" },
+          { number: 2, label: "R BACK" },
+        ],
+      },
+      {
+        id: "goalkeeper",
+        title: "🧤 GOALKEEPER",
+        positions: [
+          { number: 1, label: "GOALKEEPER", isGk: true },
+        ],
+      },
+    ],
+  },
+  "4-2-3-1": {
+    name: "4-2-3-1",
+    pitchPositions: [
+      { number: 9, label: "ST", top: 24, left: 50 },
+      { number: 11, label: "LAM", top: 38, left: 25 },
+      { number: 10, label: "CAM", top: 40, left: 50 },
+      { number: 7, label: "RAM", top: 38, left: 75 },
+      { number: 6, label: "DM", top: 57, left: 38 },
+      { number: 8, label: "DM", top: 57, left: 62 },
+      { number: 3, label: "LB", top: 72, left: 21 },
+      { number: 5, label: "CB", top: 74, left: 41 },
+      { number: 4, label: "CB", top: 74, left: 59 },
+      { number: 2, label: "RB", top: 72, left: 79 },
+      { number: 1, label: "GK", top: 86, left: 50 },
+    ],
+    tacticalGroups: [
+      {
+        id: "attack",
+        title: "⚽ ATTACK",
+        positions: [
+          { number: 9, label: "STRIKER" },
+        ],
+      },
+      {
+        id: "attacking-mid",
+        title: "🎯 ATTACKING MID",
+        positions: [
+          { number: 11, label: "LAM" },
+          { number: 10, label: "CAM" },
+          { number: 7, label: "RAM" },
+        ],
+      },
+      {
+        id: "defensive-mid",
+        title: "⚡ DEFENSIVE MID",
+        positions: [
+          { number: 6, label: "CDM" },
+          { number: 8, label: "CDM" },
+        ],
+      },
+      {
+        id: "defence",
+        title: "🛡️ DEFENCE",
+        positions: [
+          { number: 3, label: "L BACK" },
+          { number: 5, label: "CB" },
+          { number: 4, label: "CB" },
+          { number: 2, label: "R BACK" },
+        ],
+      },
+      {
+        id: "goalkeeper",
+        title: "🧤 GOALKEEPER",
+        positions: [
+          { number: 1, label: "GOALKEEPER", isGk: true },
+        ],
+      },
+    ],
+  },
+  "3-5-2": {
+    name: "3-5-2",
+    pitchPositions: [
+      { number: 11, label: "ST", top: 25, left: 40 },
+      { number: 9, label: "ST", top: 25, left: 60 },
+      { number: 3, label: "LWB", top: 48, left: 17 },
+      { number: 10, label: "CM", top: 45, left: 36 },
+      { number: 6, label: "DM", top: 57, left: 50 },
+      { number: 8, label: "CM", top: 45, left: 64 },
+      { number: 2, label: "RWB", top: 48, left: 83 },
+      { number: 5, label: "CB", top: 73, left: 30 },
+      { number: 4, label: "CB", top: 75, left: 50 },
+      { number: 7, label: "CB", top: 73, left: 70 },
+      { number: 1, label: "GK", top: 86, left: 50 },
+    ],
+    tacticalGroups: [
+      {
+        id: "attack",
+        title: "⚽ ATTACK",
+        positions: [
+          { number: 11, label: "STRIKER" },
+          { number: 9, label: "STRIKER" },
+        ],
+      },
+      {
+        id: "midfield",
+        title: "🎯 MIDFIELD",
+        positions: [
+          { number: 3, label: "LWB" },
+          { number: 10, label: "CM" },
+          { number: 6, label: "CDM" },
+          { number: 8, label: "CM" },
+          { number: 2, label: "RWB" },
+        ],
+      },
+      {
+        id: "defence",
+        title: "🛡️ DEFENCE",
+        positions: [
+          { number: 5, label: "CB" },
+          { number: 4, label: "CB" },
+          { number: 7, label: "CB" },
+        ],
+      },
+      {
+        id: "goalkeeper",
+        title: "🧤 GOALKEEPER",
+        positions: [
+          { number: 1, label: "GOALKEEPER", isGk: true },
+        ],
+      },
+    ],
+  },
+};
 
 export function FootballFormation({ isPdf = false }) {
   const { reflection, updateReflection } = useActiveSession();
@@ -42,13 +241,24 @@ export function FootballFormation({ isPdf = false }) {
       const saved = localStorage.getItem("footballFormation");
       if (saved) {
         try {
-          return JSON.parse(saved);
+          const parsed = JSON.parse(saved);
+          return {
+            formation: parsed.formation || "4-3-3",
+            teamName: parsed.teamName || "",
+            ageGroup: parsed.ageGroup || "U16",
+            date: parsed.date || new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" }),
+            opponent: parsed.opponent || "",
+            players: parsed.players || {
+              1: "", 2: "", 3: "", 4: "", 5: "", 6: "", 7: "", 8: "", 9: "", 10: "", 11: ""
+            },
+          };
         } catch (e) {
           console.error("Error parsing localStorage data:", e);
         }
       }
     }
     return {
+      formation: "4-3-3",
       teamName: "",
       ageGroup: "U16",
       date: new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" }),
@@ -62,6 +272,7 @@ export function FootballFormation({ isPdf = false }) {
   useEffect(() => {
     if (!hydrated && reflection?.formation) {
       setFormData({
+        formation: reflection.formation.formation || "4-3-3",
         teamName: reflection.formation.teamName ?? "",
         ageGroup: reflection.formation.ageGroup ?? "U16",
         date: reflection.formation.date ?? "",
@@ -102,9 +313,12 @@ export function FootballFormation({ isPdf = false }) {
     }));
   };
 
+  const selectedFormationKey = FORMATIONS_DATA[formData.formation] ? formData.formation : "4-3-3";
+  const activeFormation = FORMATIONS_DATA[selectedFormationKey];
+
   return (
     <div className="space-y-4 pb-4 select-none">
-      {/* ── Title Bar ── */}
+      {/* ── 1. Starting Lineup Header ── */}
       <div className="flex items-center justify-between py-1">
         <h2 className="text-xl font-black uppercase text-[#FF4422] tracking-wider text-glow">
           STARTING LINEUP
@@ -114,7 +328,7 @@ export function FootballFormation({ isPdf = false }) {
         </span>
       </div>
 
-      {/* ── Match & Team Info Inputs ── */}
+      {/* ── 2. Match & Team Info Inputs ── */}
       <div className="p-3.5 rounded-2xl border border-white/10 bg-[#12151D] space-y-2.5">
         <div className="grid grid-cols-2 gap-2.5">
           <div>
@@ -173,109 +387,160 @@ export function FootballFormation({ isPdf = false }) {
         </div>
       </div>
 
-      {/* ── Stadium Pitch Diagram ── */}
-      <div className="relative rounded-2xl p-3 sm:p-4 border-2 border-emerald-500/40 bg-gradient-to-b from-[#0E4D2B] via-[#0B3D22] to-[#062916] space-y-4 shadow-2xl overflow-hidden">
-        
-        {/* Pitch Center Circle Line Overlay */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-36 h-36 border-2 border-white/15 rounded-full pointer-events-none" />
-        <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-white/15 pointer-events-none" />
+      {/* ── 3 & 4. Interactive Pitch Card with Top Formation Tabs (EXACT MATCH TO CLIENT REFERENCE) ── */}
+      <div className="p-3 sm:p-4 rounded-2xl border border-white/10 bg-[#0E1118] shadow-2xl">
+        {/* Top Formation Tabs */}
+        <div className="grid grid-cols-4 gap-2 mb-3.5">
+          {Object.keys(FORMATIONS_DATA).map((fmtKey) => {
+            const isSelected = selectedFormationKey === fmtKey;
+            return (
+              <button
+                key={fmtKey}
+                type="button"
+                onClick={() => handleInputChange("formation", fmtKey)}
+                className={`py-2 px-1 text-xs sm:text-sm font-black rounded-xl transition-all ${
+                  isSelected
+                    ? "bg-[#FF4422] text-white shadow-md shadow-[#FF4422]/40"
+                    : "bg-[#181C26] text-white/60 hover:text-white"
+                }`}
+              >
+                {fmtKey}
+              </button>
+            );
+          })}
+        </div>
 
-        {/* 1. ATTACK SECTION */}
-        <div className="space-y-2 relative z-10">
-          <div className="text-center">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300 bg-black/40 px-3 py-0.5 rounded-full border border-white/10">
-              ⚽ ATTACK
-            </span>
-          </div>
+        {/* Green Football Pitch Graphic */}
+        <div className="relative w-full aspect-[1.18/1] rounded-2xl overflow-hidden shadow-inner bg-[#1A7740] border-2 border-emerald-500/40">
+          {/* Pitch Lines SVG */}
+          <svg viewBox="0 0 300 250" className="w-full h-full pointer-events-none" fill="none">
+            {/* Outer boundary */}
+            <rect
+              x="14"
+              y="12"
+              width="272"
+              height="226"
+              rx="8"
+              stroke="rgba(255,255,255,0.45)"
+              strokeWidth="1.5"
+            />
 
-          <div className="grid grid-cols-3 gap-2">
-            {FORMATION_POSITIONS.filter((p) => p.group === "ATTACK").map((pos) => (
-              <PositionCard
-                key={pos.number}
-                pos={pos}
-                value={formData.players[pos.number]}
-                onSlotChange={(idx, val) => handlePlayerSlotChange(pos.number, idx, val)}
-              />
+            {/* Halfway line */}
+            <line
+              x1="14"
+              y1="125"
+              x2="286"
+              y2="125"
+              stroke="rgba(255,255,255,0.45)"
+              strokeWidth="1.5"
+            />
+
+            {/* Center circle */}
+            <circle
+              cx="150"
+              cy="125"
+              r="34"
+              stroke="rgba(255,255,255,0.45)"
+              strokeWidth="1.5"
+            />
+
+            {/* Top penalty area */}
+            <rect
+              x="72"
+              y="12"
+              width="156"
+              height="50"
+              stroke="rgba(255,255,255,0.45)"
+              strokeWidth="1.5"
+            />
+
+            {/* Bottom penalty area */}
+            <rect
+              x="72"
+              y="188"
+              width="156"
+              height="50"
+              stroke="rgba(255,255,255,0.45)"
+              strokeWidth="1.5"
+            />
+          </svg>
+
+          {/* 11 Circular Red-Orange Player Markers */}
+          <div className="absolute inset-0 pointer-events-none">
+            {activeFormation.pitchPositions.map((pos) => (
+              <div
+                key={`${selectedFormationKey}-${pos.number}`}
+                className="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-300 flex items-center justify-center"
+                style={{
+                  top: `${pos.top}%`,
+                  left: `${pos.left}%`,
+                }}
+              >
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FF4422] border-[1.5px] border-white/80 shadow-md flex items-center justify-center">
+                  <span className="text-[9px] sm:text-[10px] font-black text-white tracking-tight uppercase">
+                    {pos.label}
+                  </span>
+                </div>
+              </div>
             ))}
           </div>
         </div>
+      </div>
 
-        {/* 2. MIDFIELD SECTION */}
-        <div className="space-y-2 relative z-10 pt-1">
-          <div className="text-center">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300 bg-black/40 px-3 py-0.5 rounded-full border border-white/10">
-              🎯 MIDFIELD
-            </span>
-          </div>
+      {/* ── 5. Tactical Sheet Section (SEPARATE BELOW THE PITCH) ── */}
+      <div className="p-3.5 sm:p-4 rounded-2xl border border-white/10 bg-[#12151D] space-y-4 shadow-xl">
+        {/* Tactical Groups: ATTACK, MIDFIELD, DEFENCE, GOALKEEPER */}
+        {activeFormation.tacticalGroups.map((group) => {
+          const count = group.positions.length;
+          let gridClass = "grid gap-2";
+          if (count === 1) gridClass += " grid-cols-1 max-w-xs mx-auto";
+          else if (count === 2) gridClass += " grid-cols-2";
+          else if (count === 3) gridClass += " grid-cols-3";
+          else if (count === 4) gridClass += " grid-cols-2 sm:grid-cols-4 gap-1.5";
+          else if (count === 5) gridClass += " grid-cols-2 sm:grid-cols-5 gap-1.5";
 
-          <div className="grid grid-cols-3 gap-2">
-            {FORMATION_POSITIONS.filter((p) => p.group === "MIDFIELD").map((pos) => (
-              <PositionCard
-                key={pos.number}
-                pos={pos}
-                value={formData.players[pos.number]}
-                onSlotChange={(idx, val) => handlePlayerSlotChange(pos.number, idx, val)}
-              />
-            ))}
-          </div>
-        </div>
+          const isGkGroup = group.id === "goalkeeper";
 
-        {/* 3. DEFENCE SECTION */}
-        <div className="space-y-2 relative z-10 pt-1">
-          <div className="text-center">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300 bg-black/40 px-3 py-0.5 rounded-full border border-white/10">
-              🛡️ DEFENCE
-            </span>
-          </div>
+          return (
+            <div key={group.id} className="space-y-2">
+              <div className="text-center">
+                <span className={`text-[10px] font-black uppercase tracking-[0.2em] bg-black/40 px-3 py-0.5 rounded-full border border-white/10 ${
+                  isGkGroup ? "text-amber-300" : "text-emerald-300"
+                }`}>
+                  {group.title}
+                </span>
+              </div>
 
-          <div className="grid grid-cols-4 gap-1.5">
-            {FORMATION_POSITIONS.filter((p) => p.group === "DEFENCE").map((pos) => (
-              <PositionCard
-                key={pos.number}
-                pos={pos}
-                value={formData.players[pos.number]}
-                onSlotChange={(idx, val) => handlePlayerSlotChange(pos.number, idx, val)}
-                isCompact
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* 4. GOALKEEPER SECTION */}
-        <div className="space-y-2 relative z-10 pt-1">
-          <div className="text-center">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300 bg-black/40 px-3 py-0.5 rounded-full border border-white/10">
-              🧤 GOALKEEPER
-            </span>
-          </div>
-
-          <div className="max-w-xs mx-auto">
-            {FORMATION_POSITIONS.filter((p) => p.group === "GOALKEEPER").map((pos) => (
-              <PositionCard
-                key={pos.number}
-                pos={pos}
-                value={formData.players[pos.number]}
-                onSlotChange={(idx, val) => handlePlayerSlotChange(pos.number, idx, val)}
-                isGk
-              />
-            ))}
-          </div>
-        </div>
-
+              <div className={gridClass}>
+                {group.positions.map((pos) => (
+                  <PositionCard
+                    key={`${selectedFormationKey}-${pos.number}`}
+                    pos={pos}
+                    value={formData.players[pos.number]}
+                    onSlotChange={(idx, val) => handlePlayerSlotChange(pos.number, idx, val)}
+                    isCompact={count >= 4}
+                    isGk={pos.isGk}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* ── Action Buttons Bar ── */}
       <SectionActionBar
         onReset={() => {
-          if (confirm("Reset Starting Lineup formation?")) {
-            localStorage.removeItem("footballFormation");
-            window.location.reload();
+          if (confirm("Reset Starting Lineup player names?")) {
+            const emptyPlayers = { 1: "", 2: "", 3: "", 4: "", 5: "", 6: "", 7: "", 8: "", 9: "", 10: "", 11: "" };
+            setFormData((prev) => ({ ...prev, players: emptyPlayers }));
+            localStorage.setItem("footballFormation", JSON.stringify({ ...formData, players: emptyPlayers }));
+            updateReflection({ formation: { ...formData, players: emptyPlayers } });
           }
         }}
         onSave={() => updateReflection({ formation: formData })}
         sectionKey="lineup"
       />
-
     </div>
   );
 }
@@ -287,13 +552,21 @@ function PositionCard({ pos, value, onSlotChange, isCompact = false, isGk = fals
   const sub2 = slots[2] || "";
 
   return (
-    <div className={`p-2 rounded-xl bg-black/60 backdrop-blur-md border border-white/20 flex flex-col items-center space-y-1.5 ${isGk ? "border-amber-400/50" : ""}`}>
+    <div className={`rounded-xl bg-black/60 backdrop-blur-md border border-white/20 flex flex-col items-center space-y-1.5 ${
+      isCompact ? "p-1.5" : "p-2"
+    } ${isGk ? "border-amber-400/50" : ""}`}>
       {/* Position Header & Number Badge */}
       <div className="flex items-center gap-1">
-        <div className={`w-5 h-5 rounded-full flex items-center justify-center font-black text-[9px] border ${isGk ? "bg-amber-500 text-black border-white" : "bg-black text-white border-white/40"}`}>
+        <div className={`${
+          isCompact ? "w-4 h-4 text-[8px]" : "w-5 h-5 text-[9px]"
+        } rounded-full flex items-center justify-center font-black border ${
+          isGk ? "bg-amber-500 text-black border-white" : "bg-black text-white border-white/40"
+        }`}>
           {pos.number}
         </div>
-        <span className="text-[9px] font-black uppercase tracking-wider text-white">
+        <span className={`${
+          isCompact ? "text-[8px] sm:text-[9px]" : "text-[9px]"
+        } font-black uppercase tracking-wider text-white truncate`}>
           {pos.label}
         </span>
       </div>
@@ -305,7 +578,9 @@ function PositionCard({ pos, value, onSlotChange, isCompact = false, isGk = fals
           placeholder="Starter"
           value={starter}
           onChange={(e) => onSlotChange(0, e.target.value)}
-          className="w-full bg-white/95 text-black px-1.5 py-1 text-[9px] font-bold rounded text-center border border-black/40 focus:outline-none focus:ring-1 focus:ring-[#FF4422]"
+          className={`w-full bg-white text-black font-bold rounded text-center border border-black/35 focus:outline-none focus:ring-1 focus:ring-[#FF4422] ${
+            isCompact ? "px-1 py-0.5 text-[8px] sm:text-[9px]" : "px-1.5 py-1 text-[9px]"
+          }`}
         />
 
         <input
@@ -313,7 +588,9 @@ function PositionCard({ pos, value, onSlotChange, isCompact = false, isGk = fals
           placeholder="Sub 1"
           value={sub1}
           onChange={(e) => onSlotChange(1, e.target.value)}
-          className="w-full bg-white/80 text-black px-1.5 py-1 text-[9px] font-bold rounded text-center border border-black/30 focus:outline-none focus:ring-1 focus:ring-[#FF4422]"
+          className={`w-full bg-[#EDEDED] text-black font-bold rounded text-center border border-black/30 focus:outline-none focus:ring-1 focus:ring-[#FF4422] ${
+            isCompact ? "px-1 py-0.5 text-[8px] sm:text-[9px]" : "px-1.5 py-1 text-[9px]"
+          }`}
         />
 
         <input
@@ -321,7 +598,9 @@ function PositionCard({ pos, value, onSlotChange, isCompact = false, isGk = fals
           placeholder="Sub 2"
           value={sub2}
           onChange={(e) => onSlotChange(2, e.target.value)}
-          className="w-full bg-white/80 text-black px-1.5 py-1 text-[9px] font-bold rounded text-center border border-black/30 focus:outline-none focus:ring-1 focus:ring-[#FF4422]"
+          className={`w-full bg-[#EDEDED] text-black font-bold rounded text-center border border-black/30 focus:outline-none focus:ring-1 focus:ring-[#FF4422] ${
+            isCompact ? "px-1 py-0.5 text-[8px] sm:text-[9px]" : "px-1.5 py-1 text-[9px]"
+          }`}
         />
       </div>
     </div>

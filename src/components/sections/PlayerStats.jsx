@@ -50,6 +50,8 @@ export function PlayerStats() {
       missedGames: "",
       freeKicks: "",
       recoveryDays: "",
+      keepUpFeet: "",
+      keepUpHead: "",
     };
 
     if (typeof window !== "undefined") {
@@ -106,6 +108,8 @@ export function PlayerStats() {
       "missedGames",
       "freeKicks",
       "recoveryDays",
+      "keepUpFeet",
+      "keepUpHead",
     ];
 
     let existingProfile = {};
@@ -168,14 +172,100 @@ export function PlayerStats() {
     year: "numeric",
   });
 
+  const handleSave = () => {
+    const profileKeys = ["fullName", "dateOfBirth", "age", "cellPhone", "school", "academy", "club", "team", "position", "activeFooter"];
+    const careerKeys = [
+      "totalYearsPlaying",
+      "totalHoursTrained",
+      "totalSessions",
+      "totalGames",
+      "totalGoals",
+      "totalPenalties",
+      "totalCornerKicks",
+      "totalThrowIns",
+      "shotsOnTarget",
+      "tacklesMade",
+      "headers",
+      "yellowCards",
+      "redCards",
+      "subIn",
+      "subOut",
+      "injured",
+      "missedGames",
+      "freeKicks",
+      "recoveryDays",
+      "keepUpFeet",
+      "keepUpHead",
+    ];
+
+    let existingProfile = {};
+    let existingCareer = {};
+    try {
+      const savedProfile = localStorage.getItem("playerProfile");
+      if (savedProfile) existingProfile = JSON.parse(savedProfile);
+      const savedCareer = localStorage.getItem("playerCareerStats");
+      if (savedCareer) existingCareer = JSON.parse(savedCareer);
+    } catch (e) {}
+
+    const profileData = { ...existingProfile };
+    const careerData = { ...existingCareer };
+
+    profileKeys.forEach((key) => {
+      if (formData[key] !== undefined) profileData[key] = formData[key];
+    });
+    careerKeys.forEach((key) => {
+      if (formData[key] !== undefined) careerData[key] = formData[key];
+    });
+
+    localStorage.setItem("playerProfile", JSON.stringify(profileData));
+    localStorage.setItem("playerCareerStats", JSON.stringify(careerData));
+
+    if (session.id) {
+      updateSession({
+        playerName: profileData.fullName,
+        position: profileData.position,
+        club: profileData.club,
+        team: profileData.team,
+        age: profileData.age,
+        totalYearsPlaying: careerData.totalYearsPlaying,
+        totalHoursTrained: careerData.totalHoursTrained,
+        activeFooter: profileData.activeFooter,
+      });
+    }
+  };
+
+  const handleReset = () => {
+    if (confirm("Reset Player Stats? This will clear your custom career and development stats.")) {
+      localStorage.removeItem("playerCareerStats");
+      setFormData((prev) => ({
+        ...prev,
+        totalYearsPlaying: "",
+        totalHoursTrained: "",
+        totalSessions: "",
+        totalGames: "",
+        totalGoals: "",
+        totalPenalties: "",
+        totalCornerKicks: "",
+        totalThrowIns: "",
+        shotsOnTarget: "",
+        tacklesMade: "",
+        headers: "",
+        yellowCards: "",
+        redCards: "",
+        subIn: "",
+        subOut: "",
+        injured: "",
+        missedGames: "",
+        freeKicks: "",
+        recoveryDays: "",
+        keepUpFeet: "",
+        keepUpHead: "",
+      }));
+    }
+  };
+
   const StatCard = ({ id, label, displayValue, rawValue, isYellow = false, colorClass = "text-white" }) => (
-    <div
-      className={`p-3 rounded-xl bg-[#12151D] space-y-1 flex flex-col justify-between ${
-        isYellow
-          ? "border border-yellow-400/50 shadow-[0_0_8px_rgba(250,204,21,0.12)]"
-          : "border border-white/10"
-      }`}
-    >
+    <div className="p-3 rounded-xl bg-[#12151D] border border-white/10 space-y-1 flex flex-col justify-between">
       <span
         className={`text-[9px] font-black uppercase tracking-wider block ${
           isYellow ? "text-yellow-400" : "text-white/60"
@@ -184,18 +274,14 @@ export function PlayerStats() {
         {label}
       </span>
       <div className="flex items-center justify-between gap-2 pt-1">
-        <span className={`text-2xl font-black ${isYellow ? "text-yellow-400" : colorClass}`}>
+        <span className={`text-2xl font-black ${colorClass}`}>
           {displayValue !== undefined && displayValue !== null ? displayValue : 0}
         </span>
         <input
           id={id}
           type="number"
           placeholder="0"
-          className={`w-14 bg-black/40 text-xs font-bold text-center py-1 rounded-lg border focus:outline-none ${
-            isYellow
-              ? "text-yellow-400 border-yellow-400/30 focus:border-yellow-400"
-              : "text-white border-white/15 focus:border-white"
-          }`}
+          className="w-14 bg-black/40 text-xs font-bold text-center py-1 rounded-lg border border-white/15 text-white focus:border-yellow-400 focus:outline-none transition-colors"
           value={rawValue || ""}
           onChange={handleChange}
         />
@@ -352,38 +438,38 @@ export function PlayerStats() {
         </h3>
 
         <div className="grid grid-cols-2 gap-2.5">
-          <div className="p-3.5 rounded-xl border border-yellow-400/30 bg-[#12151D] space-y-1 shadow-md">
-            <span className="text-[10px] font-black uppercase tracking-wider text-yellow-400 block">
+          <div className="p-3.5 rounded-xl border border-white/10 bg-[#12151D] space-y-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-white/60 block">
               TODAYS TOUCHES
             </span>
-            <div className="text-3xl font-black text-[#FF4422]">
+            <div className="text-3xl font-black text-white">
               {cumulativeStats.todayTouches || 0}
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl border border-[#00AEEF]/30 bg-[#12151D] space-y-1 shadow-md">
-            <span className="text-[10px] font-black uppercase tracking-wider text-yellow-400 block">
+          <div className="p-3.5 rounded-xl border border-white/10 bg-[#12151D] space-y-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-white/60 block">
               TOUCHES THIS WEEK
             </span>
-            <div className="text-3xl font-black text-[#00AEEF]">
+            <div className="text-3xl font-black text-white">
               {cumulativeStats.weekTouches || 0}
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl border border-[#10B981]/30 bg-[#12151D] space-y-1 shadow-md">
-            <span className="text-[10px] font-black uppercase tracking-wider text-yellow-400 block">
+          <div className="p-3.5 rounded-xl border border-white/10 bg-[#12151D] space-y-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-white/60 block">
               TOUCHES THIS MONTH
             </span>
-            <div className="text-3xl font-black text-[#10B981]">
+            <div className="text-3xl font-black text-white">
               {cumulativeStats.monthTouches || 0}
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl border border-[#F59E0B]/30 bg-[#12151D] space-y-1 shadow-md">
-            <span className="text-[10px] font-black uppercase tracking-wider text-yellow-400 block">
+          <div className="p-3.5 rounded-xl border border-white/10 bg-[#12151D] space-y-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-white/60 block">
               TOUCHES THIS SEASON
             </span>
-            <div className="text-3xl font-black text-[#F59E0B]">
+            <div className="text-3xl font-black text-white">
               {liveTouches}
             </div>
           </div>
@@ -405,78 +491,69 @@ export function PlayerStats() {
             label="TOTAL TOUCHES (LIFETIME)"
             displayValue={liveTouches}
             rawValue={formData.totalTouches}
-            colorClass="text-[#F59E0B]"
           />
           <StatCard
             id="totalGoals"
             label="GOALS SCORED"
             displayValue={liveGoals || formData.totalGoals || 0}
             rawValue={formData.totalGoals}
-            colorClass="text-[#FF4422]"
           />
           <StatCard
             id="totalGames"
             label="TOTAL GAMES"
             displayValue={formData.totalGames || 0}
             rawValue={formData.totalGames}
-            colorClass="text-[#00AEEF]"
           />
           <StatCard
             id="shotsOnTarget"
             label="SHOTS ON TARGET"
             displayValue={formData.shotsOnTarget || 0}
             rawValue={formData.shotsOnTarget}
-            colorClass="text-[#F59E0B]"
           />
           <StatCard
             id="tacklesMade"
             label="TACKLES MADE"
             displayValue={formData.tacklesMade || 0}
             rawValue={formData.tacklesMade}
-            colorClass="text-white"
           />
           <StatCard
             id="totalPenalties"
             label="PENALTIES TAKEN"
             displayValue={formData.totalPenalties || 0}
             rawValue={formData.totalPenalties}
-            colorClass="text-[#FF4422]"
           />
           <StatCard
             id="totalCornerKicks"
             label="CORNER KICKS"
             displayValue={formData.totalCornerKicks || 0}
             rawValue={formData.totalCornerKicks}
-            colorClass="text-[#00AEEF]"
           />
           <StatCard
             id="headers"
             label="HEADERS"
             displayValue={formData.headers || 0}
             rawValue={formData.headers}
-            colorClass="text-[#F59E0B]"
           />
           <StatCard
             id="totalThrowIns"
             label="THROW-INS"
             displayValue={formData.totalThrowIns || 0}
             rawValue={formData.totalThrowIns}
-            colorClass="text-white"
           />
           <StatCard
             id="freeKicks"
             label="FREE KICKS"
             displayValue={formData.freeKicks || 0}
             rawValue={formData.freeKicks}
-            colorClass="text-white"
           />
 
-          {/* Yellow Bordered Cards (Yellow Card, Red Card, Sub In, Sub Out, Injured, Missed Game) */}
+          {/* Cards with functional color accents */}
           <StatCard
             id="yellowCards"
             label="YELLOW CARD"
             displayValue={formData.yellowCards || 0}
             rawValue={formData.yellowCards}
+            colorClass="text-yellow-400"
             isYellow={true}
           />
           <StatCard
@@ -484,35 +561,31 @@ export function PlayerStats() {
             label="RED CARD"
             displayValue={formData.redCards || 0}
             rawValue={formData.redCards}
-            isYellow={true}
+            colorClass="text-rose-500"
           />
           <StatCard
             id="subIn"
             label="SUB IN"
             displayValue={formData.subIn || 0}
             rawValue={formData.subIn}
-            isYellow={true}
           />
           <StatCard
             id="subOut"
             label="SUB OUT"
             displayValue={formData.subOut || 0}
             rawValue={formData.subOut}
-            isYellow={true}
           />
           <StatCard
             id="injured"
             label="INJURED"
             displayValue={formData.injured || 0}
             rawValue={formData.injured}
-            isYellow={true}
           />
           <StatCard
             id="missedGames"
             label="MISSED GAME"
             displayValue={formData.missedGames || 0}
             rawValue={formData.missedGames}
-            isYellow={true}
           />
         </div>
       </div>
@@ -529,40 +602,44 @@ export function PlayerStats() {
             label="YEARS PLAYING"
             displayValue={formData.totalYearsPlaying || 0}
             rawValue={formData.totalYearsPlaying}
-            colorClass="text-white"
           />
           <StatCard
             id="totalHoursTrained"
             label="HOURS TRAINED"
             displayValue={liveHours || formData.totalHoursTrained || 0}
             rawValue={formData.totalHoursTrained}
-            colorClass="text-white"
           />
           <StatCard
             id="totalSessions"
             label="TOTAL SESSIONS"
             displayValue={liveSessions || formData.totalSessions || 0}
             rawValue={formData.totalSessions}
-            colorClass="text-white"
           />
           <StatCard
             id="recoveryDays"
             label="RECOVERY DAYS"
             displayValue={formData.recoveryDays || 0}
             rawValue={formData.recoveryDays}
-            isYellow={true}
+          />
+          <StatCard
+            id="keepUpFeet"
+            label="KEEP-UP-FEET"
+            displayValue={formData.keepUpFeet || 0}
+            rawValue={formData.keepUpFeet}
+          />
+          <StatCard
+            id="keepUpHead"
+            label="KEEP-UP-HEAD"
+            displayValue={formData.keepUpHead || 0}
+            rawValue={formData.keepUpHead}
           />
         </div>
       </div>
 
       {/* ── Action Buttons Bar ── */}
       <SectionActionBar
-        onReset={() => {
-          if (confirm("Reset Player Stats?")) {
-            localStorage.removeItem("playerCareerStats");
-            window.location.reload();
-          }
-        }}
+        onSave={handleSave}
+        onReset={handleReset}
         sectionKey="stats"
       />
     </div>

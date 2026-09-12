@@ -1,235 +1,215 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
-import { styled } from "nativewind";
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useActiveSession } from "../../hooks/useActiveSession";
-import { Card, CardContent } from "../ui/Card";
-import { Input } from "../ui/Input";
+import { useActiveSession } from '../../hooks/useActiveSession';
+import { SectionActionBar } from '../ui/SectionActionBar';
 
-const StyledText = styled(Text);
-const StyledView = styled(View);
-const StyledTouchableOpacity = styled(TouchableOpacity);
+const GRADE_OPTIONS = [
+  { id: 'P', label: 'P', full: 'Poor', color: 'bg-rose-500' },
+  { id: 'A', label: 'A', full: 'Average', color: 'bg-[#F59E0B]' },
+  { id: 'G', label: 'G', full: 'Good', color: 'bg-[#00AEEF]' },
+  { id: 'VG', label: 'VG', full: 'Very Good', color: 'bg-emerald-500' },
+];
 
 export function PlayerAttendanceGrade() {
   const { reflection, updateReflection } = useActiveSession();
-  const [hydrated, setHydrated] = useState(false);
 
   const [fullData, setFullData] = useState({
-      metadata: {
-        date: "",
-        game: "",
-        training: "",
-        tryout: "",
-        evaluation: "",
-        team: "",
-        sessionType: "",
-      },
-      records: Array.from({ length: 25 }, (_, i) => ({
-        id: i + 1,
-        lastName: "",
-        firstName: "",
-        age: "",
-        position: "",
-        grades: {
-          A: false,
-          B: false,
-          C: false,
-        },
-      })),
+    metadata: {
+      team: '',
+      date: new Date().toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }),
+    },
+    records: Array.from({ length: 16 }, (_, i) => ({
+      id: i + 1,
+      name: `Player ${i + 1}`,
+      grade: 'G',
+    })),
   });
 
   useEffect(() => {
-    const loadData = async () => {
-        try {
-            const saved = await AsyncStorage.getItem("playerAttendance");
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (!hydrated) {
-                    setFullData(parsed);
-                    setHydrated(true);
-                }
-            }
-        } catch (e) {
-            console.error(e);
+    async function loadData() {
+      try {
+        const saved = await AsyncStorage.getItem('playerAttendance');
+        if (saved) {
+          setFullData(JSON.parse(saved));
+        } else if (reflection?.attendance) {
+          setFullData({
+            metadata: {
+              team: reflection.attendance.metadata?.team ?? '',
+              date: reflection.attendance.metadata?.date ?? '',
+            },
+            records: (reflection.attendance.records ?? []).map((r, i) => ({
+              id: r.id || i + 1,
+              name: r.name || `Player ${i + 1}`,
+              grade: r.grade || (r.grades?.A ? 'VG' : r.grades?.B ? 'G' : 'A'),
+            })),
+          });
         }
-    };
-    loadData();
-  }, []);
-
-  useEffect(() => {
-    if (!hydrated && reflection?.attendance) {
-      setFullData({
-        metadata: {
-          date: reflection.attendance.metadata?.date ?? "",
-          game: reflection.attendance.metadata?.game ?? "",
-          training: reflection.attendance.metadata?.training ?? "",
-          tryout: reflection.attendance.metadata?.tryout ?? "",
-          evaluation: reflection.attendance.metadata?.evaluation ?? "",
-          team: reflection.attendance.metadata?.team ?? "",
-          sessionType: reflection.attendance.metadata?.sessionType ?? "",
-        },
-        records: reflection.attendance.records ?? [],
-      });
-      setHydrated(true);
+      } catch (e) {
+        console.error('Error loading attendance data:', e);
+      }
     }
+    loadData();
   }, [reflection]);
 
-  useEffect(() => {
-    AsyncStorage.setItem("playerAttendance", JSON.stringify(fullData));
-  }, [fullData]);
-
-  useEffect(() => {
-      if(hydrated) {
-        const timeout = setTimeout(() => {
-            updateReflection({ attendance: fullData });
-        }, 1000);
-        return () => clearTimeout(timeout);
-      }
-  }, [fullData, hydrated]);
-
-
-  const handleMetadataChange = (field, value) => {
-    setFullData((prev) => ({
-      ...prev,
-      metadata: { ...prev.metadata, [field]: value },
-    }));
+  const handleMetadataChange = async (field, value) => {
+    const updated = {
+      ...fullData,
+      metadata: { ...fullData.metadata, [field]: value },
+    };
+    setFullData(updated);
+    await AsyncStorage.setItem('playerAttendance', JSON.stringify(updated));
+    updateReflection({ attendance: updated });
   };
 
-  const handleRecordChange = (id, field, value) => {
-    setFullData((prev) => ({
-      ...prev,
-      records: prev.records.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item,
-      ),
-    }));
+  const handlePlayerNameChange = async (id, value) => {
+    const updated = {
+      ...fullData,
+      records: fullData.records.map((r) => (r.id === id ? { ...r, name: value } : r)),
+    };
+    setFullData(updated);
+    await AsyncStorage.setItem('playerAttendance', JSON.stringify(updated));
+    updateReflection({ attendance: updated });
   };
 
-    const handleGradeToggle = (id, grade) => {
-    setFullData((prev) => ({
-      ...prev,
-      records: prev.records.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              grades: {
-                A: false,
-                B: false,
-                C: false,
-                [grade]: !item.grades[grade],
-              },
-            }
-          : item,
-      ),
-    }));
+  const handleGradeSelect = async (id, gradeId) => {
+    const updated = {
+      ...fullData,
+      records: fullData.records.map((r) => (r.id === id ? { ...r, grade: gradeId } : r)),
+    };
+    setFullData(updated);
+    await AsyncStorage.setItem('playerAttendance', JSON.stringify(updated));
+    updateReflection({ attendance: updated });
+  };
+
+  const handleReset = () => {
+    Alert.alert('Reset Roster', 'Reset roster ratings?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Reset',
+        style: 'destructive',
+        onPress: async () => {
+          const resetRecords = fullData.records.map((r) => ({ ...r, grade: 'G' }));
+          const updated = { ...fullData, records: resetRecords };
+          setFullData(updated);
+          await AsyncStorage.setItem('playerAttendance', JSON.stringify(updated));
+          updateReflection({ attendance: updated });
+        },
+      },
+    ]);
   };
 
   return (
-    <View className="mb-6 bg-white dark:bg-[#1A1A1A] p-2 rounded-xl">
-        <View className="mb-4">
-           <StyledText className="text-xl font-black uppercase text-center text-black dark:text-white mb-4">
-             PLAYER GRADE
-           </StyledText>
-           
-           <View className="mb-4 gap-y-2">
-               <View className="flex-row justify-between items-center">
-                    <StyledText className="text-xs font-bold uppercase text-black dark:text-white">
-                        PLAYER ATTENDANCE RECORD/GRADE
-                    </StyledText>
-                    <View className="w-32">
-                         <StyledText className="text-[10px] font-bold uppercase text-black dark:text-white mb-1">DATE</StyledText>
-                         <Input 
-                            value={fullData.metadata?.date}
-                            onChangeText={(text) => handleMetadataChange('date', text)}
-                            className="bg-[#E5E5E5] text-black h-8 text-xs p-1 border-none"
-                            placeholder="YYYY-MM-DD"
-                        />
-                    </View>
-               </View>
+    <View className="space-y-4 pb-6">
+      {/* ── Title Bar ── */}
+      <View className="flex-row items-center justify-between py-1">
+        <Text className="text-xl font-black uppercase text-[#FF4422] tracking-wider">
+          TEAM ROSTER
+        </Text>
+        <Text className="text-[10px] font-bold text-white/50 tracking-wider">
+          SQUAD GRADING
+        </Text>
+      </View>
 
-               <View className="flex-row flex-wrap gap-4 mt-2">
-                   {["GAME", "TRAINING", "TRYOUT", "EVALUATION"].map((type) => (
-                       <StyledTouchableOpacity 
-                            key={type} 
-                            onPress={() => handleMetadataChange("sessionType", type)}
-                            className="flex-row items-center gap-2"
-                        >
-                           <StyledText className="text-[10px] font-bold uppercase text-black dark:text-white">{type}</StyledText>
-                           <View className={`w-4 h-4 rounded-full border border-black dark:border-white items-center justify-center ${
-                               fullData.metadata?.sessionType === type ? "bg-black dark:bg-white" : "bg-transparent"
-                           }`} />
-                       </StyledTouchableOpacity>
-                   ))}
-               </View>
-
-               <View className="mt-2">
-                   <StyledText className="text-[10px] font-bold uppercase text-black dark:text-white mb-1">TEAM</StyledText>
-                   <Input 
-                        value={fullData.metadata?.team}
-                        onChangeText={(text) => handleMetadataChange('team', text)}
-                        className="bg-[#E5E5E5] text-black h-8 text-xs p-1 border-none"
-                    />
-               </View>
-           </View>
+      {/* ── Team & Date Header Inputs ── */}
+      <View style={{ flexDirection: 'row', gap: 10 }} className="p-3.5 rounded-2xl border border-white/10 bg-[#12151D]">
+        <View style={{ flex: 1 }}>
+          <Text className="text-[8.5px] font-black uppercase text-white/60 mb-1">
+            TEAM
+          </Text>
+          <TextInput
+            value={fullData.metadata.team}
+            onChangeText={(val) => handleMetadataChange('team', val)}
+            placeholder="Team Name"
+            placeholderTextColor="rgba(255,255,255,0.3)"
+            className="bg-black/40 text-white px-3 py-2 text-xs font-semibold rounded-xl border border-white/15"
+          />
         </View>
+        <View style={{ flex: 1 }}>
+          <Text className="text-[8.5px] font-black uppercase text-white/60 mb-1">
+            DATE
+          </Text>
+          <TextInput
+            value={fullData.metadata.date}
+            onChangeText={(val) => handleMetadataChange('date', val)}
+            placeholder="Date"
+            placeholderTextColor="rgba(255,255,255,0.3)"
+            className="bg-black/40 text-white px-3 py-2 text-xs font-semibold rounded-xl border border-white/15"
+          />
+        </View>
+      </View>
 
-        <ScrollView horizontal className="pb-4">
-            <View>
-                <View className="flex-row border-b border-gray-500 pb-2 mb-2">
-                    <StyledText className="w-8 text-[10px] font-bold text-center text-black dark:text-white">#</StyledText>
-                    <StyledText className="w-24 text-[10px] font-bold text-center text-black dark:text-white">LAST NAME</StyledText>
-                    <StyledText className="w-24 text-[10px] font-bold text-center text-black dark:text-white">FIRST NAME</StyledText>
-                    <StyledText className="w-10 text-[10px] font-bold text-center text-black dark:text-white">AGE</StyledText>
-                    <StyledText className="w-16 text-[10px] font-bold text-center text-black dark:text-white">POS</StyledText>
-                    <StyledText className="w-8 text-[10px] font-bold text-center text-black dark:text-white">A</StyledText>
-                    <StyledText className="w-8 text-[10px] font-bold text-center text-black dark:text-white">B</StyledText>
-                    <StyledText className="w-8 text-[10px] font-bold text-center text-black dark:text-white">C</StyledText>
-                </View>
+      {/* ── Grade Legend ── */}
+      <View className="p-2.5 rounded-xl border border-white/10 bg-black/30 flex-row items-center justify-around">
+        <Text className="text-[9px] font-black uppercase text-white/60">GRADE:</Text>
+        <Text className="text-[9px] font-black uppercase text-rose-400">P = Poor</Text>
+        <Text className="text-[9px] font-black uppercase text-[#F59E0B]">A = Average</Text>
+        <Text className="text-[9px] font-black uppercase text-[#00AEEF]">G = Good</Text>
+        <Text className="text-[9px] font-black uppercase text-emerald-400">VG = Very Good</Text>
+      </View>
 
-                {fullData.records.map((row) => (
-                    <View key={row.id} className="flex-row items-center mb-1 border-b border-gray-800 dark:border-gray-800 pb-1">
-                        <StyledText className="w-8 text-[10px] font-bold text-center text-gray-500">{row.id}</StyledText>
-                        <View className="w-24 px-1">
-                            <Input 
-                                value={row.lastName}
-                                onChangeText={(text) => handleRecordChange(row.id, 'lastName', text)}
-                                className="bg-[#E5E5E5] text-black h-6 text-[10px] p-0 px-1 border-none"
-                            />
-                        </View>
-                        <View className="w-24 px-1">
-                            <Input 
-                                value={row.firstName}
-                                onChangeText={(text) => handleRecordChange(row.id, 'firstName', text)}
-                                className="bg-[#E5E5E5] text-black h-6 text-[10px] p-0 px-1 border-none"
-                            />
-                        </View>
-                        <View className="w-10 px-1">
-                            <Input 
-                                value={row.age}
-                                onChangeText={(text) => handleRecordChange(row.id, 'age', text)}
-                                className="bg-[#E5E5E5] text-black h-6 text-[10px] p-0 px-1 text-center border-none"
-                            />
-                        </View>
-                        <View className="w-16 px-1">
-                            <Input 
-                                value={row.position}
-                                onChangeText={(text) => handleRecordChange(row.id, 'position', text)}
-                                className="bg-[#E5E5E5] text-black h-6 text-[10px] p-0 px-1 text-center border-none"
-                            />
-                        </View>
-                        {["A", "B", "C"].map(grade => (
-                            <View key={grade} className="w-8 items-center justify-center">
-                                <StyledTouchableOpacity 
-                                    onPress={() => handleGradeToggle(row.id, grade)}
-                                    className={`w-4 h-4 rounded-full border border-gray-400 ${
-                                        row.grades[grade] ? "bg-[#FF4422] border-[#FF4422]" : "bg-[#E5E5E5]"
-                                    }`}
-                                />
-                            </View>
-                        ))}
-                    </View>
-                ))}
+      {/* ── Roster Players List ── */}
+      <View className="space-y-2">
+        {fullData.records.map((player) => (
+          <View
+            key={player.id}
+            className="p-2.5 rounded-xl border border-white/10 bg-[#12151D] flex-row items-center justify-between gap-2"
+          >
+            <View className="flex-row items-center gap-2 flex-1 pr-1">
+              <View className="w-6 h-6 rounded-full bg-black/50 border border-white/20 items-center justify-center">
+                <Text className="text-[9px] font-black text-white/80">{player.id}</Text>
+              </View>
+              <TextInput
+                value={player.name}
+                onChangeText={(val) => handlePlayerNameChange(player.id, val)}
+                className="flex-1 text-xs font-bold text-white py-1 px-2 rounded-lg bg-black/30 border border-white/5"
+              />
             </View>
-        </ScrollView>
+
+            {/* Grading Pills */}
+            <View className="flex-row gap-1">
+              {GRADE_OPTIONS.map((g) => {
+                const isSelected = player.grade === g.id;
+
+                return (
+                  <TouchableOpacity
+                    key={g.id}
+                    onPress={() => handleGradeSelect(player.id, g.id)}
+                    className={`w-7 h-7 rounded-lg items-center justify-center border ${
+                      isSelected
+                        ? `${g.color} border-white/40 shadow-sm`
+                        : 'bg-black/40 border-white/10'
+                    }`}
+                  >
+                    <Text
+                      className={`text-[9px] font-black ${
+                        isSelected ? 'text-white' : 'text-white/50'
+                      }`}
+                    >
+                      {g.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        ))}
+      </View>
+
+      {/* Action Bar */}
+      <SectionActionBar
+        onReset={handleReset}
+        onSave={() => updateReflection({ attendance: fullData })}
+        sectionKey="roster"
+        data={fullData}
+      />
     </View>
   );
 }
+
+export default PlayerAttendanceGrade;

@@ -1,218 +1,283 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
-import { styled } from "nativewind";
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useActiveSession } from "../../hooks/useActiveSession";
-import { Card, CardContent } from "../ui/Card";
-import { Input } from "../ui/Input";
-
-const StyledText = styled(Text);
-const StyledView = styled(View);
-const StyledTouchableOpacity = styled(TouchableOpacity);
+import { useActiveSession } from '../../hooks/useActiveSession';
+import { SectionActionBar } from '../ui/SectionActionBar';
 
 const EVALUATION_CATEGORIES = {
   TECHNIQUE: [
-    "Ability to play with both feet",
-    "Passing",
-    "Controlling and releasing the ball",
-    "Feinting and dribbling",
-    "Shooting at goal finishing technique",
-    "Heading",
-    "Tackling",
-    "Playing without the ball",
+    'Ability to play with both feet',
+    'Passing',
+    'Controlling and releasing the ball',
+    'Feinting and dribbling',
+    'Shooting / finishing',
+    'Heading',
+    'Tackling',
+    'Playing without the ball',
   ],
-  "PHYSICAL ATTRIBUTES": [
-    "Strength (Explosiveness)",
-    "Speed",
-    "Endurance",
-    "Suppleness (Mobility)",
-    "Core Muscles",
+  'PHYSICAL ATTRIBUTES': [
+    'Strength (explosiveness)',
+    'Speed',
+    'Endurance',
+    'Suppleness (mobility)',
+    'Core muscles',
   ],
-  "TACTICAL AWARENESS / COGNITIVE SKILLS": [
-    "Reading the game",
-    "Attacking play attacking one-on-one",
-    "Defensive play defending one-on-one",
-    "Technique under pressure",
+  'TACTICAL AWARENESS': [
+    'Reading the game',
+    'Attacking one-on-one',
+    'Defending one-on-one',
+    'Technique under pressure',
   ],
-  "CO-ORDINATION": [
-    "Orientation",
-    "Endurance",
-    "Rhythm",
-    "Differentiation",
-    "Reaction",
-    "Balance",
+  'CO-ORDINATION': [
+    'Orientation',
+    'Endurance',
+    'Rhythm',
+    'Differentiation',
+    'Reaction',
+    'Balance',
   ],
-  "MENTAL STRENGTHS": [
-    "Concentration",
-    "Willpower will to win",
-    "Perseverance",
-    "Confidence",
-    "Willingness to take risks",
-    "Creativity",
-    "Aggression",
+  'MENTAL STRENGTHS': [
+    'Concentration',
+    'Willpower / will to win',
+    'Perseverance',
+    'Confidence',
+    'Willingness to take risks',
+    'Creativity',
+    'Aggression',
   ],
-  "SOCIAL SKILLS AND ATTRIBUTES": [
-    "Communication",
-    "Behavior positive attitude",
-    "Charisma / Personality",
+  'SOCIAL SKILLS': [
+    'Communication',
+    'Behaviour / positive attitude',
+    'Charisma / personality',
+    'Team player',
   ],
+  'PHYSICAL STATE': ['General state of health'],
 };
+
+const RATING_OPTIONS = [
+  { value: 1, label: '1', full: 'Very Good', color: 'bg-emerald-500' },
+  { value: 2, label: '2', full: 'Good', color: 'bg-[#00AEEF]' },
+  { value: 3, label: '3', full: 'Average', color: 'bg-[#F59E0B]' },
+  { value: 4, label: '4', full: 'Poor', color: 'bg-[#EF4444]' },
+];
 
 export function PlayerEvaluation() {
   const { reflection, updateReflection } = useActiveSession();
 
-  const [evaluatedBy, setEvaluatedBy] = useState("");
-  const [playerName, setPlayerName] = useState("");
-  const [playerAge, setPlayerAge] = useState("");
+  const [evaluatedBy, setEvaluatedBy] = useState('');
+  const [playerName, setPlayerName] = useState('');
+  const [playerAge, setPlayerAge] = useState('');
   const [ratings, setRatings] = useState({});
 
   useEffect(() => {
-    const loadData = async () => {
-        try {
-            const savedBy = await AsyncStorage.getItem("playerEvaluationBy");
-            const savedName = await AsyncStorage.getItem("playerEvaluationName");
-            const savedAge = await AsyncStorage.getItem("playerEvaluationAge");
-            const savedRatings = await AsyncStorage.getItem("playerEvaluation");
+    async function loadData() {
+      try {
+        const savedBy = await AsyncStorage.getItem('playerEvaluationBy');
+        const savedName = await AsyncStorage.getItem('playerEvaluationName');
+        const savedAge = await AsyncStorage.getItem('playerEvaluationAge');
+        const savedRatings = await AsyncStorage.getItem('playerEvaluation');
 
-            if (savedBy) setEvaluatedBy(savedBy);
-            if (savedName) setPlayerName(savedName);
-            if (savedAge) setPlayerAge(savedAge);
-            if (savedRatings) setRatings(JSON.parse(savedRatings));
-        } catch (e) {
-            console.error(e);
-        }
-    };
+        if (savedBy) setEvaluatedBy(savedBy);
+        if (savedName) setPlayerName(savedName);
+        if (savedAge) setPlayerAge(savedAge);
+        if (savedRatings) setRatings(JSON.parse(savedRatings));
+      } catch (e) {
+        console.error('Error loading evaluation:', e);
+      }
+    }
     loadData();
   }, []);
 
   useEffect(() => {
-      AsyncStorage.setItem("playerEvaluationBy", evaluatedBy);
-      AsyncStorage.setItem("playerEvaluationName", playerName);
-      AsyncStorage.setItem("playerEvaluationAge", playerAge);
-      AsyncStorage.setItem("playerEvaluation", JSON.stringify(ratings));
-  }, [evaluatedBy, playerName, playerAge, ratings]);
-
-  useEffect(() => {
-    if (reflection) {
-      if (reflection.detailedEvaluation) setRatings(prev => ({...prev, ...reflection.detailedEvaluation}));
-      if (reflection.evaluatedBy) setEvaluatedBy(reflection.evaluatedBy);
-      if (reflection.playerEvaluationName) setPlayerName(reflection.playerEvaluationName);
-      if (reflection.playerEvaluationAge) setPlayerAge(reflection.playerEvaluationAge);
+    if (reflection?.detailedEvaluation) {
+      setRatings((prev) => ({ ...prev, ...reflection.detailedEvaluation }));
     }
+    if (reflection?.evaluatedBy) setEvaluatedBy(reflection.evaluatedBy);
   }, [reflection]);
 
-  const handleRatingChange = async (category, skill, rating) => {
-    const newRatings = {
+  const handleRatingChange = async (category, skill, ratingVal) => {
+    const updated = {
       ...ratings,
-      [category]: {
-        ...(ratings[category] || {}),
-        [skill]: rating,
-      },
+      [category]: { ...(ratings[category] || {}), [skill]: ratingVal },
     };
-    setRatings(newRatings);
-    await updateReflection({ detailedEvaluation: newRatings });
+    setRatings(updated);
+    await AsyncStorage.setItem('playerEvaluation', JSON.stringify(updated));
+    updateReflection({ detailedEvaluation: updated });
   };
 
-  const updateField = async (setter, key, value) => {
-      setter(value);
-      await updateReflection({ [key]: value });
+  const handleEvaluatorChange = async (text) => {
+    setEvaluatedBy(text);
+    await AsyncStorage.setItem('playerEvaluationBy', text);
+    updateReflection({ evaluatedBy: text });
+  };
+
+  const handleNameChange = async (text) => {
+    setPlayerName(text);
+    await AsyncStorage.setItem('playerEvaluationName', text);
+  };
+
+  const handleAgeChange = async (text) => {
+    setPlayerAge(text);
+    await AsyncStorage.setItem('playerEvaluationAge', text);
+  };
+
+  const handleReset = () => {
+    Alert.alert('Reset Evaluation', 'Clear all grades and ratings?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Reset',
+        style: 'destructive',
+        onPress: async () => {
+          setRatings({});
+          await AsyncStorage.removeItem('playerEvaluation');
+          updateReflection({ detailedEvaluation: {} });
+        },
+      },
+    ]);
   };
 
   return (
-    <View className="mb-6 bg-white dark:bg-[#1A1A1A] p-2 rounded-xl">
-        <View className="mb-4 border-b-2 border-black dark:border-white pb-2">
-          <StyledText className="text-xl font-black uppercase text-black dark:text-white">
-            PLAYER EVALUATIONS
-          </StyledText>
+    <View className="space-y-4 pb-6">
+      {/* ── Title Header ── */}
+      <View className="flex-row items-center justify-between py-1">
+        <Text className="text-xl font-black uppercase text-[#FF4422] tracking-wider">
+          PLAYER EVALUATION
+        </Text>
+        <Text className="text-[10px] font-bold text-white/50 tracking-wider">
+          COACH & PARENT GRADE
+        </Text>
+      </View>
+
+      {/* ── Metadata Inputs ── */}
+      <View className="p-3.5 rounded-2xl border border-white/10 bg-[#12151D] space-y-2.5">
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <View style={{ flex: 1 }}>
+            <Text className="text-[8.5px] font-black uppercase text-white/60 mb-1">
+              PLAYER NAME
+            </Text>
+            <TextInput
+              value={playerName}
+              onChangeText={handleNameChange}
+              placeholder="Player Name"
+              placeholderTextColor="rgba(255,255,255,0.3)"
+              className="bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs font-bold text-white"
+            />
+          </View>
+          <View style={{ width: 85 }}>
+            <Text className="text-[8.5px] font-black uppercase text-white/60 mb-1">
+              AGE
+            </Text>
+            <TextInput
+              value={playerAge}
+              onChangeText={handleAgeChange}
+              placeholder="Age"
+              placeholderTextColor="rgba(255,255,255,0.3)"
+              keyboardType="numeric"
+              className="bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs font-bold text-white text-center"
+            />
+          </View>
         </View>
 
-        <View className="gap-y-4 mb-4">
-            <View className="flex-row gap-4">
-                <View className="flex-1">
-                    <StyledText className="text-xs font-black uppercase text-gray-800 dark:text-gray-200 mb-1">NAME:</StyledText>
-                    <Input 
-                        value={playerName} 
-                        onChangeText={(text) => updateField(setPlayerName, 'playerEvaluationName', text)}
-                        className="bg-[#E5E5E5] text-black border-none"
-                    />
-                </View>
-                <View className="w-24">
-                     <StyledText className="text-xs font-black uppercase text-gray-800 dark:text-gray-200 mb-1">AGE:</StyledText>
-                     <Input 
-                        value={playerAge} 
-                        onChangeText={(text) => updateField(setPlayerAge, 'playerEvaluationAge', text)}
-                        className="bg-[#E5E5E5] text-black border-none"
-                    />
-                </View>
-            </View>
-
-            <View>
-                 <StyledText className="text-xs font-black uppercase text-gray-800 dark:text-gray-200 mb-1">PLAYER EVALUATION BY:</StyledText>
-                 <Input 
-                    value={evaluatedBy} 
-                    onChangeText={(text) => updateField(setEvaluatedBy, 'evaluatedBy', text)}
-                    className="bg-[#E5E5E5] text-black border-none"
-                />
-            </View>
+        <View>
+          <Text className="text-[8.5px] font-black uppercase text-white/60 mb-1">
+            EVALUATION BY
+          </Text>
+          <TextInput
+            value={evaluatedBy}
+            onChangeText={handleEvaluatorChange}
+            placeholder="Coach / Parent Name"
+            placeholderTextColor="rgba(255,255,255,0.3)"
+            className="bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs font-bold text-white"
+          />
         </View>
+      </View>
 
-        <View className="flex-row justify-between items-center mb-4">
-            <StyledText className="text-[10px] font-black uppercase text-black dark:text-white">EVALUATION:</StyledText>
-            <View className="flex-row gap-2">
-                {[
-                    {id: 1, label: "VERY GOOD"},
-                    {id: 2, label: "GOOD"},
-                    {id: 3, label: "AVERAGE"},
-                    {id: 4, label: "POOR"}
-                ].map(item => (
-                    <StyledText key={item.id} className="text-[10px] font-bold text-black dark:text-white">
-                        {item.id}: {item.label}
-                    </StyledText>
-                ))}
-            </View>
+      {/* ── Rating Scale Legend ── */}
+      <View className="p-2.5 rounded-xl border border-white/10 bg-black/30 flex-row items-center justify-around">
+        <View className="flex-row items-center gap-1">
+          <View className="w-2 h-2 rounded-full bg-emerald-400" />
+          <Text className="text-[9px] font-black uppercase text-emerald-400">1 = Very Good</Text>
         </View>
-
-        <View className="mb-2 flex-row px-1">
-            <View className="flex-1" />
-            {[1, 2, 3, 4].map(num => (
-                <View key={num} className="w-8 items-center justify-center border border-black/20 dark:border-white/20">
-                    <StyledText className="text-xs font-bold text-black dark:text-white">{num}</StyledText>
-                </View>
-            ))}
+        <View className="flex-row items-center gap-1">
+          <View className="w-2 h-2 rounded-full bg-[#00AEEF]" />
+          <Text className="text-[9px] font-black uppercase text-[#00AEEF]">2 = Good</Text>
         </View>
+        <View className="flex-row items-center gap-1">
+          <View className="w-2 h-2 rounded-full bg-[#F59E0B]" />
+          <Text className="text-[9px] font-black uppercase text-[#F59E0B]">3 = Average</Text>
+        </View>
+        <View className="flex-row items-center gap-1">
+          <View className="w-2 h-2 rounded-full bg-[#EF4444]" />
+          <Text className="text-[9px] font-black uppercase text-[#EF4444]">4 = Poor</Text>
+        </View>
+      </View>
 
-        <View className="gap-y-6">
-            {Object.entries(EVALUATION_CATEGORIES).map(([category, skills]) => (
-                <View key={category}>
-                    <StyledText className="text-sm font-black uppercase mb-1 border-b border-gray-200 dark:border-gray-700 pb-1 text-black dark:text-white">
-                        {category}
-                    </StyledText>
-                    <View className="gap-y-1">
-                        {skills.map(skill => {
-                            const currentRating = ratings[category]?.[skill];
-                            return (
-                                <View key={skill} className="flex-row items-center min-h-[40px] py-1">
-                                    <StyledText className="flex-1 text-[10px] font-bold uppercase text-gray-800 dark:text-gray-300 pr-2">
-                                        {skill}
-                                    </StyledText>
-                                    {[1, 2, 3, 4].map(rating => (
-                                        <StyledTouchableOpacity
-                                            key={rating}
-                                            onPress={() => handleRatingChange(category, skill, rating)}
-                                            className="w-8 h-8 items-center justify-center p-1"
-                                        >
-                                            <View className={`w-5 h-5 rounded-sm border border-gray-300 ${
-                                                currentRating === rating ? "bg-[#FF4422] border-[#FF4422]" : "bg-transparent"
-                                            }`} />
-                                        </StyledTouchableOpacity>
-                                    ))}
-                                </View>
-                            );
-                        })}
+      {/* ── EVALUATION CATEGORIES LIST ── */}
+      <View className="space-y-3">
+        {Object.entries(EVALUATION_CATEGORIES).map(([category, skills]) => (
+          <View
+            key={category}
+            className="rounded-2xl border border-white/10 bg-[#12151D] p-3.5 space-y-2.5 shadow-md"
+          >
+            <Text className="text-xs font-black uppercase tracking-wider text-yellow-400 border-b border-white/10 pb-1.5">
+              {category}
+            </Text>
+
+            <View className="space-y-2">
+              {skills.map((skill) => {
+                const currentVal = ratings[category]?.[skill];
+
+                return (
+                  <View
+                    key={skill}
+                    className="p-2 rounded-xl bg-black/30 border border-white/5 space-y-1.5"
+                  >
+                    <Text className="text-xs font-semibold text-white/90">
+                      {skill}
+                    </Text>
+
+                    <View className="flex-row gap-1.5">
+                      {RATING_OPTIONS.map((opt) => {
+                        const isSelected = currentVal === opt.value;
+
+                        return (
+                          <TouchableOpacity
+                            key={opt.value}
+                            onPress={() => handleRatingChange(category, skill, opt.value)}
+                            className={`flex-1 py-1.5 rounded-lg items-center justify-center border ${
+                              isSelected
+                                ? `${opt.color} border-white/40 shadow-sm`
+                                : 'bg-black/40 border-white/10'
+                            }`}
+                          >
+                            <Text
+                              className={`text-[10px] font-black uppercase ${
+                                isSelected ? 'text-white' : 'text-white/60'
+                              }`}
+                            >
+                              {opt.label}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
                     </View>
-                </View>
-            ))}
-        </View>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        ))}
+      </View>
+
+      {/* Action Bar */}
+      <SectionActionBar
+        onReset={handleReset}
+        onSave={() => updateReflection({ detailedEvaluation: ratings, evaluatedBy })}
+        sectionKey="evaluation"
+        data={{ evaluatedBy, playerName, playerAge, ratings }}
+      />
     </View>
   );
 }
+
+export default PlayerEvaluation;

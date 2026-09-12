@@ -81,12 +81,26 @@ export function useActiveSession() {
 
   // Calculate stats from touches (computed from touches array)
   const stats = useMemo(() => {
+    const INDEPENDENT_EVENTS = [
+      'Yellow Card',
+      'Red Card',
+      'Missed Game',
+      'Sub In',
+      'Sub Out',
+      'Injury',
+      'Penalty',
+      'Penalty Kick',
+      'Keep-Up-Feet',
+      'Keep-Up-Head'
+    ];
+
     const initialStats = {
       total: 0, good: 0, bad: 0,
       Pass: 0, Dribble: 0, 'Corner Kick': 0, Header: 0, Tackle: 0,
-      Goal: 0, Shot: 0, 'Free Kick': 0, 'Penalty Kick': 0, Cross: 0,
-      'Yellow Card': 0, 'Red Card': 0, 'Goal Kick': 0, 'Throw-In': 0
-      // Add other actions here if they appear in the wheel
+      Goal: 0, Shot: 0, 'Free Kick': 0, 'Penalty Kick': 0, Penalty: 0, Cross: 0,
+      'Yellow Card': 0, 'Red Card': 0, 'Goal Kick': 0, 'Throw-In': 0,
+      'Missed Game': 0, 'Sub In': 0, 'Sub Out': 0, Injury: 0,
+      'Keep-Up-Feet': 0, 'Keep-Up-Head': 0
     };
 
     if (!touches || touches.length === 0) {
@@ -94,13 +108,22 @@ export function useActiveSession() {
     }
 
     return touches.reduce((acc, touch) => {
-      acc.total++;
-      if (touch.quality === 'Positive') acc.good++;
-      if (touch.quality === 'Negative') acc.bad++;
+      const isIndependent = INDEPENDENT_EVENTS.includes(touch.actionType) || touch.quality === 'Event';
+
+      if (!isIndependent) {
+        acc.total++;
+        if (touch.quality === 'Positive') acc.good++;
+        if (touch.quality === 'Negative') acc.bad++;
+      }
 
       // Increment action count if it exists in our map, otherwise ignore or init
       if (touch.actionType) {
         acc[touch.actionType] = (acc[touch.actionType] || 0) + 1;
+        if (touch.actionType === 'Penalty Kick') {
+          acc.Penalty = (acc.Penalty || 0) + 1;
+        } else if (touch.actionType === 'Penalty') {
+          acc['Penalty Kick'] = (acc['Penalty Kick'] || 0) + 1;
+        }
       }
       return acc;
     }, initialStats);
@@ -128,6 +151,28 @@ export function useActiveSession() {
       });
     } catch (error) {
       console.error('Error adding touch:', error);
+    }
+  };
+
+  // Remove specific touch function
+  const removeTouch = async (actionType) => {
+    if (!sessionId) return;
+    try {
+      const allTouches = await db.touches
+        .where('sessionId')
+        .equals(sessionId)
+        .reverse()
+        .sortBy('timestamp');
+      if (allTouches.length > 0) {
+        const target = actionType
+          ? allTouches.find(t => t.actionType === actionType || (actionType === 'Penalty' && t.actionType === 'Penalty Kick'))
+          : allTouches[0];
+        if (target) {
+          await db.touches.delete(target.id);
+        }
+      }
+    } catch (error) {
+      console.error('Error removing touch:', error);
     }
   };
 
@@ -176,6 +221,7 @@ export function useActiveSession() {
     stats: stats || { total: 0, good: 0, bad: 0 },
     updateSession,
     addTouch,
+    removeTouch,
     undoLastTouch,
     updateReflection
   };

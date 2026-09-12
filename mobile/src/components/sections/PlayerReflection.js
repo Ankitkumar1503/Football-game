@@ -1,67 +1,51 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
-import { styled } from "nativewind";
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useActiveSession } from "../../hooks/useActiveSession";
+import { useActiveSession } from '../../hooks/useActiveSession';
+import { SectionActionBar } from '../ui/SectionActionBar';
 
 const WELL_DONE_TAGS = [
-  "ATTACKING", "FINISHING", "DEFENDING", "TACKLING", "LONG BALLS",
-  "TRAPPING", "TRANSITION", "FREE KICKS", "MARKING", "SPEED",
-  "PENALTIES", "ENDURANCE", "CORNERS", "PASSING", "LEADERSHIP",
-  "DECISIONS", "SUPPORT", "CREATE SPACE", "BALL CONTROL",
-  "THROW-IN", "HEADING",
+  'ATTACKING', 'FINISHING', 'DEFENDING', 'TACKLING', 'LONG BALLS',
+  'TRAPPING', 'TRANSITION', 'FREE KICKS', 'MARKING', 'SPEED',
+  'PENALTIES', 'ENDURANCE', 'CORNERS', 'PASSING', 'LEADERSHIP',
+  'DECISIONS', 'SUPPORT', 'CREATE SPACE', 'BALL CONTROL',
+  'THROW-IN', 'HEADING',
 ];
 
 const PERFORMANCE_METRICS = [
-  "ENDURANCE", "ENERGY", "DECISION MAKING", "CONFIDENCE",
-  "MOTIVATION", "ENJOYMENT", "FOCUS", "PERFORMANCE",
-  "FIRST TOUCH", "PASSING", "RECEIVING", "WILL",
-  "FITNESS", "FUN", "WILL TO WIN", "TEAM PLAYER",
+  'ENDURANCE', 'ENERGY', 'DECISION MAKING', 'CONFIDENCE',
+  'MOTIVATION', 'ENJOYMENT', 'FOCUS', 'PERFORMANCE',
+  'FIRST TOUCH', 'PASSING', 'RECEIVING', 'WILL',
+  'FITNESS', 'FUN', 'WILL TO WIN', 'TEAM PLAYER',
 ];
 
-const StyledInput = styled(TextInput, "bg-white text-black px-3 py-2 text-sm font-bold uppercase border border-gray-200 rounded");
-
 export function PlayerReflection() {
-  const { sessionId, reflection, updateReflection } = useActiveSession();
-  
+  const { reflection, updateReflection } = useActiveSession();
+
   const [formData, setFormData] = useState({
     wellDoneTags: [],
-    playerName: "",
-    playerAge: "",
-    achievedGoal: "",
-    whatLearned: "",
-    whatWouldChange: "",
+    playerName: '',
+    playerAge: '',
+    achievedGoal: '',
+    whatLearned: '',
+    whatWouldChange: '',
     detailedPerformance: {},
   });
 
-  // Load from AsyncStorage on mount
   useEffect(() => {
-    const loadSaved = async () => {
+    async function loadSaved() {
       try {
-        const saved = await AsyncStorage.getItem("playerReflection");
+        const saved = await AsyncStorage.getItem('playerReflection');
         if (saved) {
           setFormData(JSON.parse(saved));
+        } else if (reflection && Object.keys(reflection).length > 0) {
+          setFormData((prev) => ({ ...prev, ...reflection }));
         }
       } catch (e) {
-        console.error("Error loading reflection:", e);
+        console.error('Error loading reflection:', e);
       }
-    };
-    loadSaved();
-  }, []);
-
-  // Save to AsyncStorage on change
-  useEffect(() => {
-    AsyncStorage.setItem("playerReflection", JSON.stringify(formData));
-  }, [formData]);
-
-  // Sync with DB
-  useEffect(() => {
-    if (reflection) {
-        // Merge logic could be improved, but for now simple sync if DB has data
-        if (Object.keys(reflection).length > 0) {
-             setFormData(prev => ({ ...prev, ...reflection }));
-        }
     }
+    loadSaved();
   }, [reflection]);
 
   const handleTagToggle = async (tag) => {
@@ -72,19 +56,19 @@ export function PlayerReflection() {
 
     const newData = { ...formData, wellDoneTags: newTags };
     setFormData(newData);
-    await updateReflection({ wellDoneTags: newTags });
+    await AsyncStorage.setItem('playerReflection', JSON.stringify(newData));
+    updateReflection({ wellDoneTags: newTags });
   };
 
   const handleTextChange = async (key, value) => {
     const newData = { ...formData, [key]: value };
     setFormData(newData);
-    // Debounce this in a real app, but for now direct update is fine for local dev
-    await updateReflection({ [key]: value });
+    await AsyncStorage.setItem('playerReflection', JSON.stringify(newData));
+    updateReflection({ [key]: value });
   };
 
   const handleMetricChange = async (metric, value) => {
-    const numValue = parseInt(value) || 0;
-    // Limit 1-10
+    const numValue = parseInt(value, 10) || 0;
     if (numValue < 0 || numValue > 10) return;
 
     const newMetrics = {
@@ -93,103 +77,208 @@ export function PlayerReflection() {
     };
     const newData = { ...formData, detailedPerformance: newMetrics };
     setFormData(newData);
-    await updateReflection({ detailedPerformance: newMetrics });
+    await AsyncStorage.setItem('playerReflection', JSON.stringify(newData));
+    updateReflection({ detailedPerformance: newMetrics });
+  };
+
+  const handleReset = () => {
+    Alert.alert('Reset Reflection', 'Clear reflection answers?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Reset',
+        style: 'destructive',
+        onPress: async () => {
+          const empty = {
+            wellDoneTags: [],
+            playerName: '',
+            playerAge: '',
+            achievedGoal: '',
+            whatLearned: '',
+            whatWouldChange: '',
+            detailedPerformance: {},
+          };
+          setFormData(empty);
+          await AsyncStorage.setItem('playerReflection', JSON.stringify(empty));
+          updateReflection(empty);
+        },
+      },
+    ]);
   };
 
   return (
-    <View className="mb-6 bg-white dark:bg-[#1A1A1A] p-4 rounded-xl">
-      <View className="mb-6 border-b-2 border-black dark:border-white pb-2">
-        <Text className="text-xl font-black uppercase text-black dark:text-white">
+    <View className="space-y-4 pb-6">
+      {/* ── Title Header ── */}
+      <View className="flex-row items-center justify-between py-1">
+        <Text className="text-xl font-black uppercase text-[#FF4422] tracking-wider">
           PLAYER REFLECTION
         </Text>
-        <View className="flex-row gap-4 mb-1 mt-2">
-            <View className="flex-1">
-                <Text className="text-xs font-black uppercase text-black dark:text-white mb-1">NAME:</Text>
-                <StyledInput 
-                    value={formData.playerName}
-                    onChangeText={(text) => handleTextChange('playerName', text)}
-                    placeholder="NAME"
-                />
-            </View>
-            <View className="w-20">
-                <Text className="text-xs font-black uppercase text-black dark:text-white mb-1">AGE:</Text>
-                <StyledInput 
-                    value={formData.playerAge}
-                    onChangeText={(text) => handleTextChange('playerAge', text)}
-                    placeholder="AGE"
-                    keyboardType="numeric"
-                />
-            </View>
+        <Text className="text-[10px] font-bold text-white/50 tracking-wider">
+          POST-MATCH REVIEW
+        </Text>
+      </View>
+
+      {/* ── Name & Age Card ── */}
+      <View style={{ flexDirection: 'row', gap: 10 }} className="p-3.5 rounded-2xl border border-white/10 bg-[#12151D]">
+        <View style={{ flex: 1 }}>
+          <Text className="text-[9px] font-black uppercase text-white/70 mb-1">
+            PLAYER NAME
+          </Text>
+          <TextInput
+            value={formData.playerName}
+            onChangeText={(text) => handleTextChange('playerName', text)}
+            placeholder="Player Name"
+            placeholderTextColor="rgba(255,255,255,0.3)"
+            className="bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs font-bold text-white"
+          />
+        </View>
+        <View style={{ width: 85 }}>
+          <Text className="text-[9px] font-black uppercase text-white/70 mb-1">
+            AGE
+          </Text>
+          <TextInput
+            value={formData.playerAge}
+            onChangeText={(text) => handleTextChange('playerAge', text)}
+            placeholder="Age"
+            placeholderTextColor="rgba(255,255,255,0.3)"
+            keyboardType="numeric"
+            className="bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs font-bold text-white text-center"
+          />
         </View>
       </View>
 
-      <View className="mb-8">
-        <Text className="text-sm font-black uppercase mb-3 text-black dark:text-white">
+      {/* ── WHAT DID YOU DO WELL TAGS ── */}
+      <View className="space-y-2">
+        <Text
+          style={{ letterSpacing: 2 }}
+          className="text-xs font-black uppercase text-white/70 px-0.5"
+        >
           WHAT DID YOU DO WELL:
         </Text>
-        <View className="flex-row flex-wrap gap-2">
-          {WELL_DONE_TAGS.map((tag) => (
-            <TouchableOpacity
-              key={tag}
-              onPress={() => handleTagToggle(tag)}
-              className={`flex-row items-center gap-2 p-1 ${formData.wellDoneTags?.includes(tag) ? 'bg-gray-100' : ''}`}
-            >
-              <View className={`w-4 h-4 border-2 items-center justify-center bg-white border-black`}>
-                {formData.wellDoneTags?.includes(tag) && <View className="w-2 h-2 bg-black" />}
-              </View>
-              <Text className="text-[10px] font-bold uppercase text-black dark:text-white">
-                {tag}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        <View className="flex-row flex-wrap gap-2 p-3.5 rounded-2xl border border-white/10 bg-[#12151D]">
+          {WELL_DONE_TAGS.map((tag) => {
+            const isSelected = formData.wellDoneTags?.includes(tag);
+            return (
+              <TouchableOpacity
+                key={tag}
+                activeOpacity={0.7}
+                onPress={() => handleTagToggle(tag)}
+                className={`px-3 py-1.5 rounded-xl border ${
+                  isSelected
+                    ? 'bg-[#FF4422] border-[#FF4422]'
+                    : 'bg-black/30 border-white/10'
+                }`}
+              >
+                <Text
+                  className={`text-[9.5px] font-black uppercase tracking-wider ${
+                    isSelected ? 'text-white' : 'text-white/60'
+                  }`}
+                >
+                  {tag}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
 
-      <View className="gap-y-4 mb-8">
+      {/* ── REFLECTION TEXT INPUTS ── */}
+      <View className="space-y-3">
         <View>
-            <Text className="text-sm font-black uppercase mb-1 text-black dark:text-white">DID YOU ACHIEVE YOUR GOAL?</Text>
-            <StyledInput 
-                value={formData.achievedGoal}
-                onChangeText={(text) => handleTextChange('achievedGoal', text)}
-            />
+          <Text className="text-[9px] font-black uppercase tracking-wider text-white/70 mb-1 px-1">
+            DID YOU ACHIEVE YOUR GOAL?
+          </Text>
+          <TextInput
+            multiline
+            numberOfLines={2}
+            value={formData.achievedGoal}
+            onChangeText={(text) => handleTextChange('achievedGoal', text)}
+            placeholder="Describe your match goal and outcome..."
+            placeholderTextColor="rgba(255,255,255,0.3)"
+            className="w-full bg-[#12151D] text-white p-3 text-xs font-medium rounded-xl border border-white/15"
+          />
         </View>
+
         <View>
-            <Text className="text-sm font-black uppercase mb-1 text-black dark:text-white">WHAT DID YOU LEARN?</Text>
-             <StyledInput 
-                value={formData.whatLearned}
-                onChangeText={(text) => handleTextChange('whatLearned', text)}
-            />
+          <Text className="text-[9px] font-black uppercase tracking-wider text-white/70 mb-1 px-1">
+            WHAT DID YOU LEARN?
+          </Text>
+          <TextInput
+            multiline
+            numberOfLines={2}
+            value={formData.whatLearned}
+            onChangeText={(text) => handleTextChange('whatLearned', text)}
+            placeholder="Key takeaways..."
+            placeholderTextColor="rgba(255,255,255,0.3)"
+            className="w-full bg-[#12151D] text-white p-3 text-xs font-medium rounded-xl border border-white/15"
+          />
         </View>
+
         <View>
-            <Text className="text-sm font-black uppercase mb-1 text-black dark:text-white">WHAT WOULD YOU CHANGE?</Text>
-             <StyledInput 
-                value={formData.whatWouldChange}
-                onChangeText={(text) => handleTextChange('whatWouldChange', text)}
-            />
+          <Text className="text-[9px] font-black uppercase tracking-wider text-white/70 mb-1 px-1">
+            WHAT WOULD YOU CHANGE?
+          </Text>
+          <TextInput
+            multiline
+            numberOfLines={2}
+            value={formData.whatWouldChange}
+            onChangeText={(text) => handleTextChange('whatWouldChange', text)}
+            placeholder="Tactics, decisions..."
+            placeholderTextColor="rgba(255,255,255,0.3)"
+            className="w-full bg-[#12151D] text-white p-3 text-xs font-medium rounded-xl border border-white/15"
+          />
         </View>
       </View>
 
-      <View>
-        <Text className="text-sm font-black uppercase mb-4 text-black dark:text-white">
-          REFLECT ON YOUR GAME PERFORMANCE: 1-10
+      {/* ── PERFORMANCE RATINGS (1-10) ── */}
+      <View className="space-y-2 pt-1">
+        <Text
+          style={{ letterSpacing: 2 }}
+          className="text-xs font-black uppercase text-white/70 px-0.5"
+        >
+          GAME PERFORMANCE RATINGS: (1–10)
         </Text>
-        <View className="flex-row flex-wrap gap-x-8 gap-y-2">
-          {PERFORMANCE_METRICS.map((metric) => (
-            <View key={metric} className="flex-row items-center gap-2 w-[45%]">
-              <StyledInput
-                className="w-12 h-8 text-center"
-                keyboardType="numeric"
-                maxLength={2}
-                value={String(formData.detailedPerformance?.[metric] || "")}
-                onChangeText={(text) => handleMetricChange(metric, text)}
-              />
-              <Text className="text-[10px] font-bold uppercase text-black dark:text-white flex-1">
-                {metric}
-              </Text>
+        <View className="space-y-2 p-3 rounded-2xl border border-white/10 bg-[#12151D]">
+          {Array.from({ length: Math.ceil(PERFORMANCE_METRICS.length / 2) }, (_, i) =>
+            PERFORMANCE_METRICS.slice(i * 2, i * 2 + 2)
+          ).map((pair, rowIndex) => (
+            <View key={rowIndex} style={{ flexDirection: 'row', gap: 8 }}>
+              {pair.map((metric) => (
+                <View
+                  key={metric}
+                  style={{ flex: 1 }}
+                  className="flex-row items-center justify-between bg-black/30 p-2 rounded-xl border border-white/5"
+                >
+                  <Text
+                    numberOfLines={1}
+                    className="text-[8.5px] font-black uppercase text-white/70 flex-1 pr-1"
+                  >
+                    {metric}
+                  </Text>
+                  <TextInput
+                    keyboardType="numeric"
+                    maxLength={2}
+                    placeholder="10"
+                    placeholderTextColor="rgba(255,255,255,0.2)"
+                    value={String(formData.detailedPerformance?.[metric] || '')}
+                    onChangeText={(text) => handleMetricChange(metric, text)}
+                    className="w-9 bg-white/10 text-[#FF4422] font-black text-xs text-center py-0.5 rounded-lg border border-white/10"
+                  />
+                </View>
+              ))}
             </View>
           ))}
         </View>
       </View>
+
+      {/* Action Bar */}
+      <SectionActionBar
+        onReset={handleReset}
+        onSave={() => updateReflection(formData)}
+        sectionKey="reflection"
+        data={formData}
+      />
     </View>
   );
 }
+
+export default PlayerReflection;

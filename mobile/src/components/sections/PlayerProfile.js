@@ -1,321 +1,759 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { Footprints } from "lucide-react-native";
-import { Card, CardContent } from "../ui/Card";
-import { Input } from "../ui/Input";
-import { useActiveSession } from "../../hooks/useActiveSession";
-import { useCumulativeStats } from "../../hooks/useCumulativeStats";
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  Modal,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import {
+  Check,
+  ChevronDown,
+  ChevronUp,
+  ArrowUp,
+  ArrowRight,
+  X,
+} from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { styled } from "nativewind";
+import { useActiveSession } from '../../hooks/useActiveSession';
+import { useAuth } from '../../contexts/AuthContext';
+import { registerPlayer } from '../../services/api';
 
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
+const POSITIONS = [
+  'Goalkeeper (GK)',
+  'Center Back (CB)',
+  'Left Back (LB)',
+  'Right Back (RB)',
+  'Defensive Midfielder (CDM)',
+  'Central Midfielder (CM)',
+  'Attacking Midfielder (CAM)',
+  'Left Winger (LW)',
+  'Right Winger (RW)',
+  'Striker / Forward (ST)',
+];
 
-function useDebounce(value, delay) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-  useEffect(() => {
-    const handler = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-  return debouncedValue;
-}
+const COUNTRIES = [
+  'United States',
+  'United Kingdom',
+  'Canada',
+  'Australia',
+  'Spain',
+  'Germany',
+  'France',
+  'Brazil',
+  'Argentina',
+  'Italy',
+  'Portugal',
+  'Netherlands',
+  'Mexico',
+  'Japan',
+  'South Korea',
+  'Nigeria',
+  'Ghana',
+  'Colombia',
+  'Chile',
+  'Other',
+];
+
+const GAME_TYPES = ['GRASSROOTS', '4V4', '7V7', '9V9', '11V11'];
 
 export function PlayerProfile() {
+  const navigation = useNavigation();
   const { session, updateSession } = useActiveSession();
-  const cumulativeStats = useCumulativeStats();
+  const { isRegistered, completeRegistration } = useAuth();
+
+  const [showOptionalFields, setShowOptionalFields] = useState(false);
+  const [positionModalOpen, setPositionModalOpen] = useState(false);
+  const [countryModalOpen, setCountryModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
-      level: "",
-      date: new Date().toISOString().split("T")[0],
-      time: new Date().toTimeString().slice(0, 5),
-      playerName: "",
-      age: "",
-      club: "",
-      team: "",
-      position: "",
-      totalYearsPlaying: "",
-      totalHoursTrained: "",
-      totalSessions: "",
-      gameNumber: "",
-      totalGames: "",
-      totalGoals: "",
-      totalPenalties: "",
-      yourPosition: "",
-      rightFooter: "",
-      leftFooter: "",
+    fullName: '',
+    playerName: '',
+    age: '',
+    club: '',
+    team: '',
+    position: '',
+    country: '',
+    activeFooter: '',
+    email: '',
+    cellPhone: '',
+    instagram: '',
+    tiktok: '',
+    favoriteTeam: '',
+    favoritePlayer: '',
+    gameTypes: [],
   });
 
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-      const loadLocal = async () => {
-          try {
-              const saved = await AsyncStorage.getItem("playerProfile");
-              if (saved) {
-                  const parsed = JSON.parse(saved);
-                  // If DB session is empty but we have local, use local (or if not loaded yet)
-                  if (!session.id || !isLoaded) {
-                       setFormData(prev => ({...prev, ...parsed}));
-                  }
-              }
-          } catch(e) {
-              console.error(e);
-          }
-      };
-      loadLocal();
-  }, []);
-
-  useEffect(() => {
-    if (session.id) {
-      const hasLocalData = formData.playerName || formData.club || formData.team;
-
-      if (!isLoaded) {
-        if (!hasLocalData || (session.playerName && session.playerName !== formData.playerName)) {
-          setFormData(prev => ({
+    async function loadProfile() {
+      try {
+        const saved = await AsyncStorage.getItem('playerProfile');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setFormData((prev) => ({
             ...prev,
-            ...session,
-            date: session.date || new Date().toISOString().split("T")[0],
-            time: session.time || new Date().toTimeString().slice(0, 5),
+            ...parsed,
+            fullName: parsed.fullName || parsed.playerName || '',
+          }));
+        } else if (session?.id) {
+          setFormData((prev) => ({
+            ...prev,
+            fullName: session.fullName || session.playerName || '',
+            age: session.age ? String(session.age) : '',
+            club: session.club || '',
+            team: session.team || '',
+            position: session.position || '',
+            activeFooter: session.activeFooter || '',
           }));
         }
+      } catch (e) {
+        console.error('Error loading profile:', e);
+      } finally {
         setIsLoaded(true);
       }
     }
-  }, [session, isLoaded]);
+    loadProfile();
+  }, [session]);
 
-  const debouncedData = useDebounce(formData, 800);
-
-  useEffect(() => {
-    AsyncStorage.setItem("playerProfile", JSON.stringify(formData));
-  }, [formData]);
-
-  useEffect(() => {
-    if (session.id && isLoaded) {
-      updateSession(debouncedData);
-    } else if (session.id && !isLoaded && (formData.playerName || formData.club)) {
-      updateSession(debouncedData);
+  const handleChange = async (field, value) => {
+    const updated = { ...formData, [field]: value };
+    if (field === 'fullName') {
+      updated.playerName = value;
     }
-  }, [debouncedData, session.id, isLoaded]);
-
-  const handleChange = (key, value) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
+    setFormData(updated);
+    try {
+      await AsyncStorage.setItem('playerProfile', JSON.stringify(updated));
+      if (session?.id) {
+        updateSession(updated);
+      }
+    } catch (e) {
+      console.error('Error updating field:', e);
+    }
   };
 
-  const handlePositionSelect = (num) => {
-    setFormData((prev) => ({ ...prev, position: num.toString() }));
+  const handleFootSelect = async (foot) => {
+    const footUpper = foot.toUpperCase();
+    const updated = {
+      ...formData,
+      activeFooter: footUpper,
+      leftFooter: footUpper === 'LEFT' ? 'LEFT' : '',
+      rightFooter: footUpper === 'RIGHT' ? 'RIGHT' : '',
+    };
+    setFormData(updated);
+    try {
+      await AsyncStorage.setItem('playerProfile', JSON.stringify(updated));
+      if (session?.id) {
+        updateSession(updated);
+      }
+    } catch (e) {
+      console.error('Error selecting foot:', e);
+    }
   };
+
+  const handleGameTypeToggle = async (type) => {
+    const current = formData.gameTypes || [];
+    const newTypes = current.includes(type)
+      ? current.filter((t) => t !== type)
+      : [...current, type];
+
+    const updated = { ...formData, gameTypes: newTypes };
+    setFormData(updated);
+    try {
+      await AsyncStorage.setItem('playerProfile', JSON.stringify(updated));
+      if (session?.id) {
+        updateSession(updated);
+      }
+    } catch (e) {
+      console.error('Error toggling game type:', e);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
+
+    if (!formData.activeFooter) {
+      Alert.alert(
+        'Dominant Foot Required',
+        'Please select whether you are a LEFT or RIGHT footer before continuing.'
+      );
+      return;
+    }
+
+    const name = (formData.fullName || formData.playerName || '').trim();
+    if (!name) {
+      Alert.alert(
+        'Player Name Required',
+        'Please enter your name before continuing.'
+      );
+      return;
+    }
+
+    if (formData.email && formData.email.trim() && !formData.email.includes('@')) {
+      Alert.alert(
+        'Invalid Email',
+        'Please enter a valid email address or leave it blank.'
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // 1. Submit to the live backend API
+      const result = await registerPlayer(formData);
+
+      const token = result?.token;
+      const backendData = result?.data || result?.player;
+
+      // 2. Persist local registration state
+      await completeRegistration(formData, token, backendData);
+
+      if (session?.id) {
+        await updateSession(formData);
+      }
+
+      // If editing existing profile while already registered, navigate back
+      if (isRegistered && navigation.canGoBack()) {
+        navigation.goBack();
+      }
+      // If newly registered, AuthContext's isRegistered state update will
+      // automatically cause AppNavigation to switch from Register to Dashboard stack!
+    } catch (error) {
+      console.error('Registration submission error:', error);
+      const serverMessage =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        (error?.message?.includes('Network Error')
+          ? 'Network error. Please check your internet connection and try again.'
+          : 'Registration failed. Please check your details and try again.');
+      Alert.alert('Registration Error', serverMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const isLeftSelected = formData.activeFooter === 'LEFT';
+  const isRightSelected = formData.activeFooter === 'RIGHT';
 
   return (
-    <View className="mb-8">
-      <Card className="bg-transparent border-none shadow-none">
-        <CardContent className="p-1 gap-y-4">
-          {/* Date & Time */}
-          <View className="flex-row gap-4">
-            <View className="flex-1 space-y-1">
-              <StyledText className="text-xs font-black uppercase text-gray-800 dark:text-gray-200">
-                Date
-              </StyledText>
-              <Input
-                value={formData.date}
-                onChangeText={(text) => handleChange('date', text)}
-                className="bg-[#E5E5E5] text-black border-none"
-                placeholder="YYYY-MM-DD"
-              />
-            </View>
-            <View className="flex-1 space-y-1">
-              <StyledText className="text-xs font-black uppercase text-gray-800 dark:text-gray-200">
-                Time
-              </StyledText>
-              <Input
-                value={formData.time}
-                onChangeText={(text) => handleChange('time', text)}
-                className="bg-[#E5E5E5] text-black border-none"
-                placeholder="HH:MM"
-              />
-            </View>
-          </View>
+    <View className="space-y-3 pb-8">
+      {/* ── TOP BRANDING & LOGOS ── */}
+      <View className="items-center justify-center space-y-1 pt-2">
+        <View className="w-14 h-14 items-center justify-center">
+          <Image
+            source={require('../../../assets/right_foot.png')}
+            className="w-14 h-14"
+            resizeMode="contain"
+          />
+        </View>
 
-          {/* Name & Age */}
-          <View className="flex-row gap-4">
-            <View className="flex-1 space-y-1">
-              <StyledText className="text-xs font-black uppercase text-gray-800 dark:text-gray-200">
-                Name of Player
-              </StyledText>
-              <Input
-                value={formData.playerName}
-                onChangeText={(text) => handleChange('playerName', text)}
-                className="bg-[#E5E5E5] text-black border-none"
+        <Text
+          style={{ letterSpacing: 2 }}
+          className="text-[10px] font-black uppercase text-white/70 mt-1"
+        >
+          FOOTBALLER ATHLETICS
+        </Text>
+
+        <View className="py-1">
+          <Image
+            source={require('../../../assets/touches_logo.png')}
+            className="w-44 h-10"
+            resizeMode="contain"
+          />
+        </View>
+
+        <Text
+          style={{ letterSpacing: 2 }}
+          className="text-[10px] font-black uppercase text-yellow-400"
+        >
+          TRACK • REFLECT • IMPROVE
+        </Text>
+      </View>
+
+      {/* ── MAIN CARD & DOMINANT FOOT SECTION ── */}
+      <View className="bg-[#0F121A] rounded-2xl p-4 border border-white/15 space-y-3.5 shadow-xl">
+        {/* Question Heading */}
+        <View className="items-center space-y-1">
+          <Text className="text-xl font-black uppercase text-white text-center leading-tight">
+            ARE YOU A <Text className="text-[#FF4422]">LEFT</Text> OR{' '}
+            <Text className="text-[#00AEEF]">RIGHT</Text> FOOTER?
+          </Text>
+          <Text className="text-[11px] text-white/70 text-center font-medium px-2">
+            Every elite player knows their dominant foot. This is where your journey begins.
+          </Text>
+        </View>
+
+        {/* ── Left vs Right Foot Cards Grid ── */}
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          {/* LEFT FOOTER CARD */}
+          <TouchableOpacity
+            onPress={() => handleFootSelect('LEFT')}
+            activeOpacity={0.8}
+            style={{ flex: 1 }}
+            className={`p-3 rounded-xl border-2 items-center text-center space-y-2 ${
+              isLeftSelected
+                ? 'border-[#FF4422] bg-[#FF4422]/15 shadow-md shadow-[#FF4422]/20'
+                : 'border-[#FF4422]/40 bg-[#161920]'
+            }`}
+          >
+            {isLeftSelected && (
+              <View className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#FF4422] items-center justify-center shadow">
+                <Check size={10} color="white" strokeWidth={3} />
+              </View>
+            )}
+
+            <View className="w-14 h-14 items-center justify-center">
+              <Image
+                source={require('../../../assets/left_foot.png')}
+                className="w-14 h-14"
+                resizeMode="contain"
               />
             </View>
-            <View className="w-20 space-y-1">
-              <StyledText className="text-xs font-black uppercase text-gray-800 dark:text-gray-200">
-                Age
-              </StyledText>
-              <Input
-                className="bg-[#E5E5E5] text-black border-none"
+
+            <View className="items-center">
+              <Text className="text-xs font-black uppercase tracking-wider text-[#FF4422]">
+                LEFT FOOTER
+              </Text>
+              <Text className="text-[9px] text-white/80 text-center leading-tight mt-0.5 font-medium">
+                The creative side. Legends born here.
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* RIGHT FOOTER CARD */}
+          <TouchableOpacity
+            onPress={() => handleFootSelect('RIGHT')}
+            activeOpacity={0.8}
+            style={{ flex: 1 }}
+            className={`p-3 rounded-xl border-2 items-center text-center space-y-2 ${
+              isRightSelected
+                ? 'border-[#00AEEF] bg-[#00AEEF]/15 shadow-md shadow-[#00AEEF]/20'
+                : 'border-[#00AEEF]/40 bg-[#161920]'
+            }`}
+          >
+            {isRightSelected && (
+              <View className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#00AEEF] items-center justify-center shadow">
+                <Check size={10} color="white" strokeWidth={3} />
+              </View>
+            )}
+
+            <View className="w-14 h-14 items-center justify-center">
+              <Image
+                source={require('../../../assets/right_foot.png')}
+                className="w-14 h-14"
+                resizeMode="contain"
+              />
+            </View>
+
+            <View className="items-center">
+              <Text className="text-xs font-black uppercase tracking-wider text-[#00AEEF]">
+                RIGHT FOOTER
+              </Text>
+              <Text className="text-[9px] text-white/80 text-center leading-tight mt-0.5 font-medium">
+                Power & precision. Own the pitch.
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* ── SECTION DIVIDER ── */}
+        <View className="flex-row items-center gap-2 my-1">
+          <View className="h-[1px] bg-white/15 flex-1" />
+          <Text
+            style={{ letterSpacing: 1.5 }}
+            className="text-[9px] font-black uppercase text-white/60"
+          >
+            PLAYER REGISTRATION
+          </Text>
+          <View className="h-[1px] bg-white/15 flex-1" />
+        </View>
+
+        {/* ── FORM FIELDS ── */}
+        <View className="space-y-3">
+          {/* Row 1: First Name & Age */}
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={{ flex: 1 }}>
+              <Text className="text-[9px] font-black uppercase tracking-wider text-white/80 mb-1">
+                FIRST NAME
+              </Text>
+              <TextInput
+                placeholder="Your first name"
+                placeholderTextColor="rgba(255,255,255,0.3)"
+                value={formData.fullName}
+                onChangeText={(text) => handleChange('fullName', text)}
+                className="bg-[#161920] text-white px-3 py-2 text-xs font-semibold rounded-xl border border-white/15"
+              />
+            </View>
+
+            <View style={{ width: 85 }}>
+              <Text className="text-[9px] font-black uppercase tracking-wider text-white/80 mb-1">
+                AGE
+              </Text>
+              <TextInput
+                placeholder="Age"
+                placeholderTextColor="rgba(255,255,255,0.3)"
                 keyboardType="numeric"
                 value={formData.age}
                 onChangeText={(text) => handleChange('age', text)}
+                className="bg-[#161920] text-white px-3 py-2 text-xs font-semibold rounded-xl border border-white/15 text-center"
               />
             </View>
           </View>
 
-          {/* Club */}
-          <View className="space-y-1">
-            <StyledText className="text-xs font-black uppercase text-gray-800 dark:text-gray-200">
-              Club
-            </StyledText>
-            <Input
-              value={formData.club}
-              onChangeText={(text) => handleChange('club', text)}
-              className="bg-[#E5E5E5] text-black border-none"
-            />
-          </View>
+          {/* Row 2: Club / Team & Position */}
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={{ flex: 1 }}>
+              <Text className="text-[9px] font-black uppercase tracking-wider text-white/80 mb-1">
+                CLUB / TEAM
+              </Text>
+              <TextInput
+                placeholder="Club name"
+                placeholderTextColor="rgba(255,255,255,0.3)"
+                value={formData.club}
+                onChangeText={(text) => handleChange('club', text)}
+                className="bg-[#161920] text-white px-3 py-2 text-xs font-semibold rounded-xl border border-white/15"
+              />
+            </View>
 
-          {/* Team */}
-          <View className="space-y-1">
-            <StyledText className="text-xs font-black uppercase text-gray-800 dark:text-gray-200">
-              Team
-            </StyledText>
-            <Input
-              value={formData.team}
-              onChangeText={(text) => handleChange('team', text)}
-              className="bg-[#E5E5E5] text-black border-none"
-            />
-          </View>
-
-          {/* Position Selector */}
-          <View className="space-y-1 pb-4 border-b-2 border-white/10">
-            <StyledText className="text-xs font-black uppercase text-gray-800 dark:text-gray-200 mb-2">
-              Position:
-            </StyledText>
-            <View className="flex-row justify-between items-center bg-[#E5E5E5] p-1 rounded-sm">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((num) => (
-                <StyledTouchableOpacity
-                  key={num}
-                  onPress={() => handlePositionSelect(num)}
-                  className={`w-7 h-7 flex items-center justify-center rounded ${
-                    formData.position === num.toString()
-                      ? "bg-white shadow-sm"
-                      : ""
+            <View style={{ flex: 1 }}>
+              <Text className="text-[9px] font-black uppercase tracking-wider text-white/80 mb-1">
+                POSITION
+              </Text>
+              <TouchableOpacity
+                onPress={() => setPositionModalOpen(true)}
+                className="bg-[#161920] px-3 py-2 rounded-xl border border-white/15 flex-row items-center justify-between"
+              >
+                <Text
+                  numberOfLines={1}
+                  className={`text-xs font-semibold flex-1 pr-1 ${
+                    formData.position ? 'text-white' : 'text-white/30'
                   }`}
                 >
-                  <StyledText 
-                    className={`text-sm font-black ${
-                        formData.position === num.toString() 
-                        ? "text-[#FF4422]" 
-                        : "text-gray-400"
+                  {formData.position || 'Select Position'}
+                </Text>
+                <ChevronDown size={14} color="rgba(255,255,255,0.5)" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Row 3: Country */}
+          <View>
+            <Text className="text-[9px] font-black uppercase tracking-wider text-white/80 mb-1">
+              COUNTRY
+            </Text>
+            <TouchableOpacity
+              onPress={() => setCountryModalOpen(true)}
+              className="bg-[#161920] px-3 py-2.5 rounded-xl border border-white/15 flex-row items-center justify-between"
+            >
+              <Text
+                className={`text-xs font-semibold ${
+                  formData.country ? 'text-white' : 'text-white/30'
+                }`}
+              >
+                {formData.country || 'Select Country'}
+              </Text>
+              <ChevronDown size={14} color="rgba(255,255,255,0.5)" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Submit / Continue Button */}
+          <View className="pt-2">
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleSubmit}
+              disabled={isSubmitting || !formData.activeFooter}
+              className={`w-full py-3.5 px-5 rounded-xl flex-row items-center justify-center gap-2 ${
+                !formData.activeFooter || isSubmitting
+                  ? 'bg-[#3D1A15] border border-[#FF4422]/40'
+                  : formData.activeFooter === 'LEFT'
+                  ? 'bg-[#FF4422]'
+                  : 'bg-[#00AEEF]'
+              }`}
+            >
+              {isSubmitting ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <Text
+                    style={{ letterSpacing: 1.5 }}
+                    className="text-xs font-black uppercase text-white"
+                  >
+                    REGISTERING PLAYER...
+                  </Text>
+                </View>
+              ) : (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Text
+                    style={{ letterSpacing: 1.5 }}
+                    className={`text-xs font-black uppercase ${
+                      !formData.activeFooter ? 'text-[#FF6B35]' : 'text-white'
                     }`}
                   >
-                    {num}
-                  </StyledText>
-                </StyledTouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Right/Left Footer */}
-          <View className="flex-row gap-4 pb-4 border-b-2 border-white/10 mb-4">
-            <View className="flex-1 flex-row items-center justify-between">
-              <StyledText className="text-xs font-black uppercase text-gray-800 dark:text-gray-200 mr-2">
-                Right Footer
-              </StyledText>
-              <View className="flex-row items-center gap-2 flex-1">
-                <Footprints size={16} className="text-gray-600 dark:text-gray-400" color="#9CA3AF" />
-                <Input
-                  value={formData.rightFooter}
-                  onChangeText={(text) => handleChange('rightFooter', text)}
-                  className="bg-[#E5E5E5] text-black w-full border-none h-8 py-1"
-                />
-              </View>
-            </View>
-            <View className="flex-1 flex-row items-center justify-between">
-              <StyledText className="text-xs font-black uppercase text-gray-800 dark:text-gray-200 mr-2">
-                Left Footer
-              </StyledText>
-              <View className="flex-row items-center gap-2 flex-1">
-                <Footprints size={16} className="text-gray-600 dark:text-gray-400" color="#9CA3AF" />
-                <Input
-                  value={formData.leftFooter}
-                  onChangeText={(text) => handleChange('leftFooter', text)}
-                  className="bg-[#E5E5E5] text-black w-full border-none h-8 py-1"
-                />
-              </View>
-            </View>
-          </View>
-
-          {/* Player Stats */}
-          <View className="pt-2">
-            <StyledText className="text-sm font-black uppercase text-gray-800 dark:text-gray-200 mb-1 border-b-2 border-black/80 dark:border-white/80 pb-1">
-              Player Stats
-            </StyledText>
-            <StyledText className="text-[8px] uppercase tracking-widest text-center text-gray-500 dark:text-gray-400 mb-3 font-bold">
-              ⚡ These stats accumulate across all sessions
-            </StyledText>
-
-            <View className="gap-y-2">
-              {/* Editable: Years Playing */}
-              <View className="flex-row items-center justify-between">
-                <StyledText className="text-xs font-bold uppercase text-gray-600 dark:text-gray-400 flex-1">
-                  Years Playing
-                </StyledText>
-                <Input
-                  value={formData.totalYearsPlaying}
-                  onChangeText={(text) => handleChange('totalYearsPlaying', text)}
-                  keyboardType="numeric"
-                  className="w-20 bg-[#E5E5E5] text-black text-xs font-bold text-center border-none h-8 py-1"
-                />
-              </View>
-
-              {/* Editable: Hours Trained (this session) */}
-              <View className="flex-row items-center justify-between">
-                <StyledText className="text-xs font-bold uppercase text-gray-600 dark:text-gray-400 flex-1">
-                  Hours Trained (this session)
-                </StyledText>
-                <Input
-                  value={formData.totalHoursTrained}
-                  onChangeText={(text) => handleChange('totalHoursTrained', text)}
-                  keyboardType="numeric"
-                  className="w-20 bg-[#E5E5E5] text-black text-xs font-bold text-center border-none h-8 py-1"
-                />
-              </View>
-
-              {/* Auto-computed stats */}
-              {[
-                { label: "Total Hours Trained", value: cumulativeStats.totalHoursTrained },
-                { label: "Number of Sessions", value: cumulativeStats.totalSessions },
-                { label: "Number of Games", value: cumulativeStats.totalGames },
-                { label: "Goals Scored", value: cumulativeStats.totalGoals },
-                { label: "Penalties Taken", value: cumulativeStats.totalPenalties },
-                { label: "Total Touches", value: cumulativeStats.totalTouches },
-              ].map((item) => (
-                <View key={item.label} className="flex-row items-center justify-between">
-                  <StyledText className="text-xs font-bold uppercase text-gray-600 dark:text-gray-400 flex-1">
-                    {item.label}
-                  </StyledText>
-                  <View className="w-20 items-center border-b-2 border-[#FF4422] py-1">
-                    <StyledText className="text-xs font-black text-[#FF4422] text-center">
-                      {item.value}
-                    </StyledText>
-                  </View>
+                    {!formData.activeFooter
+                      ? 'CHOOSE YOUR FOOT FIRST'
+                      : isRegistered
+                      ? 'SAVE & CONTINUE'
+                      : 'REGISTER & START TRAINING'}
+                  </Text>
+                  {!formData.activeFooter ? (
+                    <ArrowUp size={15} color="#FF6B35" />
+                  ) : (
+                    <ArrowRight size={15} color="#FFFFFF" />
+                  )}
                 </View>
-              ))}
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
 
-              {/* Editable: Your Position */}
-              <View className="flex-row items-center justify-between">
-                <StyledText className="text-xs font-bold uppercase text-gray-600 dark:text-gray-400 flex-1">
-                  Your Position
-                </StyledText>
-                <Input
-                  value={formData.yourPosition}
-                  onChangeText={(text) => handleChange('yourPosition', text)}
-                  className="w-20 bg-[#E5E5E5] text-black text-xs font-bold text-center border-none h-8 py-1"
-                />
+        {/* ── OPTIONAL ADDITIONAL DETAILS ── */}
+        <View className="border-t border-white/10 pt-3">
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => setShowOptionalFields(!showOptionalFields)}
+            className="w-full flex-row items-center justify-between py-2 px-3 rounded-lg bg-white/5"
+          >
+            <Text
+              style={{ letterSpacing: 1 }}
+              className="text-[9px] font-black uppercase text-white/70"
+            >
+              Additional Profile Information (Optional)
+            </Text>
+            {showOptionalFields ? (
+              <ChevronUp size={14} color="rgba(255,255,255,0.7)" />
+            ) : (
+              <ChevronDown size={14} color="rgba(255,255,255,0.7)" />
+            )}
+          </TouchableOpacity>
+
+          {showOptionalFields && (
+            <View className="mt-3 space-y-3 pt-1">
+              {/* Contact */}
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <View style={{ flex: 1 }}>
+                  <Text className="text-[9px] font-black uppercase tracking-wider text-white/80 mb-1">
+                    EMAIL
+                  </Text>
+                  <TextInput
+                    placeholder="Email address"
+                    placeholderTextColor="rgba(255,255,255,0.3)"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    value={formData.email}
+                    onChangeText={(text) => handleChange('email', text)}
+                    className="bg-[#161920] text-white px-3 py-2 text-xs font-semibold rounded-xl border border-white/15"
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text className="text-[9px] font-black uppercase tracking-wider text-white/80 mb-1">
+                    PHONE
+                  </Text>
+                  <TextInput
+                    placeholder="Phone number"
+                    placeholderTextColor="rgba(255,255,255,0.3)"
+                    keyboardType="phone-pad"
+                    value={formData.cellPhone}
+                    onChangeText={(text) => handleChange('cellPhone', text)}
+                    className="bg-[#161920] text-white px-3 py-2 text-xs font-semibold rounded-xl border border-white/15"
+                  />
+                </View>
+              </View>
+
+              {/* Socials */}
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <View style={{ flex: 1 }}>
+                  <Text className="text-[9px] font-black uppercase tracking-wider text-white/80 mb-1">
+                    INSTAGRAM
+                  </Text>
+                  <TextInput
+                    placeholder="@handle"
+                    placeholderTextColor="rgba(255,255,255,0.3)"
+                    autoCapitalize="none"
+                    value={formData.instagram}
+                    onChangeText={(text) => handleChange('instagram', text)}
+                    className="bg-[#161920] text-white px-3 py-2 text-xs font-semibold rounded-xl border border-white/15"
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text className="text-[9px] font-black uppercase tracking-wider text-white/80 mb-1">
+                    TIKTOK
+                  </Text>
+                  <TextInput
+                    placeholder="@handle"
+                    placeholderTextColor="rgba(255,255,255,0.3)"
+                    autoCapitalize="none"
+                    value={formData.tiktok}
+                    onChangeText={(text) => handleChange('tiktok', text)}
+                    className="bg-[#161920] text-white px-3 py-2 text-xs font-semibold rounded-xl border border-white/15"
+                  />
+                </View>
+              </View>
+
+              {/* Favorites */}
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <View style={{ flex: 1 }}>
+                  <Text className="text-[9px] font-black uppercase tracking-wider text-white/80 mb-1">
+                    FAVORITE TEAM
+                  </Text>
+                  <TextInput
+                    placeholder="e.g. Real Madrid"
+                    placeholderTextColor="rgba(255,255,255,0.3)"
+                    value={formData.favoriteTeam}
+                    onChangeText={(text) => handleChange('favoriteTeam', text)}
+                    className="bg-[#161920] text-white px-3 py-2 text-xs font-semibold rounded-xl border border-white/15"
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text className="text-[9px] font-black uppercase tracking-wider text-white/80 mb-1">
+                    FAVORITE PLAYER
+                  </Text>
+                  <TextInput
+                    placeholder="e.g. Messi / CR7"
+                    placeholderTextColor="rgba(255,255,255,0.3)"
+                    value={formData.favoritePlayer}
+                    onChangeText={(text) => handleChange('favoritePlayer', text)}
+                    className="bg-[#161920] text-white px-3 py-2 text-xs font-semibold rounded-xl border border-white/15"
+                  />
+                </View>
+              </View>
+
+              {/* Game Format */}
+              <View>
+                <Text className="text-[9px] font-black uppercase tracking-wider text-white/80 mb-1.5">
+                  PREFERRED GAME FORMAT
+                </Text>
+                <View className="flex-row flex-wrap gap-1.5">
+                  {GAME_TYPES.map((type) => {
+                    const isSelected = (formData.gameTypes || []).includes(type);
+                    return (
+                      <TouchableOpacity
+                        key={type}
+                        activeOpacity={0.7}
+                        onPress={() => handleGameTypeToggle(type)}
+                        className={`px-2.5 py-1 rounded-md border ${
+                          isSelected
+                            ? 'bg-[#FF4422] border-[#FF4422]'
+                            : 'bg-[#161920] border-white/15'
+                        }`}
+                      >
+                        <Text
+                          style={{ letterSpacing: 0.5 }}
+                          className={`text-[9px] font-black uppercase ${
+                            isSelected ? 'text-white' : 'text-white/70'
+                          }`}
+                        >
+                          {type}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
               </View>
             </View>
+          )}
+        </View>
+      </View>
+
+      {/* ── POSITION MODAL ── */}
+      <Modal
+        visible={positionModalOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPositionModalOpen(false)}
+      >
+        <View className="flex-1 bg-black/80 justify-center items-center px-4">
+          <View className="bg-[#161920] w-full max-w-sm rounded-2xl border border-white/15 overflow-hidden max-h-[80%]">
+            <View className="flex-row items-center justify-between p-4 border-b border-white/10">
+              <Text className="text-sm font-black text-white uppercase tracking-wider">
+                Select Position
+              </Text>
+              <TouchableOpacity onPress={() => setPositionModalOpen(false)}>
+                <X size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView className="p-2">
+              {POSITIONS.map((pos) => {
+                const isSelected = formData.position === pos;
+                return (
+                  <TouchableOpacity
+                    key={pos}
+                    onPress={() => {
+                      handleChange('position', pos);
+                      setPositionModalOpen(false);
+                    }}
+                    className={`py-3 px-4 rounded-xl flex-row items-center justify-between my-0.5 ${
+                      isSelected ? 'bg-[#FF4422]/20 border border-[#FF4422]' : 'bg-white/5'
+                    }`}
+                  >
+                    <Text
+                      className={`text-xs font-semibold ${
+                        isSelected ? 'text-[#FF4422]' : 'text-white'
+                      }`}
+                    >
+                      {pos}
+                    </Text>
+                    {isSelected && <Check size={16} color="#FF4422" />}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
           </View>
-        </CardContent>
-      </Card>
+        </View>
+      </Modal>
+
+      {/* ── COUNTRY MODAL ── */}
+      <Modal
+        visible={countryModalOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCountryModalOpen(false)}
+      >
+        <View className="flex-1 bg-black/80 justify-center items-center px-4">
+          <View className="bg-[#161920] w-full max-w-sm rounded-2xl border border-white/15 overflow-hidden max-h-[80%]">
+            <View className="flex-row items-center justify-between p-4 border-b border-white/10">
+              <Text className="text-sm font-black text-white uppercase tracking-wider">
+                Select Country
+              </Text>
+              <TouchableOpacity onPress={() => setCountryModalOpen(false)}>
+                <X size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView className="p-2">
+              {COUNTRIES.map((cty) => {
+                const isSelected = formData.country === cty;
+                return (
+                  <TouchableOpacity
+                    key={cty}
+                    onPress={() => {
+                      handleChange('country', cty);
+                      setCountryModalOpen(false);
+                    }}
+                    className={`py-3 px-4 rounded-xl flex-row items-center justify-between my-0.5 ${
+                      isSelected ? 'bg-[#FF4422]/20 border border-[#FF4422]' : 'bg-white/5'
+                    }`}
+                  >
+                    <Text
+                      className={`text-xs font-semibold ${
+                        isSelected ? 'text-[#FF4422]' : 'text-white'
+                      }`}
+                    >
+                      {cty}
+                    </Text>
+                    {isSelected && <Check size={16} color="#FF4422" />}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
+export default PlayerProfile;

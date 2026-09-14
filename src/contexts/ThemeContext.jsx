@@ -1,23 +1,28 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect } from "react";
 
-const ThemeContext = createContext(null);
+const ThemeContext = createContext({
+  theme: "dark",
+  toggleTheme: () => {},
+  setTheme: () => {},
+});
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("football-theme") || "dark";
-    }
-    return "dark";
-  });
+  const theme = "dark";
 
   useEffect(() => {
     const root = window.document.documentElement;
-    root.classList.remove("theme-light", "theme-dark");
-    root.classList.add(`theme-${theme}`);
-    localStorage.setItem("football-theme", theme);
-  }, [theme]);
+    root.classList.remove("theme-light");
+    root.classList.add("theme-dark");
+    try {
+      localStorage.setItem("football-theme", "dark");
+    } catch {
+      // ignore
+    }
+  }, []);
 
-  const toggleTheme = () => setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  // Theme switching removed: lock to dark
+  const toggleTheme = () => {};
+  const setTheme = () => {};
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
@@ -31,4 +36,4 @@ export function useTheme() {
   const ctx = useContext(ThemeContext);
   if (!ctx) throw new Error("useTheme must be used inside ThemeProvider");
   return ctx;
-}
+}

@@ -247,10 +247,6 @@ export function PdfReportPage() {
 
   const generatePDF = async () => {
     const root = document.documentElement;
-    const prevClass = root.className;
-
-    root.classList.remove("theme-dark");
-    root.classList.add("theme-light");
 
     const styleOverride = document.createElement("style");
     styleOverride.id = "pdf-theme-override";
@@ -403,7 +399,6 @@ export function PdfReportPage() {
       await new Promise((r) => setTimeout(r, 2000));
       navigate(-1);
     } finally {
-      root.className = prevClass;
       document.getElementById("pdf-theme-override")?.remove();
     }
   };

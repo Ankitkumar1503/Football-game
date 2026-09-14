@@ -63,7 +63,7 @@ export function Navigation({ isOpen, onClose }) {
       >
         <div className="w-10" />
         <img
-          src={theme === "dark" ? touches : touchesLight}
+          src={touches}
           alt="TOUCHES"
           className="h-10 w-32 object-contain"
         />
@@ -82,14 +82,9 @@ export function Navigation({ isOpen, onClose }) {
         {NAV_ITEMS.map(({ label, icon: Icon, path }) => {
           const isActive = location.pathname === path;
 
-          const bgClass =
-            theme === "light"
-              ? isActive
-                ? "bg-white text-black border border-black"
-                : "bg-[#00AEEF] text-white border border-[#00AEEF]"
-              : isActive
-                ? "bg-football-accent text-white border border-football-accent"
-                : "bg-football-accent/80 text-white border border-football-accent";
+          const bgClass = isActive
+            ? "bg-football-accent text-white border border-football-accent"
+            : "bg-football-accent/80 text-white border border-football-accent";
 
           return (
             <Link

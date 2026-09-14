@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "../ui/Card";
 import { useActiveSession } from "../../hooks/useActiveSession";
-import { useTheme } from "../../contexts/ThemeContext";
 import touchesLogo from "../../assets/touches.png";
 import {
   ChevronDown,
@@ -55,8 +54,6 @@ const GAME_TYPES = ["GRASSROOTS", "4V4", "7V7", "9V9", "11V11"];
 export function PlayerProfile() {
   const navigate = useNavigate();
   const { session, updateSession } = useActiveSession();
-  const { theme } = useTheme();
-  const isLightTheme = theme === "light";
 
   const [showOptionalFields, setShowOptionalFields] = useState(false);
 

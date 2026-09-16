@@ -281,7 +281,7 @@ export function PlayerStats() {
           id={id}
           type="number"
           placeholder="0"
-          className="w-14 bg-black/40 text-xs font-bold text-center py-1 rounded-lg border border-white/15 text-white focus:border-yellow-400 focus:outline-none transition-colors"
+          className="w-14 bg-black/40 text-xs font-bold text-center py-1 rounded-lg border border-white/15 text-white focus:border-white focus:outline-none transition-colors"
           value={rawValue || ""}
           onChange={handleChange}
         />
@@ -338,12 +338,12 @@ export function PlayerStats() {
             </p>
           </div>
 
-          {/* Yellow Stick Figure Icon */}
+          {/* Stick Figure Icon */}
           <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 flex items-center justify-center">
             <img
               src={isRightFoot ? "/right_foot.png" : "/left_foot.png"}
               alt="Stick Figure Icon"
-              className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]"
+              className="w-full h-full object-contain brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]"
             />
           </div>
         </div>
@@ -383,8 +383,8 @@ export function PlayerStats() {
                 : "bg-black/30 text-white/70 hover:bg-black/50 border-white/10"
             }`}
           >
-            <div className="w-5 h-5 rounded-full border border-yellow-400 flex items-center justify-center p-0.5">
-              <img src="/left_foot.png" alt="Left" className="w-full h-full object-contain" />
+            <div className="w-5 h-5 rounded-full border border-white flex items-center justify-center p-0.5">
+              <img src="/left_foot.png" alt="Left" className="w-full h-full object-contain brightness-0 invert" />
             </div>
             <span>LEFT FOOTER</span>
           </button>
@@ -398,8 +398,8 @@ export function PlayerStats() {
                 : "bg-black/30 text-white/70 hover:bg-black/50 border-white/10"
             }`}
           >
-            <div className="w-5 h-5 rounded-full border border-yellow-400 flex items-center justify-center p-0.5">
-              <img src="/right_foot.png" alt="Right" className="w-full h-full object-contain" />
+            <div className="w-5 h-5 rounded-full border border-white flex items-center justify-center p-0.5">
+              <img src="/right_foot.png" alt="Right" className="w-full h-full object-contain brightness-0 invert" />
             </div>
             <span>RIGHT FOOTER</span>
           </button>
@@ -433,7 +433,7 @@ export function PlayerStats() {
 
       {/* ── QUICK STATS SECTION ── */}
       <div className="space-y-2.5 pt-2">
-        <h3 className="text-sm font-black uppercase tracking-wider text-yellow-400 px-0.5">
+        <h3 className="text-sm font-black uppercase tracking-wider text-white px-0.5">
           QUICK STATS
         </h3>
 

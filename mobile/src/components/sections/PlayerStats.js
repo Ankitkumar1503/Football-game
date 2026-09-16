@@ -263,6 +263,7 @@ export function PlayerStats() {
               }
               className="w-14 h-14"
               resizeMode="contain"
+              style={{ tintColor: '#FFFFFF' }}
             />
           </View>
         </View>
@@ -299,11 +300,14 @@ export function PlayerStats() {
                 : 'bg-black/30 border-white/10'
             }`}
           >
-            <Image
-              source={require('../../../assets/left_foot.png')}
-              className="w-4 h-4"
-              resizeMode="contain"
-            />
+            <View className="w-5 h-5 rounded-full border border-white items-center justify-center p-0.5">
+              <Image
+                source={require('../../../assets/left_foot.png')}
+                className="w-3.5 h-3.5"
+                resizeMode="contain"
+                style={{ tintColor: '#FFFFFF' }}
+              />
+            </View>
             <Text className="text-white text-xs font-black uppercase tracking-wider">
               LEFT FOOTER
             </Text>
@@ -317,11 +321,14 @@ export function PlayerStats() {
                 : 'bg-black/30 border-white/10'
             }`}
           >
-            <Image
-              source={require('../../../assets/right_foot.png')}
-              className="w-4 h-4"
-              resizeMode="contain"
-            />
+            <View className="w-5 h-5 rounded-full border border-white items-center justify-center p-0.5">
+              <Image
+                source={require('../../../assets/right_foot.png')}
+                className="w-3.5 h-3.5"
+                resizeMode="contain"
+                style={{ tintColor: '#FFFFFF' }}
+              />
+            </View>
             <Text className="text-white text-xs font-black uppercase tracking-wider">
               RIGHT FOOTER
             </Text>
@@ -353,7 +360,7 @@ export function PlayerStats() {
 
       {/* ── QUICK STATS SECTION ── */}
       <View className="space-y-2.5 pt-1">
-        <Text className="text-xs font-black uppercase tracking-wider text-yellow-400 px-0.5">
+        <Text className="text-xs font-black uppercase tracking-wider text-white px-0.5">
           QUICK STATS
         </Text>
 

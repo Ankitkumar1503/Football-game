@@ -202,9 +202,9 @@ export function ThirtyDayChallenge() {
         />
       </div>
 
-      {/* ── INSPIRATIONAL QUOTE CARD (Circled in yellow in reference image) ── */}
+      {/* ── INSPIRATIONAL QUOTE CARD ── */}
       <div className="p-4 sm:p-5 rounded-2xl bg-[#10B981] text-white space-y-1.5 shadow-xl border border-emerald-400/40">
-        <p className="text-lg sm:text-xl font-black italic tracking-wide text-yellow-300 leading-snug">
+        <p className="text-lg sm:text-xl font-black italic tracking-wide text-white leading-snug">
           “Play like you always have the ball”
         </p>
         <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-100/90">

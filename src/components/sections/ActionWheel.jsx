@@ -14,6 +14,7 @@ import {
   Shield,
   Flag,
   RotateCw,
+  Mic,
 } from "lucide-react";
 
 const ACTIONS_CONFIG = [
@@ -27,8 +28,8 @@ const ACTIONS_CONFIG = [
   { id: "Corner Kick", label: "CORNER", icon: Flag },
   { id: "Throw-In", label: "THROW-IN", icon: ArrowRight },
   { id: "Penalty", label: "PENALTY", icon: Target },
-  { id: "Keep-Up-Feet", label: "KEEP-UP-FEET", icon: Zap },
-  { id: "Keep-Up-Head", label: "KEEP-UP-HEAD", icon: CircleDot },
+  { id: "Keep-Up-Feet", label: "KEEP-LEFT", icon: Zap },
+  { id: "Keep-Up-Head", label: "KEEP-HEAD", icon: CircleDot },
 ];
 
 const POSITIONS = [
@@ -54,11 +55,96 @@ const MATCH_EVENTS_CONFIG = [
   { id: "Injury", label: "INJURY" },
 ];
 
+export function parseVoiceCommand(text) {
+  if (!text) return null;
+  const lower = text
+    .toLowerCase()
+    .trim()
+    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+
+  // Match events (strictly independent, no positive/negative)
+  if (lower.includes("yellow card") || lower === "yellow") {
+    return { type: "event", id: "Yellow Card" };
+  }
+  if (lower.includes("red card") || lower === "red") {
+    return { type: "event", id: "Red Card" };
+  }
+  if (lower.includes("missed game") || lower.includes("missed match")) {
+    return { type: "event", id: "Missed Game" };
+  }
+  if (lower.includes("sub in") || lower.includes("substitution in")) {
+    return { type: "event", id: "Sub In" };
+  }
+  if (lower.includes("sub out") || lower.includes("substitution out")) {
+    return { type: "event", id: "Sub Out" };
+  }
+  if (lower.includes("injury") || lower.includes("injured")) {
+    return { type: "event", id: "Injury" };
+  }
+
+  // Quality specification
+  let quality = null;
+  if (
+    lower.includes("positive") ||
+    lower.includes("good") ||
+    lower.includes("plus") ||
+    lower.startsWith("pos ")
+  ) {
+    quality = "Positive";
+  } else if (
+    lower.includes("negative") ||
+    lower.includes("bad") ||
+    lower.includes("minus") ||
+    lower.startsWith("neg ")
+  ) {
+    quality = "Negative";
+  }
+
+  // Touch actions
+  let actionId = null;
+  if (lower.includes("pass")) actionId = "Pass";
+  else if (lower.includes("dribble")) actionId = "Dribble";
+  else if (lower.includes("shot") || lower.includes("shoot")) actionId = "Shot";
+  else if (lower.includes("goal")) actionId = "Goal";
+  else if (lower.includes("header") || lower.includes("head")) actionId = "Header";
+  else if (lower.includes("tackle")) actionId = "Tackle";
+  else if (lower.includes("free kick") || lower.includes("freekick")) actionId = "Free Kick";
+  else if (lower.includes("corner")) actionId = "Corner Kick";
+  else if (lower.includes("throw in") || lower.includes("throwin") || lower.includes("throw"))
+    actionId = "Throw-In";
+  else if (lower.includes("penalty")) actionId = "Penalty";
+  else if (
+    lower.includes("keep-left") ||
+    lower.includes("keep left") ||
+    lower.includes("keep up feet") ||
+    lower.includes("keep feet")
+  )
+    actionId = "Keep-Up-Feet";
+  else if (
+    lower.includes("keep-head") ||
+    lower.includes("keep head") ||
+    lower.includes("keep up head")
+  )
+    actionId = "Keep-Up-Head";
+
+  if (actionId) {
+    return { type: "touch", id: actionId, quality };
+  }
+
+  return null;
+}
+
 export function ActionWheel() {
   const navigate = useNavigate();
   const { stats, sessionId, addTouch, removeTouch, updateSession } = useActiveSession();
   const [selectedQuality, setSelectedQuality] = useState("Positive");
   const [lastLoggedAction, setLastLoggedAction] = useState(null);
+
+  // Voice Command States
+  const [isListening, setIsListening] = useState(false);
+  const [voiceFeedback, setVoiceFeedback] = useState(null);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [manualVoiceInput, setManualVoiceInput] = useState("");
 
   const getSavedProfile = () => {
     try {
@@ -72,16 +158,33 @@ export function ActionWheel() {
   const initialProfile = getSavedProfile();
 
   const [playerName, setPlayerName] = useState(() => {
-    return localStorage.getItem("touch_playerName") || initialProfile?.fullName || initialProfile?.playerName || "";
+    return (
+      localStorage.getItem("touch_playerName") ||
+      initialProfile?.fullName ||
+      initialProfile?.playerName ||
+      ""
+    );
   });
   const [age, setAge] = useState(() => {
-    return localStorage.getItem("touch_age") || (initialProfile?.age ? String(initialProfile.age) : "");
+    return (
+      localStorage.getItem("touch_age") ||
+      (initialProfile?.age ? String(initialProfile.age) : "")
+    );
   });
   const [position, setPosition] = useState(() => {
-    return localStorage.getItem("touch_position") || initialProfile?.position || "Select Position";
+    return (
+      localStorage.getItem("touch_position") ||
+      initialProfile?.position ||
+      "Select Position"
+    );
   });
   const [playerNumber, setPlayerNumber] = useState(() => {
-    return localStorage.getItem("touch_number") || (initialProfile?.number || initialProfile?.jerseyNumber ? String(initialProfile?.number || initialProfile?.jerseyNumber) : "");
+    return (
+      localStorage.getItem("touch_number") ||
+      (initialProfile?.number || initialProfile?.jerseyNumber
+        ? String(initialProfile?.number || initialProfile?.jerseyNumber)
+        : "")
+    );
   });
 
   const [trainingLocation, setTrainingLocation] = useState(() => {
@@ -129,7 +232,7 @@ export function ActionWheel() {
     localStorage.setItem("minutesPlayed", minutesPlayed);
   }, [minutesPlayed]);
 
-  const handleActionTap = async (actionId) => {
+  const handleActionTap = async (actionId, overrideQuality = null) => {
     const isIndependent = [
       "Penalty",
       "Keep-Up-Feet",
@@ -142,7 +245,7 @@ export function ActionWheel() {
       "Injury",
     ].includes(actionId);
 
-    const quality = isIndependent ? "Event" : selectedQuality;
+    const quality = isIndependent ? "Event" : overrideQuality || selectedQuality;
     await addTouch(actionId, quality);
     setLastLoggedAction({ action: actionId, quality });
     setTimeout(() => setLastLoggedAction(null), 1200);
@@ -196,6 +299,89 @@ export function ActionWheel() {
     }
   };
 
+  // Process voice command using existing handlers
+  const processVoiceCommand = async (transcript) => {
+    setIsListening(false);
+    const result = parseVoiceCommand(transcript);
+    if (!result) {
+      setVoiceFeedback({
+        type: "error",
+        message: `Command not recognized: "${transcript}"`,
+      });
+      setTimeout(() => setVoiceFeedback(null), 3000);
+      return;
+    }
+
+    if (result.type === "touch") {
+      const effectiveQuality = result.quality || selectedQuality;
+      if (result.quality) {
+        setSelectedQuality(result.quality);
+      }
+      await handleActionTap(result.id, effectiveQuality);
+      setVoiceFeedback({
+        type: "success",
+        message: `✓ Recognized: ${effectiveQuality ? `${effectiveQuality} ` : ""}${result.id}`,
+      });
+      setTimeout(() => setVoiceFeedback(null), 2500);
+    } else if (result.type === "event") {
+      await handleEventTap(result.id);
+      setVoiceFeedback({
+        type: "success",
+        message: `✓ Recognized: ${result.id}`,
+      });
+      setTimeout(() => setVoiceFeedback(null), 2500);
+    }
+  };
+
+  const startVoiceRecognition = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      setIsVoiceModalOpen(true);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = "en-US";
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        setVoiceFeedback({
+          type: "listening",
+          message: "Listening... speak command (e.g. 'positive pass')",
+        });
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        processVoiceCommand(transcript);
+      };
+
+      recognition.onerror = (event) => {
+        setIsListening(false);
+        setVoiceFeedback({
+          type: "error",
+          message: `Mic: ${event.error || "error occurred"}`,
+        });
+        setTimeout(() => setVoiceFeedback(null), 3000);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.start();
+    } catch (err) {
+      console.error("Speech recognition error:", err);
+      setIsListening(false);
+      setIsVoiceModalOpen(true);
+    }
+  };
+
   const total = stats.total || 0;
   const positiveCount = stats.good || 0;
   const negativeCount = stats.bad || 0;
@@ -204,21 +390,160 @@ export function ActionWheel() {
   const negativePercent = total > 0 ? Math.round((negativeCount / total) * 100) : 0;
 
   return (
-    <div className="space-y-4 pb-6 select-none">
-      {/* ── Page Header Bar ── */}
+    <div className="space-y-3 pb-6 select-none max-w-md mx-auto">
+      {/* ── 1. TOUCH COUNTER TITLE & VOICE MIC BUTTON ── */}
       <div className="flex items-center justify-between py-1">
-        <h2 className="text-xl font-black uppercase text-white tracking-wider">
-          TOUCH COUNTER
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-black uppercase text-white tracking-wider">
+            TOUCH COUNTER
+          </h2>
 
-        <div className="px-2.5 py-0.5 rounded-full border border-red-500 text-red-500 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-          <span>LIVE</span>
+          <div className="px-2 py-0.5 rounded-full border border-red-500 text-red-500 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            <span>LIVE</span>
+          </div>
+        </div>
+
+        {/* Compact Voice Command Button */}
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={startVoiceRecognition}
+            title={
+              isListening
+                ? "Listening... speak now"
+                : "Voice Commands (e.g. 'positive pass', 'yellow card')"
+            }
+            className={`p-2 rounded-xl border flex items-center gap-1.5 transition-all ${
+              isListening
+                ? "bg-red-500 text-white border-red-400 shadow-lg shadow-red-500/40 animate-pulse"
+                : "bg-[#12151D] text-white/80 border-white/10 hover:text-white hover:border-white/30 hover:bg-white/5"
+            }`}
+          >
+            <Mic size={16} className={isListening ? "animate-bounce" : ""} />
+            <span className="text-[10px] font-black uppercase tracking-wider hidden sm:inline">
+              {isListening ? "Listening..." : "Voice"}
+            </span>
+          </button>
         </div>
       </div>
 
-      {/* ── GREEN SOCCER PITCH HERO CARD WITH YELLOW CIRCLE COUNTER ── */}
-      <div className="relative rounded-2xl p-6 shadow-2xl overflow-hidden border border-emerald-500/30 bg-gradient-to-b from-[#14532D] via-[#0F3E22] to-[#0A2916] flex flex-col items-center justify-center min-h-[220px]">
+      {/* Voice Feedback Notification Toast */}
+      {voiceFeedback && (
+        <div
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center justify-between border transition-all ${
+            voiceFeedback.type === "error"
+              ? "bg-rose-950/90 border-rose-500/50 text-rose-200"
+              : voiceFeedback.type === "listening"
+              ? "bg-emerald-950/90 border-emerald-500/50 text-emerald-200 animate-pulse"
+              : "bg-emerald-950/90 border-emerald-500/50 text-emerald-200"
+          }`}
+        >
+          <span>{voiceFeedback.message}</span>
+          <button
+            onClick={() => setVoiceFeedback(null)}
+            className="text-white/60 hover:text-white text-xs ml-2"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* ── 2. PLAYER INFORMATION SECTION (IMAGE 2 LAYOUT: COMPACT 4 ROWS ABOVE PITCH) ── */}
+      <div className="space-y-2 p-3 rounded-2xl border border-white/10 bg-[#0E121A]">
+        {/* Row 1: PLAYER NAME & AGE */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="space-y-1">
+            <label className="block text-[10px] font-black uppercase tracking-wider text-white/70">
+              PLAYER NAME
+            </label>
+            <input
+              type="text"
+              placeholder="Enter player name"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              className="w-full bg-[#12151D] border border-white/10 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-white/40 placeholder:text-white/30"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-[10px] font-black uppercase tracking-wider text-white/70">
+              AGE
+            </label>
+            <input
+              type="number"
+              placeholder="Age"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+              className="w-full bg-[#12151D] border border-white/10 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-white/40 placeholder:text-white/30"
+            />
+          </div>
+        </div>
+
+        {/* Row 2: PLAYER POSITION & NUMBER */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="space-y-1">
+            <label className="block text-[10px] font-black uppercase tracking-wider text-white/70">
+              PLAYER POSITION
+            </label>
+            <select
+              value={position}
+              onChange={(e) => setPosition(e.target.value)}
+              className="w-full bg-[#12151D] border border-white/10 rounded-xl px-2.5 py-2 text-white text-xs font-semibold focus:outline-none focus:border-white/40"
+            >
+              {POSITIONS.map((pos) => (
+                <option key={pos} value={pos} className="bg-[#12151D] text-white">
+                  {pos}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-[10px] font-black uppercase tracking-wider text-white/70">
+              NUMBER
+            </label>
+            <input
+              type="number"
+              placeholder="Jersey No."
+              value={playerNumber}
+              onChange={(e) => setPlayerNumber(e.target.value)}
+              className="w-full bg-[#12151D] border border-white/10 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-white/40 placeholder:text-white/30"
+            />
+          </div>
+        </div>
+
+        {/* Row 3: TRAINING LOCATION */}
+        <div className="space-y-1">
+          <label className="block text-[10px] font-black uppercase tracking-wider text-white/70">
+            TRAINING LOCATION
+          </label>
+          <input
+            type="text"
+            placeholder="Enter training location"
+            value={trainingLocation}
+            onChange={(e) => setTrainingLocation(e.target.value)}
+            className="w-full bg-[#12151D] border border-white/10 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-white/40 placeholder:text-white/30"
+          />
+        </div>
+
+        {/* Row 4: GAME LOCATION */}
+        <div className="space-y-1">
+          <label className="block text-[10px] font-black uppercase tracking-wider text-white/70">
+            GAME LOCATION
+          </label>
+          <input
+            type="text"
+            placeholder="Enter game location"
+            value={gameLocation}
+            onChange={(e) => setGameLocation(e.target.value)}
+            className="w-full bg-[#12151D] border border-white/10 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-white/40 placeholder:text-white/30"
+          />
+        </div>
+      </div>
+
+      {/* ── 3. GREEN FOOTBALL PITCH (WHITE CENTRAL COUNTER & WHITE TEXT) ── */}
+      <div className="relative rounded-2xl p-5 shadow-2xl overflow-hidden border border-emerald-500/30 bg-gradient-to-b from-[#14532D] via-[#0F3E22] to-[#0A2916] flex flex-col items-center justify-center min-h-[200px]">
         {/* Soccer Pitch Vector Markings */}
         <div className="absolute inset-0 opacity-20 pointer-events-none flex items-center justify-center">
           <svg
@@ -239,15 +564,15 @@ export function ActionWheel() {
           </svg>
         </div>
 
-        {/* Central Yellow Ring Counter Gauge */}
-        <div className="relative z-10 w-36 h-36 sm:w-40 sm:h-40 rounded-full border-4 border-yellow-400 bg-black/40 backdrop-blur-md shadow-[0_0_20px_rgba(250,204,21,0.3)] flex flex-col items-center justify-center space-y-0.5">
-          <span className="text-4xl sm:text-5xl font-black text-yellow-400 tracking-tight drop-shadow-md">
+        {/* Central White Ring Counter Gauge (White border and White text as requested in Image 1) */}
+        <div className="relative z-10 w-36 h-36 sm:w-40 sm:h-40 rounded-full border-4 border-white bg-black/40 backdrop-blur-md shadow-[0_0_25px_rgba(255,255,255,0.25)] flex flex-col items-center justify-center space-y-0.5">
+          <span className="text-4xl sm:text-5xl font-black text-white tracking-tight drop-shadow-md">
             {total}
           </span>
-          <span className="text-[8px] font-black uppercase tracking-widest text-white/70">
+          <span className="text-[8px] font-black uppercase tracking-widest text-white/80">
             TOTAL TOUCHES
           </span>
-          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-yellow-400">
+          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-white">
             TOUCHES
           </span>
 
@@ -259,13 +584,13 @@ export function ActionWheel() {
         </div>
       </div>
 
-      {/* ── POSITIVE vs NEGATIVE SUMMARY CARDS ── */}
+      {/* ── 4. POSITIVE / NEGATIVE SUMMARY TOTALS ── */}
       <div className="grid grid-cols-2 gap-3">
         {/* Positive Card */}
-        <div className="p-3.5 rounded-2xl border border-emerald-500/30 bg-[#0E1A14] space-y-1.5 shadow-lg">
+        <div className="p-3 rounded-2xl border border-emerald-500/30 bg-[#0E1A14] space-y-1.5 shadow-lg">
           <div className="flex items-center justify-between text-emerald-400">
             <span className="text-[10px] font-black uppercase tracking-wider">POSITIVE</span>
-            <ThumbsUp size={16} />
+            <ThumbsUp size={15} />
           </div>
           <div className="flex items-baseline justify-between">
             <span className="text-2xl font-black text-emerald-400">{positiveCount}</span>
@@ -280,10 +605,10 @@ export function ActionWheel() {
         </div>
 
         {/* Negative Card */}
-        <div className="p-3.5 rounded-2xl border border-rose-500/30 bg-[#1F1014] space-y-1.5 shadow-lg">
+        <div className="p-3 rounded-2xl border border-rose-500/30 bg-[#1F1014] space-y-1.5 shadow-lg">
           <div className="flex items-center justify-between text-rose-400">
             <span className="text-[10px] font-black uppercase tracking-wider">NEGATIVE</span>
-            <ThumbsDown size={16} />
+            <ThumbsDown size={15} />
           </div>
           <div className="flex items-baseline justify-between">
             <span className="text-2xl font-black text-rose-400">{negativeCount}</span>
@@ -298,9 +623,9 @@ export function ActionWheel() {
         </div>
       </div>
 
-      {/* ── QUALITY SELECTOR BANNER ── */}
+      {/* ── 5. POSITIVE / NEGATIVE SELECTOR ── */}
       <div className="space-y-2 pt-1 text-center">
-        <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-yellow-400">
+        <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-white/90">
           HOW WAS THE PLAYERS FIRST TOUCH?
         </h3>
 
@@ -333,202 +658,129 @@ export function ActionWheel() {
         </div>
       </div>
 
-      {/* ── 3-COLUMN MAIN ACTIONS GRID ── */}
-      <div className="grid grid-cols-3 gap-2.5 pt-1">
-        {ACTIONS_CONFIG.map((item) => {
-          const Icon = item.icon;
-          const count = stats[item.id] || 0;
+      {/* ── 6. COMPACT 3-COLUMN TOUCH COUNTER GRID ── */}
+      <div className="space-y-1.5 pt-1">
+        <div className="text-[10px] font-black uppercase tracking-wider text-white/60 px-0.5">
+          TOUCH ACTIONS
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {ACTIONS_CONFIG.map((item) => {
+            const Icon = item.icon;
+            const count = stats[item.id] || 0;
 
-          return (
-            <button
-              key={item.id}
-              onClick={() => handleActionTap(item.id)}
-              className="group p-3 rounded-2xl border border-white/10 bg-[#12151D] hover:bg-white/10 active:scale-95 transition-all text-center flex flex-col items-center justify-between h-24 relative overflow-hidden"
-            >
-              <div className="w-8 h-8 rounded-xl bg-white/5 group-hover:bg-[#FF4422]/20 text-white/70 group-hover:text-[#FF4422] flex items-center justify-center transition-colors">
-                <Icon size={16} />
-              </div>
-
-              <div className="space-y-0.5">
-                <div className="text-base font-black text-white">{count}</div>
-                <div className="text-[8px] font-black uppercase tracking-wider text-white/60 group-hover:text-white">
-                  {item.label}
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ── 3-COLUMN INDEPENDENT EVENT COUNTERS GRID (CLEAN DARK/NEUTRAL CARDS) ── */}
-      <div className="grid grid-cols-3 gap-2.5 pt-1">
-        {MATCH_EVENTS_CONFIG.map((item) => {
-          const count = stats[item.id] || 0;
-          const isYellow = item.type === "yellow-card";
-          const isRed = item.type === "red-card";
-
-          return (
-            <div
-              key={item.id}
-              onClick={() => handleEventTap(item.id)}
-              className="group p-3 rounded-2xl border border-white/10 bg-[#12151D] hover:bg-white/[0.07] hover:border-white/20 active:scale-95 transition-all text-center flex flex-col items-center justify-between h-24 relative cursor-pointer select-none"
-            >
-              {/* Optional Decrement button when count > 0 */}
-              {count > 0 && (
-                <button
-                  type="button"
-                  title={`Decrease ${item.label}`}
-                  onClick={(e) => handleEventDecrement(e, item.id)}
-                  className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center text-[10px] font-bold z-10 transition-colors"
-                >
-                  -
-                </button>
-              )}
-
-              {/* Minimalist Icon / Badge */}
-              {isYellow ? (
-                <div className="w-5 h-5 rounded border border-yellow-400/80 bg-yellow-400/20 flex items-center justify-center">
-                  <div className="w-2 h-2.5 bg-yellow-400 rounded-sm" />
-                </div>
-              ) : isRed ? (
-                <div className="w-5 h-5 rounded border border-red-500/80 bg-red-500/20 flex items-center justify-center">
-                  <div className="w-2 h-2.5 bg-red-500 rounded-sm" />
-                </div>
-              ) : (
-                <div className="w-5 h-5 rounded border border-white/20 bg-white/5 flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 bg-white/60 rounded-sm" />
-                </div>
-              )}
-
-              <div className="space-y-0.5">
-                <div
-                  className={`text-base font-black ${
-                    isYellow ? "text-yellow-400" : isRed ? "text-red-400" : "text-white"
-                  }`}
-                >
-                  {count}
-                </div>
-                <div
-                  className={`text-[8px] font-black uppercase tracking-wider ${
-                    isYellow
-                      ? "text-yellow-400/90"
-                      : isRed
-                      ? "text-red-400/90"
-                      : "text-white/60 group-hover:text-white/90"
-                  }`}
-                >
-                  {item.label}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* ── PLAYER & SESSION INFORMATION (4 NEW FIELDS + EXISTING LOCATIONS) ── */}
-      <div className="space-y-3 pt-2">
-        <div className="space-y-2">
-          {/* Row 1: PLAYER NAME & AGE */}
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="space-y-1">
-              <label className="block text-[10px] font-black uppercase tracking-wider text-white/70">
-                PLAYER NAME
-              </label>
-              <input
-                type="text"
-                placeholder="Enter player name"
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
-                className="w-full bg-[#12151D] border border-white/10 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-yellow-400/70 placeholder:text-white/30"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="block text-[10px] font-black uppercase tracking-wider text-white/70">
-                AGE
-              </label>
-              <input
-                type="number"
-                placeholder="Age"
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                className="w-full bg-[#12151D] border border-white/10 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-yellow-400/70 placeholder:text-white/30"
-              />
-            </div>
-          </div>
-
-          {/* Row 2: PLAYER POSITION & NUMBER */}
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="space-y-1">
-              <label className="block text-[10px] font-black uppercase tracking-wider text-white/70">
-                PLAYER POSITION
-              </label>
-              <select
-                value={position}
-                onChange={(e) => setPosition(e.target.value)}
-                className="w-full bg-[#12151D] border border-white/10 rounded-xl px-2.5 py-2 text-white text-xs font-semibold focus:outline-none focus:border-yellow-400/70"
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleActionTap(item.id)}
+                className="group p-2.5 rounded-2xl border border-white/10 bg-[#12151D] hover:bg-white/10 active:scale-95 transition-all text-center flex flex-col items-center justify-between h-24 relative overflow-hidden"
               >
-                {POSITIONS.map((pos) => (
-                  <option key={pos} value={pos} className="bg-[#12151D] text-white">
-                    {pos}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <div className="w-8 h-8 rounded-xl bg-white/5 group-hover:bg-[#FF4422]/20 text-white/70 group-hover:text-[#FF4422] flex items-center justify-center transition-colors">
+                  <Icon size={16} />
+                </div>
 
-            <div className="space-y-1">
-              <label className="block text-[10px] font-black uppercase tracking-wider text-white/70">
-                NUMBER
-              </label>
-              <input
-                type="number"
-                placeholder="Jersey Number"
-                value={playerNumber}
-                onChange={(e) => setPlayerNumber(e.target.value)}
-                className="w-full bg-[#12151D] border border-white/10 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-yellow-400/70 placeholder:text-white/30"
-              />
-            </div>
-          </div>
+                <div className="space-y-0.5">
+                  <div className="text-base font-black text-white">{count}</div>
+                  <div className="text-[8px] font-black uppercase tracking-wider text-white/60 group-hover:text-white">
+                    {item.label}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-          {/* Row 3: TRAINING LOCATION (EXISTING) */}
-          <div className="space-y-1">
-            <label className="block text-[10px] font-black uppercase tracking-wider text-white/70">
-              TRAINING LOCATION
-            </label>
-            <input
-              type="text"
-              placeholder="Enter training location"
-              value={trainingLocation}
-              onChange={(e) => setTrainingLocation(e.target.value)}
-              className="w-full bg-[#12151D] border border-white/10 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-yellow-400/70 placeholder:text-white/30"
-            />
+      {/* ── 7. COMPACT 3-COLUMN MATCH EVENTS (STRICTLY INDIVIDUAL EVENTS) ── */}
+      <div className="space-y-1.5 pt-1">
+        <div className="flex items-center justify-between px-0.5">
+          <div className="text-[10px] font-black uppercase tracking-wider text-white/60">
+            MATCH EVENTS
           </div>
-
-          {/* Row 4: GAME LOCATION (EXISTING) */}
-          <div className="space-y-1">
-            <label className="block text-[10px] font-black uppercase tracking-wider text-white/70">
-              GAME LOCATION
-            </label>
-            <input
-              type="text"
-              placeholder="Enter game location"
-              value={gameLocation}
-              onChange={(e) => setGameLocation(e.target.value)}
-              className="w-full bg-[#12151D] border border-white/10 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-yellow-400/70 placeholder:text-white/30"
-            />
-          </div>
+          <span className="text-[9px] text-white/40">Events do not affect touch counters</span>
         </div>
 
-        {/* TIME IN TRAINING SLIDER */}
+        <div className="grid grid-cols-3 gap-2">
+          {MATCH_EVENTS_CONFIG.map((item) => {
+            const count = stats[item.id] || 0;
+            const isYellow = item.type === "yellow-card";
+            const isRed = item.type === "red-card";
+
+            return (
+              <div
+                key={item.id}
+                onClick={() => handleEventTap(item.id)}
+                className="group p-2.5 rounded-2xl border border-white/10 bg-[#12151D] hover:bg-white/[0.07] hover:border-white/20 active:scale-95 transition-all text-center flex flex-col items-center justify-between h-24 relative cursor-pointer select-none"
+              >
+                {/* Optional Decrement button when count > 0 */}
+                {count > 0 && (
+                  <button
+                    type="button"
+                    title={`Decrease ${item.label}`}
+                    onClick={(e) => handleEventDecrement(e, item.id)}
+                    className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center text-[10px] font-bold z-10 transition-colors"
+                  >
+                    -
+                  </button>
+                )}
+
+                {/* Minimalist Icon / Badge */}
+                {isYellow ? (
+                  <div className="w-5 h-5 rounded border border-yellow-400/80 bg-yellow-400/20 flex items-center justify-center">
+                    <div className="w-2 h-2.5 bg-yellow-400 rounded-sm" />
+                  </div>
+                ) : isRed ? (
+                  <div className="w-5 h-5 rounded border border-red-500/80 bg-red-500/20 flex items-center justify-center">
+                    <div className="w-2 h-2.5 bg-red-500 rounded-sm" />
+                  </div>
+                ) : (
+                  <div className="w-5 h-5 rounded border border-white/20 bg-white/5 flex items-center justify-center">
+                    <div className="w-1.5 h-1.5 bg-white/60 rounded-sm" />
+                  </div>
+                )}
+
+                <div className="space-y-0.5">
+                  <div
+                    className={`text-base font-black ${
+                      isYellow ? "text-yellow-400" : isRed ? "text-red-400" : "text-white"
+                    }`}
+                  >
+                    {count}
+                  </div>
+                  <div
+                    className={`text-[8px] font-black uppercase tracking-wider ${
+                      isYellow
+                        ? "text-yellow-400/90"
+                        : isRed
+                        ? "text-red-400/90"
+                        : "text-white/60 group-hover:text-white/90"
+                    }`}
+                  >
+                    {item.label}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── 8. TIME IN TRAINING & MINUTES PLAYED SLIDERS ── */}
+      <div className="space-y-3 pt-2 p-3 rounded-2xl border border-white/10 bg-[#0E121A]">
         {(() => {
           const timePercent = Math.min(100, Math.max(0, (timeInTraining / 180) * 100));
           const minutesPercent = Math.min(100, Math.max(0, (minutesPlayed / 180) * 100));
           return (
             <>
-              <div className="space-y-1.5 pt-1">
-                <label className="block text-xs font-black uppercase tracking-wider text-white/70">
-                  TIME IN TRAINING
-                </label>
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-black uppercase tracking-wider text-white/70">
+                    TIME IN TRAINING
+                  </label>
+                  <span className="text-[#FF4422] font-black text-xs">
+                    {timeInTraining} Minutes
+                  </span>
+                </div>
                 <div className="flex items-center gap-3">
                   <input
                     type="range"
@@ -538,21 +790,22 @@ export function ActionWheel() {
                     value={timeInTraining}
                     onChange={(e) => setTimeInTraining(Number(e.target.value))}
                     style={{
-                      background: `linear-gradient(to right, #facc15 0%, #facc15 ${timePercent}%, rgba(255, 255, 255, 0.15) ${timePercent}%, rgba(255, 255, 255, 0.15) 100%)`,
+                      background: `linear-gradient(to right, #FF4422 0%, #FF4422 ${timePercent}%, rgba(255, 255, 255, 0.15) ${timePercent}%, rgba(255, 255, 255, 0.15) 100%)`,
                     }}
-                    className="yellow-range-slider flex-1"
+                    className="orange-range-slider flex-1"
                   />
-                  <span className="text-yellow-400 font-black text-sm whitespace-nowrap min-w-[85px] text-right">
-                    {timeInTraining} Minutes
-                  </span>
                 </div>
               </div>
 
-              {/* MINUTES PLAYED SLIDER */}
               <div className="space-y-1.5 pt-1">
-                <label className="block text-xs font-black uppercase tracking-wider text-white/70">
-                  MINUTES PLAYED
-                </label>
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-black uppercase tracking-wider text-white/70">
+                    MINUTES PLAYED
+                  </label>
+                  <span className="text-[#FF4422] font-black text-xs">
+                    {minutesPlayed} Minutes
+                  </span>
+                </div>
                 <div className="flex items-center gap-3">
                   <input
                     type="range"
@@ -562,13 +815,10 @@ export function ActionWheel() {
                     value={minutesPlayed}
                     onChange={(e) => setMinutesPlayed(Number(e.target.value))}
                     style={{
-                      background: `linear-gradient(to right, #facc15 0%, #facc15 ${minutesPercent}%, rgba(255, 255, 255, 0.15) ${minutesPercent}%, rgba(255, 255, 255, 0.15) 100%)`,
+                      background: `linear-gradient(to right, #FF4422 0%, #FF4422 ${minutesPercent}%, rgba(255, 255, 255, 0.15) ${minutesPercent}%, rgba(255, 255, 255, 0.15) 100%)`,
                     }}
-                    className="yellow-range-slider flex-1"
+                    className="orange-range-slider flex-1"
                   />
-                  <span className="text-yellow-400 font-black text-sm whitespace-nowrap min-w-[85px] text-right">
-                    {minutesPlayed} Minutes
-                  </span>
                 </div>
               </div>
             </>
@@ -576,12 +826,83 @@ export function ActionWheel() {
         })()}
       </div>
 
-      {/* ── Action Buttons Bar ── */}
+      {/* ── 9. ACTION BUTTONS (RESET, SHARE, PDF, SAVE) ── */}
       <SectionActionBar
         onReset={handleResetSessionTouches}
         onSave={handleSaveSession}
         sectionKey="touch-counter"
       />
+
+      {/* ── VOICE COMMAND HELPER / FALLBACK MODAL ── */}
+      {isVoiceModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#12151D] border border-white/20 rounded-2xl p-5 max-w-sm w-full space-y-3 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Mic size={18} className="text-[#FF4422]" />
+                <h4 className="text-sm font-black uppercase text-white tracking-wider">
+                  Voice Command
+                </h4>
+              </div>
+              <button
+                onClick={() => setIsVoiceModalOpen(false)}
+                className="text-white/60 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-xs text-white/70">
+              Speak or type a command. Examples:
+              <br />
+              <span className="text-emerald-400 font-semibold">• "positive pass"</span>
+              <br />
+              <span className="text-rose-400 font-semibold">• "negative shot"</span>
+              <br />
+              <span className="text-yellow-400 font-semibold">• "yellow card"</span>
+              <br />
+              <span className="text-white/90 font-semibold">• "injury", "sub in", "goal"</span>
+            </p>
+            <div className="space-y-2">
+              <input
+                type="text"
+                placeholder="e.g. positive pass"
+                value={manualVoiceInput}
+                onChange={(e) => setManualVoiceInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    processVoiceCommand(manualVoiceInput);
+                    setManualVoiceInput("");
+                    setIsVoiceModalOpen(false);
+                  }
+                }}
+                className="w-full bg-black/40 border border-white/20 rounded-xl px-3 py-2 text-white text-xs"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    processVoiceCommand(manualVoiceInput);
+                    setManualVoiceInput("");
+                    setIsVoiceModalOpen(false);
+                  }}
+                  className="flex-1 py-2 rounded-xl bg-[#FF4422] text-white text-xs font-black uppercase tracking-wider hover:bg-[#FF4422]/80 transition-colors"
+                >
+                  Execute Command
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsVoiceModalOpen(false)}
+                  className="px-3 py-2 rounded-xl bg-white/10 text-white/80 text-xs font-bold hover:bg-white/20 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+export default ActionWheel;

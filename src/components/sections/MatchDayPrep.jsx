@@ -92,17 +92,17 @@ export function MatchDayPrep() {
         <h2 className="text-xl sm:text-2xl font-black uppercase text-white tracking-wider">
           MATCH DAY PREP
         </h2>
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-[9px] font-black uppercase">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/20 text-white text-[9px] font-black uppercase">
           <Zap size={12} />
           <span>READY TO WIN</span>
         </div>
       </div>
 
       {/* ── MATCHDAY HERO CARD ── */}
-      <div className="relative rounded-2xl p-4 sm:p-5 shadow-2xl overflow-hidden border border-yellow-500/40 bg-gradient-to-b from-[#1C1608] via-[#120F08] to-[#0A0905] text-white space-y-3.5">
+      <div className="relative rounded-2xl p-4 sm:p-5 shadow-2xl overflow-hidden border border-white/15 bg-gradient-to-b from-[#141722] via-[#0E121A] to-[#0A0C14] text-white space-y-3.5">
         <div className="flex items-start justify-between relative z-10">
           <div className="space-y-1">
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-400">
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/80">
               NEXT FIXTURE PREPARATION
             </p>
             <h1 className="text-xl sm:text-2xl font-black uppercase text-white">
@@ -117,15 +117,15 @@ export function MatchDayPrep() {
             <img
               src={isRightFoot ? "/right_foot.png" : "/left_foot.png"}
               alt="Stick Figure Icon"
-              className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]"
+              className="w-full h-full object-contain brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]"
             />
           </div>
         </div>
 
         {/* Fixture Details Input Bar */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 relative z-10">
-          <div className="bg-black/50 border border-yellow-400/30 rounded-xl p-2.5 space-y-1">
-            <label className="text-[9px] font-black uppercase text-yellow-400 block flex items-center gap-1">
+          <div className="bg-black/50 border border-white/15 rounded-xl p-2.5 space-y-1">
+            <label className="text-[9px] font-black uppercase text-white/80 block flex items-center gap-1">
               <ShieldCheck size={10} />
               <span>OPPONENT</span>
             </label>
@@ -138,8 +138,8 @@ export function MatchDayPrep() {
             />
           </div>
 
-          <div className="bg-black/50 border border-yellow-400/30 rounded-xl p-2.5 space-y-1">
-            <label className="text-[9px] font-black uppercase text-yellow-400 block flex items-center gap-1">
+          <div className="bg-black/50 border border-white/15 rounded-xl p-2.5 space-y-1">
+            <label className="text-[9px] font-black uppercase text-white/80 block flex items-center gap-1">
               <Clock size={10} />
               <span>KICKOFF TIME</span>
             </label>
@@ -152,8 +152,8 @@ export function MatchDayPrep() {
             />
           </div>
 
-          <div className="bg-black/50 border border-yellow-400/30 rounded-xl p-2.5 space-y-1">
-            <label className="text-[9px] font-black uppercase text-yellow-400 block flex items-center gap-1">
+          <div className="bg-black/50 border border-white/15 rounded-xl p-2.5 space-y-1">
+            <label className="text-[9px] font-black uppercase text-white/80 block flex items-center gap-1">
               <MapPin size={10} />
               <span>VENUE</span>
             </label>
@@ -170,12 +170,12 @@ export function MatchDayPrep() {
         {/* Readiness Progress Bar */}
         <div className="space-y-1.5 pt-2 border-t border-white/10 relative z-10">
           <div className="flex items-center justify-between text-xs font-black uppercase">
-            <span className="text-yellow-400">PREPARATION READINESS</span>
+            <span className="text-white">PREPARATION READINESS</span>
             <span className="text-white">{progressPercent}% READY</span>
           </div>
           <div className="w-full h-2.5 bg-black/60 rounded-full overflow-hidden p-0.5 border border-white/10">
             <div
-              className="h-full bg-gradient-to-r from-yellow-500 to-amber-400 rounded-full transition-all duration-500"
+              className="h-full bg-white rounded-full transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -235,7 +235,7 @@ export function MatchDayPrep() {
 
       {/* ── TACTICAL FOCUS & NOTES ── */}
       <div className="p-4 rounded-2xl border border-white/10 bg-[#12151D] space-y-2">
-        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-yellow-400 block">
+        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80 block">
           TACTICAL FOCUS & COACH INSTRUCTIONS
         </label>
         <textarea
@@ -243,13 +243,13 @@ export function MatchDayPrep() {
           placeholder="Write your tactical role, 3 main objectives, and coach instructions..."
           value={tacticalNotes}
           onChange={(e) => setTacticalNotes(e.target.value)}
-          className="w-full bg-black/40 border border-white/15 rounded-xl p-3 text-white text-xs font-medium focus:outline-none focus:border-yellow-400 placeholder:text-white/30 resize-none"
+          className="w-full bg-black/40 border border-white/15 rounded-xl p-3 text-white text-xs font-medium focus:outline-none focus:border-white/40 placeholder:text-white/30 resize-none"
         />
       </div>
 
       {/* ── INSPIRATIONAL QUOTE BANNER ── */}
       <div className="p-4 rounded-2xl bg-[#10B981] text-white space-y-1 shadow-lg border border-emerald-400/40">
-        <p className="text-base sm:text-lg font-black italic tracking-wide text-yellow-300">
+        <p className="text-base sm:text-lg font-black italic tracking-wide text-white">
           “Preparation is the bridge to peak performance.”
         </p>
         <p className="text-[9px] font-bold uppercase tracking-wider text-emerald-100">

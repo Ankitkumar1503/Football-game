@@ -223,7 +223,7 @@ export function Settings() {
     },
     {
       q: "Who operates Touches™?",
-      a: "Touches™ is operated by Footballer Athletics™, developed by Clem Murdock.",
+      a: "Touches™ is operated by Footballer Athletics™.",
     },
   ];
 
@@ -408,24 +408,6 @@ export function Settings() {
           description="Submit a request to have your data reviewed or permanently deleted."
           onClick={() => {}}
         />
-
-        {/* ════════════════════════════════
-            TRADEMARK / LEGAL BLOCK
-        ════════════════════════════════ */}
-        <p className={sectionHeaderClass}>Trademark</p>
-        <div className="p-4 border border-football-text/10 space-y-2 bg-football-card rounded-2xl">
-          <p className="text-[10px] text-football-text/80 leading-relaxed">
-            © 2026 ClemMurdock – Footballer Athletics™. All Rights Reserved.
-          </p>
-          <p className="text-[10px] text-football-text/80 leading-relaxed">
-            Touches™, Footballer Athletics™, and PlayLikeU™ are protected
-            trademarks by Clem Murdock.
-          </p>
-          <p className="text-[10px] text-football-text/80 leading-relaxed">
-            Touches™ is not affiliated with FIFA, UEFA, Apple, Google, or any
-            governing body.
-          </p>
-        </div>
 
         {/* ════════════════════════════════
             FAQ SECTION

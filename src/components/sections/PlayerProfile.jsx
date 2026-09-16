@@ -239,11 +239,11 @@ export function PlayerProfile() {
             <img
               src="/right_foot.png"
               alt="Footballer Athletics Icon"
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain brightness-0 invert"
             />
           </div>
 
-          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-football-text/70">
+          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-white">
             FOOTBALLER ATHLETICS
           </p>
 
@@ -252,11 +252,11 @@ export function PlayerProfile() {
             <img
               src="/touches_logo.png"
               alt="TOUCHES LOGO"
-              className="h-14 w-auto object-contain"
+              className="h-14 w-auto object-contain brightness-0 invert"
             />
           </div>
 
-          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-yellow-400">
+          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-white">
             TRACK • REFLECT • IMPROVE
           </p>
         </div>
@@ -273,12 +273,12 @@ export function PlayerProfile() {
 
           {/* Pitch Icon & Question Heading */}
           <div className="text-center relative z-10">
-            <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-football-text leading-tight">
+            <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white leading-tight">
               ARE YOU A <span className="text-[#FF4422]">LEFT</span> OR{" "}
               <span className="text-[#00AEEF]">RIGHT</span> FOOTER?
             </h1>
 
-            <p className="text-[11px] text-football-text/70 max-w-xs mx-auto leading-tight font-medium">
+            <p className="text-[11px] text-white/70 max-w-xs mx-auto leading-tight font-medium">
               Every elite player knows their dominant foot. This is where your
               journey begins.
             </p>
@@ -302,12 +302,12 @@ export function PlayerProfile() {
                 </div>
               )}
 
-              {/* Left Foot Icon */}
+              {/* Left Foot Icon (White) */}
               <div className="w-14 h-14 rounded-full flex items-center justify-center">
                 <img
                   src="/left_foot.png"
                   alt="Left Footer Icon"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain brightness-0 invert"
                 />
               </div>
 
@@ -337,12 +337,12 @@ export function PlayerProfile() {
                 </div>
               )}
 
-              {/* Right Foot Icon */}
+              {/* Right Foot Icon (White) */}
               <div className="w-14 h-14 rounded-full flex items-center justify-center">
                 <img
                   src="/right_foot.png"
                   alt="Right Footer Icon"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain brightness-0 invert"
                 />
               </div>
 

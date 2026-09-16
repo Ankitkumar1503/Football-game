@@ -467,11 +467,11 @@ export function BottomBar() {
         </div>
 
         {/* Bottom Branding Row */}
-        <div className="flex items-center justify-center gap-1.5 pt-1 text-[8px] font-black uppercase tracking-[0.25em] text-white/40 border-t border-white/5">
+        <div className="flex items-center justify-center gap-1.5 pt-1 text-[8px] font-black uppercase tracking-[0.25em] text-white/50 border-t border-white/5">
           <img
             src={isRightFoot ? "/right_foot.png" : "/left_foot.png"}
             alt="Icon"
-            className="w-3.5 h-3.5 object-contain"
+            className="w-3.5 h-3.5 object-contain brightness-0 invert"
           />
           <span>FOOTBALLER ATHLETICS</span>
         </div>

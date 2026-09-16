@@ -88,7 +88,7 @@ export function AiPlayerAgent() {
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] sm:h-[calc(100vh-120px)] max-w-2xl mx-auto space-y-2 select-none overflow-hidden pb-2">
       {/* ── TOP HEADER BAR (Fixed Top) ── */}
-      <div className="flex-shrink-0 p-3 rounded-2xl border border-yellow-500/30 bg-[#121015] flex items-center justify-between shadow-lg">
+      <div className="flex-shrink-0 p-3 rounded-2xl border border-white/10 bg-[#121015] flex items-center justify-between shadow-lg">
         <div className="flex items-center gap-3">
           {/* Bot Avatar Icon */}
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#FF4422] text-white flex items-center justify-center shadow-md flex-shrink-0">
@@ -96,10 +96,10 @@ export function AiPlayerAgent() {
           </div>
 
           <div>
-            <h2 className="text-sm sm:text-base font-black text-yellow-400 tracking-wide leading-none flex items-center gap-1.5">
+            <h2 className="text-sm sm:text-base font-black text-white tracking-wide leading-none flex items-center gap-1.5">
               <span>AiPlayerAgent - Mentor</span>
             </h2>
-            <p className="text-[10px] font-bold text-yellow-300/80 mt-1">
+            <p className="text-[10px] font-bold text-white/80 mt-1">
               Powered by Footballer Athletics
             </p>
           </div>
@@ -121,7 +121,7 @@ export function AiPlayerAgent() {
           <button
             key={idx}
             onClick={() => handleSend(text)}
-            className="px-3 py-1.5 rounded-full bg-[#181418] border border-[#FF4422]/60 hover:bg-[#FF4422]/20 text-[#FF4422] text-xs font-bold whitespace-nowrap transition-all flex-shrink-0 active:scale-95"
+            className="px-3 py-1.5 rounded-full bg-[#181418] border border-[#FF4422]/60 hover:bg-[#FF4422]/20 text-white text-xs font-bold whitespace-nowrap transition-all flex-shrink-0 active:scale-95"
           >
             {text}
           </button>
@@ -130,19 +130,6 @@ export function AiPlayerAgent() {
 
       {/* ── CHAT MESSAGES CONTAINER (ONLY THIS SCROLLS!) ── */}
       <div className="flex-1 overflow-y-auto no-scrollbar space-y-3 py-2 pr-1">
-        {/* Centered Yellow Stick Figure Graphic */}
-        {messages.length <= 2 && (
-          <div className="my-auto py-4 flex flex-col items-center justify-center opacity-90 pointer-events-none">
-            <div className="w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center">
-              <img
-                src={isRightFoot ? "/right_foot.png" : "/left_foot.png"}
-                alt="AI Mentor Kicking Icon"
-                className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]"
-              />
-            </div>
-          </div>
-        )}
-
         {messages.map((msg, idx) => {
           const isAgent = msg.sender === "agent";
 
@@ -153,7 +140,7 @@ export function AiPlayerAgent() {
                 key={idx}
                 className="p-3.5 sm:p-4 rounded-2xl border-l-4 border-[#FF4422] bg-[#141217] space-y-2 shadow-xl"
               >
-                <p className="text-xs sm:text-sm font-bold text-yellow-400 leading-relaxed whitespace-pre-line">
+                <p className="text-xs sm:text-sm font-bold text-white leading-relaxed whitespace-pre-line">
                   {msg.text}
                 </p>
               </div>
@@ -176,7 +163,7 @@ export function AiPlayerAgent() {
               <div
                 className={`max-w-[82%] p-3 sm:p-3.5 rounded-2xl text-xs sm:text-sm font-semibold leading-relaxed shadow-md ${
                   isAgent
-                    ? "bg-[#16141C] border border-yellow-400/30 text-yellow-300 rounded-tl-none"
+                    ? "bg-[#16141C] border border-white/15 text-white rounded-tl-none"
                     : "bg-[#FF4422] text-white rounded-tr-none"
                 }`}
               >
@@ -193,7 +180,7 @@ export function AiPlayerAgent() {
         })}
 
         {isTyping && (
-          <div className="flex items-center gap-2 text-yellow-400 text-xs font-bold italic px-2 animate-pulse">
+          <div className="flex items-center gap-2 text-white/80 text-xs font-bold italic px-2 animate-pulse">
             <Bot size={14} />
             <span>AI Mentor is thinking...</span>
           </div>
@@ -214,10 +201,10 @@ export function AiPlayerAgent() {
           <div className="relative flex-1">
             <input
               type="text"
-              placeholder="How can i help you with your game?"
+              placeholder="How can I help you with your game?"
               value={inputQuery}
               onChange={(e) => setInputQuery(e.target.value)}
-              className="w-full bg-[#16141D] border border-white/15 rounded-full py-2.5 px-4 text-xs sm:text-sm font-semibold text-white placeholder:text-yellow-400/90 focus:outline-none focus:border-yellow-400 transition-colors shadow-inner"
+              className="w-full bg-[#16141D] border border-white/15 rounded-full py-2.5 px-4 text-xs sm:text-sm font-semibold text-white placeholder:text-white/70 focus:outline-none focus:border-white/40 transition-colors shadow-inner"
             />
           </div>
 
@@ -233,7 +220,7 @@ export function AiPlayerAgent() {
 
       {/* Action Bar */}
       <div className="flex-shrink-0">
-        <SectionActionBar sectionKey="ai-agent" />
+        <SectionActionBar sectionKey="ai-agent" onReset={handleResetChat} />
       </div>
     </div>
   );

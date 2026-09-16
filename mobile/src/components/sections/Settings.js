@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
   User,
@@ -10,6 +10,8 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  Mail,
+  Lock,
 } from 'lucide-react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useActiveSession } from '../../hooks/useActiveSession';
@@ -47,7 +49,7 @@ export function Settings() {
     },
     {
       q: 'Who operates Touches™?',
-      a: 'Touches™ is operated by Footballer Athletics™, founded by Coach Clem Murdock.',
+      a: 'Touches™ is operated by Footballer Athletics™.',
     },
   ];
 
@@ -224,6 +226,61 @@ export function Settings() {
             </View>
           </View>
           <ChevronRight size={14} color="#EF4444" />
+        </TouchableOpacity>
+      </View>
+
+      {/* ── CONTACT & SUPPORT ── */}
+      <View className="space-y-1 pt-2">
+        <Text className="text-[9px] font-black uppercase tracking-widest text-white/50 mb-1">
+          Contact & Support
+        </Text>
+
+        <TouchableOpacity
+          onPress={() => Linking.openURL('mailto:footballerathleticss@gmail.com')}
+          className="p-3 rounded-xl bg-[#12151D] border border-white/10 flex-row items-center justify-between"
+        >
+          <View className="flex-row items-center gap-3">
+            <Mail size={16} color="white" />
+            <View>
+              <Text className="text-xs font-black uppercase text-white">
+                Support / Privacy Requests
+              </Text>
+              <Text className="text-[9px] text-white/60">
+                footballerathleticss@gmail.com
+              </Text>
+            </View>
+          </View>
+          <ChevronRight size={14} color="rgba(255,255,255,0.4)" />
+        </TouchableOpacity>
+      </View>
+
+      {/* ── DATA & PRIVACY ── */}
+      <View className="space-y-1 pt-2">
+        <Text className="text-[9px] font-black uppercase tracking-widest text-white/50 mb-1">
+          Data & Privacy
+        </Text>
+
+        <TouchableOpacity
+          onPress={() => {
+            Alert.alert(
+              'Data Control & Deletion',
+              'Submit a request to footballerathleticss@gmail.com to have your data reviewed or permanently deleted.'
+            );
+          }}
+          className="p-3 rounded-xl bg-[#12151D] border border-white/10 flex-row items-center justify-between"
+        >
+          <View className="flex-row items-center gap-3">
+            <Lock size={16} color="white" />
+            <View>
+              <Text className="text-xs font-black uppercase text-white">
+                Data Control & Deletion
+              </Text>
+              <Text className="text-[9px] text-white/60">
+                Submit a request to review or delete your data
+              </Text>
+            </View>
+          </View>
+          <ChevronRight size={14} color="rgba(255,255,255,0.4)" />
         </TouchableOpacity>
       </View>
 

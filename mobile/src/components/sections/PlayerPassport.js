@@ -136,6 +136,7 @@ export function PlayerPassport() {
                   : require('../../../assets/left_foot.png')
               }
               className="w-12 h-12"
+              style={{ tintColor: '#FFFFFF' }}
               resizeMode="contain"
             />
           </View>

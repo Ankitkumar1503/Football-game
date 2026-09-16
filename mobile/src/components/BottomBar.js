@@ -113,11 +113,12 @@ export function BottomBar() {
               : require('../../assets/left_foot.png')
           }
           className="w-3.5 h-3.5"
+          style={{ tintColor: '#FFFFFF' }}
           resizeMode="contain"
         />
         <Text
           style={{ letterSpacing: 1.5 }}
-          className="text-[7.5px] font-black uppercase text-white/40"
+          className="text-[7.5px] font-black uppercase text-white/50"
         >
           FOOTBALLER ATHLETICS™
         </Text>

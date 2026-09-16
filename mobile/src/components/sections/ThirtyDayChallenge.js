@@ -193,7 +193,7 @@ export function ThirtyDayChallenge() {
 
       {/* ── INSPIRATIONAL QUOTE CARD ── */}
       <View className="p-4 rounded-2xl bg-[#10B981] space-y-1 shadow-lg border border-emerald-400/40">
-        <Text className="text-lg font-black italic tracking-wide text-yellow-300">
+        <Text className="text-lg font-black italic tracking-wide text-white">
           “Play like you always have the ball”
         </Text>
         <Text className="text-[9.5px] font-bold uppercase tracking-wider text-emerald-100">

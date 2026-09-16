@@ -184,6 +184,7 @@ export function PlayerDashboard() {
                   : require('../../../assets/left_foot.png')
               }
               className="w-14 h-14"
+              style={{ tintColor: '#FFFFFF' }}
               resizeMode="contain"
             />
           </View>
@@ -442,85 +443,6 @@ export function PlayerDashboard() {
           </View>
           <ChevronRight size={16} color="rgba(255,255,255,0.4)" />
         </TouchableOpacity>
-      </View>
-
-      {/* ── CAREER STATS SECTION ── */}
-      <View className="space-y-2.5 pt-2">
-        <Text
-          style={{ letterSpacing: 2 }}
-          className="text-[11px] font-black uppercase text-white/70 px-0.5"
-        >
-          CAREER STATS
-        </Text>
-
-        {[
-          [
-            { label: 'GOALS', value: totalGoals, color: '#FF4422', icon: Trophy },
-            {
-              label: 'HOURS TRAINED',
-              value: totalHoursTrained,
-              color: '#00AEEF',
-              icon: Flame,
-            },
-          ],
-          [
-            {
-              label: 'SESSIONS',
-              value: totalSessions,
-              color: '#10B981',
-              icon: Activity,
-            },
-            {
-              label: 'TOTAL TOUCHES',
-              value: totalTouches,
-              color: '#F59E0B',
-              icon: Zap,
-            },
-          ],
-        ].map((pair, rowIndex) => (
-          <View key={rowIndex} style={{ flexDirection: 'row', gap: 10 }}>
-            {pair.map((item) => {
-              const IconComp = item.icon;
-              return (
-                <View
-                  key={item.label}
-                  style={{ flex: 1 }}
-                  className="p-3 rounded-xl border border-white/10 bg-[#12151D]"
-                >
-                  <View className="flex-row items-center justify-between mb-1">
-                    <Text className="text-[8px] font-black uppercase tracking-widest text-white/60">
-                      {item.label}
-                    </Text>
-                    <IconComp size={13} color={item.color} />
-                  </View>
-                  <Text
-                    className="text-2xl font-black"
-                    style={{ color: item.color }}
-                  >
-                    {item.value}
-                  </Text>
-                </View>
-              );
-            })}
-          </View>
-        ))}
-      </View>
-
-      {/* ── BRAND FOOTER CARD ── */}
-      <View className="p-3 rounded-xl border border-white/10 bg-[#12151D] flex-row items-center justify-between mt-2">
-        <View className="flex-row items-center gap-2.5">
-          <View className="w-7 h-7 rounded-full bg-[#141720] border border-white/20 items-center justify-center">
-            <Text className="text-[6.5px] font-black text-white/70">FA</Text>
-          </View>
-          <View>
-            <Text className="text-[10px] font-black uppercase tracking-wider text-white">
-              FOOTBALLER ATHLETICS
-            </Text>
-            <Text className="text-[8px] text-white/50 font-medium">
-              Founded by Coach Clem Murdock · TOUCHES™ 2026
-            </Text>
-          </View>
-        </View>
       </View>
     </View>
   );

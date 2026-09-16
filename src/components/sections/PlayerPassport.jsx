@@ -116,12 +116,12 @@ export function PlayerPassport() {
             </div>
           </div>
 
-          {/* Compact Yellow Stick Figure Icon */}
+          {/* Compact White Stick Figure Icon */}
           <div className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center relative z-10">
             <img
               src={isRightFoot ? "/right_foot.png" : "/left_foot.png"}
               alt="Stick Figure Icon"
-              className="w-full h-full object-contain drop-shadow-[0_0_6px_rgba(250,204,21,0.5)]"
+              className="w-full h-full object-contain brightness-0 invert drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]"
             />
           </div>
         </div>

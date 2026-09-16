@@ -7,7 +7,6 @@ import { db } from "../../lib/db";
 import touchesLogo from "../../assets/touches.png";
 import { InstallAppBanner } from "../InstallAppBanner";
 import {
-  Settings,
   Pointer,
   BarChart3,
   Brain,
@@ -167,60 +166,6 @@ export function PlayerDashboard() {
 
   return (
     <div className="bg-[#07090E] text-football-text pb-6 pt-1 px-1 sm:px-2 space-y-3">
-      {/* ════════════════════════════════
-          1. CLEAN COMPACT HEADER BAR
-      ════════════════════════════════ */}
-      <div className="flex items-center justify-between py-2 px-1 border-b border-white/10">
-        {/* Left: Yellow Ü Icon + Yellow TOUCHES Logo */}
-        <div
-          onClick={() => navigate("/dashboard")}
-          className="flex items-center gap-2.5 cursor-pointer"
-        >
-          <img
-            src="/touches_icon.png"
-            alt="TOUCHES Icon"
-            className="h-8 sm:h-9 w-auto object-contain"
-          />
-          <img
-            src="/touches_logo.png"
-            alt="TOUCHES"
-            className="h-7 sm:h-8 w-auto object-contain"
-          />
-        </div>
-
-        {/* Right: Dynamic Foot Icon (Display only), Settings Gear, User Initial Avatar Badge */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          {/* Dominant Foot Icon (No link, dynamic according to DB/state) */}
-          <div className="flex items-center justify-center">
-            <img
-              src={isRightFoot ? "/right_foot.png" : "/left_foot.png"}
-              alt={`${activeFoot} Foot Icon`}
-              className="w-8 h-8 sm:w-9 sm:h-9 object-contain"
-            />
-          </div>
-
-          {/* Settings Gear */}
-          <button
-            onClick={() => navigate("/settings")}
-            title="Settings"
-            className="p-1 text-white hover:text-yellow-400 transition-colors flex items-center justify-center"
-          >
-            <Settings size={24} strokeWidth={2} />
-          </button>
-
-          {/* Profile Initial Badge */}
-          <button
-            onClick={() => navigate("/account")}
-            title={`Account (${playerName})`}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#FF4422] text-white font-black text-xs sm:text-sm flex items-center justify-center shadow-md border border-white/20 hover:scale-105 transition-transform"
-          >
-            {playerInitial}
-          </button>
-        </div>
-      </div>
-
-      {/* PWA INSTALL APP BANNER */}
-      <InstallAppBanner />
 
       {/* ════════════════════════════════
           2. GREEN STADIUM HERO BANNER
@@ -263,12 +208,12 @@ export function PlayerDashboard() {
             </div>
           </div>
 
-          {/* Top Right Stick Figure Icon (Circled in yellow in reference image) */}
+          {/* Top Right Stick Figure Icon (White) */}
           <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 flex items-center justify-center">
             <img
               src={isRightFoot ? "/right_foot.png" : "/left_foot.png"}
               alt="Stick Figure Icon"
-              className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]"
+              className="w-full h-full object-contain brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]"
             />
           </div>
         </div>
@@ -617,90 +562,6 @@ export function PlayerDashboard() {
             className="text-white/40 group-hover:text-white transition-colors"
           />
         </button>
-      </div>
-
-      {/* ════════════════════════════════
-          5. CAREER STATS SECTION (Compact)
-      ════════════════════════════════ */}
-      <div className="space-y-2 pt-1">
-        <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-white/70 px-0.5">
-          CAREER STATS
-        </h2>
-
-        <div className="grid grid-cols-2 gap-2.5">
-          {/* Goals */}
-          <div className="p-3 rounded-xl border border-white/10 bg-[#12151D] space-y-0.5">
-            <div className="flex items-center justify-between">
-              <p className="text-[8px] font-black uppercase tracking-widest text-white/60">
-                GOALS
-              </p>
-              <Trophy size={12} className="text-[#FF4422]/60" />
-            </div>
-            <p className="text-2xl font-black text-[#FF4422]">{totalGoals}</p>
-          </div>
-
-          {/* Hours Trained */}
-          <div className="p-3 rounded-xl border border-white/10 bg-[#12151D] space-y-0.5">
-            <div className="flex items-center justify-between">
-              <p className="text-[8px] font-black uppercase tracking-widest text-white/60">
-                HOURS TRAINED
-              </p>
-              <Flame size={12} className="text-[#00AEEF]/60" />
-            </div>
-            <p className="text-2xl font-black text-[#00AEEF]">
-              {totalHoursTrained}
-            </p>
-          </div>
-
-          {/* Sessions */}
-          <div className="p-3 rounded-xl border border-white/10 bg-[#12151D] space-y-0.5">
-            <div className="flex items-center justify-between">
-              <p className="text-[8px] font-black uppercase tracking-widest text-white/60">
-                SESSIONS
-              </p>
-              <Activity size={12} className="text-[#10B981]/60" />
-            </div>
-            <p className="text-2xl font-black text-[#10B981]">
-              {totalSessions}
-            </p>
-          </div>
-
-          {/* Total Touches */}
-          <div className="p-3 rounded-xl border border-white/10 bg-[#12151D] space-y-0.5">
-            <div className="flex items-center justify-between">
-              <p className="text-[8px] font-black uppercase tracking-widest text-white/60">
-                TOTAL TOUCHES
-              </p>
-              <Zap size={12} className="text-[#F59E0B]/60" />
-            </div>
-            <p className="text-2xl font-black text-[#F59E0B]">{totalTouches}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* ════════════════════════════════
-          6. FOOTER BRAND CARD
-      ════════════════════════════════ */}
-      <div className="p-3 rounded-xl border border-white/10 bg-[#12151D] flex items-center justify-between mt-2">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-full bg-[#141720] border border-white/20 flex items-center justify-center">
-            <span className="text-[6px] font-black tracking-tighter text-white/70">
-              FA
-            </span>
-          </div>
-          <div>
-            <h4 className="text-[11px] font-black uppercase tracking-wider text-white">
-              FOOTBALLER ATHLETICS
-            </h4>
-            <p className="text-[8px] text-white/50 font-medium">
-              Founded by Coach Clem Murdock • TOUCHES™ 2026
-            </p>
-          </div>
-        </div>
-
-        <div className="w-8 h-6 border border-white/15 rounded flex items-center justify-center opacity-40">
-          <div className="w-3 h-3 border border-white/20 rounded-full" />
-        </div>
       </div>
     </div>
   );

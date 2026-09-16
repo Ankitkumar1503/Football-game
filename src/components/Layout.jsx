@@ -10,7 +10,7 @@ export function Layout({ defaultMenuOpen = false }) {
   const [isMenuOpen, setIsMenuOpen] = useState(defaultMenuOpen);
   const location = useLocation();
   const isRegisterPage = location.pathname === "/register" || location.pathname === "/";
-  const hideHeader = isRegisterPage || location.pathname === "/dashboard";
+  const hideHeader = isRegisterPage;
 
   return (
     <div

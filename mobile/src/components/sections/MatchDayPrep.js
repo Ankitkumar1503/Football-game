@@ -91,21 +91,21 @@ export function MatchDayPrep() {
         <Text className="text-xl font-black uppercase text-white tracking-wider">
           MATCH DAY PREP
         </Text>
-        <View className="flex-row items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/30">
-          <Zap size={12} color="#FACC15" />
-          <Text className="text-yellow-400 text-[8.5px] font-black uppercase">
+        <View className="flex-row items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/20">
+          <Zap size={12} color="#FFFFFF" />
+          <Text className="text-white text-[8.5px] font-black uppercase">
             READY TO WIN
           </Text>
         </View>
       </View>
 
       {/* ── HERO FIXTURE CARD ── */}
-      <View className="rounded-2xl p-4 border border-yellow-500/40 bg-[#14120B] space-y-3 shadow-xl">
+      <View className="rounded-2xl p-4 border border-white/15 bg-[#0F121A] space-y-3 shadow-xl">
         <View className="flex-row items-start justify-between">
           <View className="space-y-0.5 flex-1 pr-2">
             <Text
               style={{ letterSpacing: 2 }}
-              className="text-[8.5px] font-black uppercase text-yellow-400"
+              className="text-[8.5px] font-black uppercase text-white/80"
             >
               NEXT FIXTURE PREPARATION
             </Text>
@@ -128,6 +128,7 @@ export function MatchDayPrep() {
                   : require('../../../assets/left_foot.png')
               }
               className="w-12 h-12"
+              style={{ tintColor: '#FFFFFF' }}
               resizeMode="contain"
             />
           </View>
@@ -135,8 +136,8 @@ export function MatchDayPrep() {
 
         {/* Fixture Details Inputs */}
         <View className="space-y-2 pt-1">
-          <View className="bg-black/50 border border-yellow-400/30 rounded-xl p-2.5">
-            <Text className="text-[8.5px] font-black uppercase text-yellow-400 mb-0.5">
+          <View className="bg-black/50 border border-white/15 rounded-xl p-2.5">
+            <Text className="text-[8.5px] font-black uppercase text-white/80 mb-0.5">
               OPPONENT
             </Text>
             <TextInput
@@ -149,8 +150,8 @@ export function MatchDayPrep() {
           </View>
 
           <View style={{ flexDirection: 'row', gap: 10 }}>
-            <View className="flex-1 bg-black/50 border border-yellow-400/30 rounded-xl p-2.5">
-              <Text className="text-[8.5px] font-black uppercase text-yellow-400 mb-0.5">
+            <View className="flex-1 bg-black/50 border border-white/15 rounded-xl p-2.5">
+              <Text className="text-[8.5px] font-black uppercase text-white/80 mb-0.5">
                 KICKOFF
               </Text>
               <TextInput
@@ -162,8 +163,8 @@ export function MatchDayPrep() {
               />
             </View>
 
-            <View className="flex-1 bg-black/50 border border-yellow-400/30 rounded-xl p-2.5">
-              <Text className="text-[8.5px] font-black uppercase text-yellow-400 mb-0.5">
+            <View className="flex-1 bg-black/50 border border-white/15 rounded-xl p-2.5">
+              <Text className="text-[8.5px] font-black uppercase text-white/80 mb-0.5">
                 VENUE
               </Text>
               <TextInput
@@ -180,14 +181,14 @@ export function MatchDayPrep() {
         {/* Readiness Progress Bar */}
         <View className="space-y-1 pt-1 border-t border-white/10">
           <View className="flex-row items-center justify-between">
-            <Text className="text-[9px] font-black uppercase text-yellow-400">
+            <Text className="text-[9px] font-black uppercase text-white">
               PREPARATION READINESS
             </Text>
             <Text className="text-white font-black text-xs">{progressPercent}% READY</Text>
           </View>
           <View className="h-2 bg-black/60 rounded-full overflow-hidden">
             <View
-              className="h-full bg-yellow-400"
+              className="h-full bg-white"
               style={{ width: `${progressPercent}%` }}
             />
           </View>
@@ -251,7 +252,7 @@ export function MatchDayPrep() {
       <View className="p-4 rounded-2xl border border-white/10 bg-[#12151D] space-y-2">
         <Text
           style={{ letterSpacing: 2 }}
-          className="text-[9.5px] font-black uppercase text-yellow-400"
+          className="text-[9.5px] font-black uppercase text-white/80"
         >
           TACTICAL FOCUS & COACH INSTRUCTIONS
         </Text>
@@ -268,7 +269,7 @@ export function MatchDayPrep() {
 
       {/* ── INSPIRATIONAL BANNER ── */}
       <View className="p-4 rounded-2xl bg-[#10B981] space-y-1 shadow-lg border border-emerald-400/40">
-        <Text className="text-base font-black italic tracking-wide text-yellow-300">
+        <Text className="text-base font-black italic tracking-wide text-white">
           “Preparation is the bridge to peak performance.”
         </Text>
         <Text className="text-[9px] font-bold uppercase tracking-wider text-emerald-100">

@@ -152,7 +152,9 @@ export function Layout({
   return (
     <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-[#07090E]">
       {/* Top Header */}
-      {!hideHeader && <Header onOpenMenu={() => setIsMenuOpen(true)} />}
+      {!hideHeader && (
+        <Header onOpenMenu={() => setIsMenuOpen(true)} />
+      )}
 
       {/* Main Content */}
       <KeyboardAvoidingView

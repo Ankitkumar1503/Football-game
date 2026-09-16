@@ -6,7 +6,6 @@ import {
   TextInput,
   ScrollView,
   Alert,
-  Image,
 } from 'react-native';
 import { Bot, RefreshCw, Send, User } from 'lucide-react-native';
 import { useActiveSession } from '../../hooks/useActiveSession';
@@ -120,7 +119,7 @@ export function AiPlayerAgent() {
           flexShrink: 0,
           padding: 12,
           borderRadius: 16,
-          borderColor: 'rgba(234, 179, 8, 0.3)',
+          borderColor: 'rgba(255, 255, 255, 0.1)',
           borderWidth: 1,
           backgroundColor: '#121015',
           flexDirection: 'row',
@@ -144,14 +143,14 @@ export function AiPlayerAgent() {
             <Bot size={18} color="white" />
           </View>
           <View>
-            <Text style={{ fontSize: 13, fontWeight: '900', color: '#FACC15' }}>
+            <Text style={{ fontSize: 13, fontWeight: '900', color: '#FFFFFF' }}>
               AiPlayerAgent - Mentor
             </Text>
             <Text
               style={{
                 fontSize: 9,
                 fontWeight: '700',
-                color: 'rgba(253, 224, 71, 0.8)',
+                color: 'rgba(255, 255, 255, 0.8)',
                 marginTop: 2,
               }}
             >
@@ -224,7 +223,7 @@ export function AiPlayerAgent() {
               <Text
                 numberOfLines={1}
                 style={{
-                  color: '#FF4422',
+                  color: '#FFFFFF',
                   fontSize: 11,
                   fontWeight: '700',
                 }}
@@ -246,27 +245,6 @@ export function AiPlayerAgent() {
         contentContainerStyle={{ paddingBottom: 8 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Centered Stick Figure Graphic for initial/short chats */}
-        {messages.length <= 2 && (
-          <View
-            style={{
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingVertical: 10,
-            }}
-          >
-            <Image
-              source={
-                isRightFoot
-                  ? require('../../../assets/right_foot.png')
-                  : require('../../../assets/left_foot.png')
-              }
-              style={{ width: 84, height: 84 }}
-              resizeMode="contain"
-            />
-          </View>
-        )}
-
         {messages.map((msg, idx) => {
           const isAgent = msg.sender === 'agent';
 
@@ -287,7 +265,7 @@ export function AiPlayerAgent() {
                   style={{
                     fontSize: 12,
                     fontWeight: '700',
-                    color: '#FACC15',
+                    color: '#FFFFFF',
                     lineHeight: 18,
                   }}
                 >
@@ -331,7 +309,7 @@ export function AiPlayerAgent() {
                   borderRadius: 16,
                   backgroundColor: isAgent ? '#16141C' : '#FF4422',
                   borderColor: isAgent
-                    ? 'rgba(250, 204, 21, 0.3)'
+                    ? 'rgba(255, 255, 255, 0.15)'
                     : 'transparent',
                   borderWidth: isAgent ? 1 : 0,
                 }}
@@ -341,7 +319,7 @@ export function AiPlayerAgent() {
                     fontSize: 12,
                     fontWeight: '600',
                     lineHeight: 17,
-                    color: isAgent ? '#FEF08A' : '#FFFFFF',
+                    color: '#FFFFFF',
                   }}
                 >
                   {msg.text}
@@ -377,10 +355,10 @@ export function AiPlayerAgent() {
               paddingVertical: 4,
             }}
           >
-            <Bot size={14} color="#FACC15" />
+            <Bot size={14} color="#FFFFFF" />
             <Text
               style={{
-                color: '#FACC15',
+                color: 'rgba(255, 255, 255, 0.8)',
                 fontSize: 12,
                 fontStyle: 'italic',
                 fontWeight: '700',
@@ -404,8 +382,8 @@ export function AiPlayerAgent() {
         }}
       >
         <TextInput
-          placeholder="Ask how to improve your game..."
-          placeholderTextColor="rgba(250, 204, 21, 0.7)"
+          placeholder="How can I help you with your game?"
+          placeholderTextColor="rgba(255, 255, 255, 0.7)"
           value={inputQuery}
           onChangeText={setInputQuery}
           onSubmitEditing={() => handleSend()}

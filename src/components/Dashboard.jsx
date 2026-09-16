@@ -11,7 +11,7 @@ import touches2 from "../assets/touches2.png";
 import { PlayerProfilesByPosition } from "./sections/PlayerProfilesByPosition";
 import { PlayerAttendanceGrade } from "./sections/PlayerAttendanceGrade";
 import { FootballFormation } from "./sections/Footballformation";
-import { ActionWheelOld } from "./sections/ActionWheelOld";
+import { Header } from "./Header";
 import { Navigation } from "./Navigation";
 
 export function Dashboard() {
@@ -25,20 +25,7 @@ export function Dashboard() {
     >
       {/* Header */}
       <Navigation />
-      <header className="sticky top-0 z-40 bg-[#0A0A0A]/95 backdrop-blur-md border-b-2 border-gary-300">
-        <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-center gap-3">
-          <img
-            src={touches}
-            alt="Football"
-            className="w-56 h-20 object-contain flex-shrink-0"
-          />
-          <img
-            src={touches2}
-            alt="Football"
-            className="w-16 h-20 object-contain flex-shrink-0"
-          />
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content */}
       <main className="max-w-md mx-auto">

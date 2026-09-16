@@ -250,13 +250,14 @@ export function PlayerProfile() {
           <Image
             source={require('../../../assets/right_foot.png')}
             className="w-14 h-14"
+            style={{ tintColor: '#FFFFFF' }}
             resizeMode="contain"
           />
         </View>
 
         <Text
           style={{ letterSpacing: 2 }}
-          className="text-[10px] font-black uppercase text-white/70 mt-1"
+          className="text-[10px] font-black uppercase text-white mt-1"
         >
           FOOTBALLER ATHLETICS
         </Text>
@@ -265,13 +266,14 @@ export function PlayerProfile() {
           <Image
             source={require('../../../assets/touches_logo.png')}
             className="w-44 h-10"
+            style={{ tintColor: '#FFFFFF' }}
             resizeMode="contain"
           />
         </View>
 
         <Text
           style={{ letterSpacing: 2 }}
-          className="text-[10px] font-black uppercase text-yellow-400"
+          className="text-[10px] font-black uppercase text-white"
         >
           TRACK • REFLECT • IMPROVE
         </Text>
@@ -309,10 +311,12 @@ export function PlayerProfile() {
               </View>
             )}
 
+            {/* Left Foot Icon (White) */}
             <View className="w-14 h-14 items-center justify-center">
               <Image
                 source={require('../../../assets/left_foot.png')}
                 className="w-14 h-14"
+                style={{ tintColor: '#FFFFFF' }}
                 resizeMode="contain"
               />
             </View>
@@ -344,10 +348,12 @@ export function PlayerProfile() {
               </View>
             )}
 
+            {/* Right Foot Icon (White) */}
             <View className="w-14 h-14 items-center justify-center">
               <Image
                 source={require('../../../assets/right_foot.png')}
                 className="w-14 h-14"
+                style={{ tintColor: '#FFFFFF' }}
                 resizeMode="contain"
               />
             </View>

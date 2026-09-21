@@ -74,7 +74,7 @@ function AppNavigation() {
             <Stack.Screen name="Settings" component={SettingsScreen} />
             <Stack.Screen name="Account" component={AccountScreen} />
             <Stack.Screen name="PaymentSuccess" component={PaymentSuccessScreen} />
-            <Stack.Screen name="Register" component={RegisterScreen} />
+            <Stack.Screen name="Profile" component={RegisterScreen} />
           </Stack.Group>
         )}
       </Stack.Navigator>

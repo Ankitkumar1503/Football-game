@@ -219,20 +219,26 @@ export function PlayerProfile() {
         await updateSession(formData);
       }
 
-      // If editing existing profile while already registered, navigate back
-      if (isRegistered && navigation.canGoBack()) {
-        navigation.goBack();
+      // If editing existing profile while already registered, navigate back or return to Dashboard
+      if (isRegistered) {
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+        } else {
+          navigation.navigate('Dashboard');
+        }
       }
-      // If newly registered, AuthContext's isRegistered state update will
-      // automatically cause AppNavigation to switch from Register to Dashboard stack!
+      // If newly registered (isRegistered was false), completeRegistration updates AuthContext,
+      // setting isRegistered to true. AppNavigation reacts to this central state change,
+      // unmounting the Register screen and mounting the Dashboard stack automatically!
     } catch (error) {
       console.error('Registration submission error:', error);
       const serverMessage =
+        error?.data?.error ||
+        error?.data?.message ||
         error?.response?.data?.error ||
         error?.response?.data?.message ||
-        (error?.message?.includes('Network Error')
-          ? 'Network error. Please check your internet connection and try again.'
-          : 'Registration failed. Please check your details and try again.');
+        error?.message ||
+        'Registration failed. Please check your connection and try again.';
       Alert.alert('Registration Error', serverMessage);
     } finally {
       setIsSubmitting(false);

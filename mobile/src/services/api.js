@@ -1,4 +1,3 @@
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Production Railway API URL with fallback
@@ -6,29 +5,58 @@ const API_BASE_URL =
   process.env.EXPO_PUBLIC_BACKEND_API_URL ||
   'https://footballbackend-production-9919.up.railway.app';
 
-export const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 10000,
-});
+console.log('[API CONFIG] Active API_BASE_URL:', API_BASE_URL);
 
-// Request Interceptor: Attach stored JWT token to Authorization header
-apiClient.interceptors.request.use(
-  async (config) => {
+/**
+ * Robust fetch wrapper with timeout and auth header attachment
+ */
+async function request(endpoint, options = {}) {
+  const url = `${API_BASE_URL.replace(/\/+$/, '')}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+  
+  const token = await AsyncStorage.getItem('authToken').catch(() => null);
+  const headers = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    ...(options.headers || {}),
+  };
+
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), options.timeout || 15000) : null;
+
+  try {
+    console.log(`[API] ${options.method || 'GET'} -> ${url}`);
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      signal: controller?.signal,
+    });
+
+    if (timeoutId) clearTimeout(timeoutId);
+
+    const text = await response.text();
+    let data;
     try {
-      const token = await AsyncStorage.getItem('authToken');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    } catch (e) {
-      console.warn('Error reading authToken for request:', e);
+      data = JSON.parse(text);
+    } catch {
+      data = { raw: text };
     }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+
+    if (!response.ok) {
+      const errorMsg = data?.error || data?.message || `Request failed with status ${response.status}`;
+      const err = new Error(errorMsg);
+      err.status = response.status;
+      err.data = data;
+      throw err;
+    }
+
+    return data;
+  } catch (error) {
+    if (timeoutId) clearTimeout(timeoutId);
+    console.error(`[API ERROR] ${options.method || 'GET'} ${url}:`, error?.message || error);
+    throw error;
+  }
+}
 
 /**
  * Register a new player with the backend API
@@ -65,16 +93,11 @@ export const registerPlayer = async (registrationData) => {
     phone: registrationData.cellPhone || registrationData.phone || undefined,
   };
 
-  try {
-    const response = await apiClient.post('/api/registrations', payload);
-    return response.data;
-  } catch (error) {
-    console.error(
-      'Registration API error:',
-      error?.response?.data || error.message
-    );
-    throw error;
-  }
+  return await request('/api/registrations', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    timeout: 15000,
+  });
 };
 
 /**
@@ -82,18 +105,10 @@ export const registerPlayer = async (registrationData) => {
  * GET /api/auth/verify-login-token?token=<token>
  */
 export const verifyLoginToken = async (token) => {
-  try {
-    const response = await apiClient.get('/api/auth/verify-login-token', {
-      params: { token },
-    });
-    return response.data;
-  } catch (error) {
-    console.error(
-      '[API DEBUG] Token verification API call error:',
-      error?.response?.data || error.message
-    );
-    throw error;
-  }
+  return await request(`/api/auth/verify-login-token?token=${encodeURIComponent(token)}`, {
+    method: 'GET',
+    timeout: 12000,
+  });
 };
 
 /**
@@ -101,11 +116,9 @@ export const verifyLoginToken = async (token) => {
  * GET /api/auth/me
  */
 export const getCurrentUser = async () => {
-  try {
-    const response = await apiClient.get('/api/auth/me');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching current user profile:', error);
-    throw error;
-  }
+  return await request('/api/auth/me', {
+    method: 'GET',
+    timeout: 12000,
+  });
 };
+

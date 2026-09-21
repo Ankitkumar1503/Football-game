@@ -22,7 +22,9 @@
         "backgroundColor": "#07090E"
       },
       "package": "com.touches.footballapp",
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "usesCleartextTraffic": true,
+      "permissions": ["INTERNET"]
     },
     "web": {
       "favicon": "./assets/favicon.png"

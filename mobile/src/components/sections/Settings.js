@@ -61,7 +61,6 @@ export function Settings() {
         style: 'destructive',
         onPress: async () => {
           await logout();
-          navigation.navigate('Register');
         },
       },
     ]);
@@ -106,9 +105,8 @@ export function Settings() {
               await db.sessions.clear();
               await db.touches.clear();
               await db.reflections.clear();
-              await AsyncStorage.clear();
+              await logout();
               Alert.alert('Reset Complete', 'All app data has been cleared.');
-              navigation.navigate('Register');
             } catch (e) {
               console.error(e);
             }
@@ -138,7 +136,7 @@ export function Settings() {
         </Text>
 
         <TouchableOpacity
-          onPress={() => navigation.navigate('Register')}
+          onPress={() => navigation.navigate('Profile')}
           className="p-3 rounded-xl bg-[#12151D] border border-white/10 flex-row items-center justify-between"
         >
           <View className="flex-row items-center gap-3">

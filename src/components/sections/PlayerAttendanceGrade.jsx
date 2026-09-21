@@ -110,7 +110,7 @@ export function PlayerAttendanceGrade({ isPdf, pdfPart }) {
     <div className="space-y-3 pb-1 select-none">
       {/* ── Title Bar ── */}
       <div className="flex items-center justify-between py-1">
-        <h2 className="text-xl font-black uppercase text-[#FF4422] tracking-wider text-glow">
+        <h2 className="text-xl font-black uppercase text-white tracking-wider">
           TEAM ROSTER
         </h2>
         <span className="text-[10px] font-bold text-white/50 tracking-wider">

@@ -489,103 +489,62 @@ export function PlayerStats() {
           <StatCard
             id="totalTouches"
             label="TOTAL TOUCHES (LIFETIME)"
-            displayValue={liveTouches}
+            displayValue={cumulativeStats.totalTouches ?? liveTouches}
             rawValue={formData.totalTouches}
           />
           <StatCard
             id="totalGoals"
             label="GOALS SCORED"
-            displayValue={liveGoals || formData.totalGoals || 0}
+            displayValue={cumulativeStats.totalGoals || formData.totalGoals || 0}
             rawValue={formData.totalGoals}
           />
           <StatCard
             id="totalGames"
             label="TOTAL GAMES"
-            displayValue={formData.totalGames || 0}
+            displayValue={cumulativeStats.totalGames || formData.totalGames || 0}
             rawValue={formData.totalGames}
           />
           <StatCard
             id="shotsOnTarget"
             label="SHOTS ON TARGET"
-            displayValue={formData.shotsOnTarget || 0}
+            displayValue={cumulativeStats.shotsOnTarget || formData.shotsOnTarget || 0}
             rawValue={formData.shotsOnTarget}
           />
           <StatCard
             id="tacklesMade"
             label="TACKLES MADE"
-            displayValue={formData.tacklesMade || 0}
+            displayValue={cumulativeStats.tacklesMade || formData.tacklesMade || 0}
             rawValue={formData.tacklesMade}
           />
           <StatCard
             id="totalPenalties"
             label="PENALTIES TAKEN"
-            displayValue={formData.totalPenalties || 0}
+            displayValue={cumulativeStats.totalPenalties || formData.totalPenalties || 0}
             rawValue={formData.totalPenalties}
           />
           <StatCard
             id="totalCornerKicks"
             label="CORNER KICKS"
-            displayValue={formData.totalCornerKicks || 0}
+            displayValue={cumulativeStats.totalCornerKicks || formData.totalCornerKicks || 0}
             rawValue={formData.totalCornerKicks}
           />
           <StatCard
             id="headers"
             label="HEADERS"
-            displayValue={formData.headers || 0}
+            displayValue={cumulativeStats.headers || formData.headers || 0}
             rawValue={formData.headers}
           />
           <StatCard
             id="totalThrowIns"
             label="THROW-INS"
-            displayValue={formData.totalThrowIns || 0}
+            displayValue={cumulativeStats.totalThrowIns || formData.totalThrowIns || 0}
             rawValue={formData.totalThrowIns}
           />
           <StatCard
             id="freeKicks"
             label="FREE KICKS"
-            displayValue={formData.freeKicks || 0}
+            displayValue={cumulativeStats.freeKicks || formData.freeKicks || 0}
             rawValue={formData.freeKicks}
-          />
-
-          {/* Cards with functional color accents */}
-          <StatCard
-            id="yellowCards"
-            label="YELLOW CARD"
-            displayValue={formData.yellowCards || 0}
-            rawValue={formData.yellowCards}
-            colorClass="text-yellow-400"
-            isYellow={true}
-          />
-          <StatCard
-            id="redCards"
-            label="RED CARD"
-            displayValue={formData.redCards || 0}
-            rawValue={formData.redCards}
-            colorClass="text-rose-500"
-          />
-          <StatCard
-            id="subIn"
-            label="SUB IN"
-            displayValue={formData.subIn || 0}
-            rawValue={formData.subIn}
-          />
-          <StatCard
-            id="subOut"
-            label="SUB OUT"
-            displayValue={formData.subOut || 0}
-            rawValue={formData.subOut}
-          />
-          <StatCard
-            id="injured"
-            label="INJURED"
-            displayValue={formData.injured || 0}
-            rawValue={formData.injured}
-          />
-          <StatCard
-            id="missedGames"
-            label="MISSED GAME"
-            displayValue={formData.missedGames || 0}
-            rawValue={formData.missedGames}
           />
         </div>
       </div>
@@ -597,6 +556,52 @@ export function PlayerStats() {
         </h3>
 
         <div className="grid grid-cols-2 gap-2.5">
+          {/* Row 1: Yellow Card | Red Card */}
+          <StatCard
+            id="yellowCards"
+            label="YELLOW CARD"
+            displayValue={cumulativeStats.yellowCards || formData.yellowCards || 0}
+            rawValue={formData.yellowCards}
+            colorClass="text-yellow-400"
+            isYellow={true}
+          />
+          <StatCard
+            id="redCards"
+            label="RED CARD"
+            displayValue={cumulativeStats.redCards || formData.redCards || 0}
+            rawValue={formData.redCards}
+            colorClass="text-rose-500"
+          />
+
+          {/* Row 2: Sub In | Sub Out */}
+          <StatCard
+            id="subIn"
+            label="SUB IN"
+            displayValue={cumulativeStats.subIn || formData.subIn || 0}
+            rawValue={formData.subIn}
+          />
+          <StatCard
+            id="subOut"
+            label="SUB OUT"
+            displayValue={cumulativeStats.subOut || formData.subOut || 0}
+            rawValue={formData.subOut}
+          />
+
+          {/* Row 3: Injured | Missed Game */}
+          <StatCard
+            id="injured"
+            label="INJURED"
+            displayValue={cumulativeStats.injured || formData.injured || 0}
+            rawValue={formData.injured}
+          />
+          <StatCard
+            id="missedGames"
+            label="MISSED GAME"
+            displayValue={cumulativeStats.missedGames || formData.missedGames || 0}
+            rawValue={formData.missedGames}
+          />
+
+          {/* Row 4: Years Playing | Hours Trained */}
           <StatCard
             id="totalYearsPlaying"
             label="YEARS PLAYING"
@@ -606,13 +611,29 @@ export function PlayerStats() {
           <StatCard
             id="totalHoursTrained"
             label="HOURS TRAINED"
-            displayValue={liveHours || formData.totalHoursTrained || 0}
+            displayValue={cumulativeStats.totalHoursTrained || liveHours || formData.totalHoursTrained || 0}
             rawValue={formData.totalHoursTrained}
           />
+
+          {/* Row 5: Keep-Up-Feet | Keep-Up-Head */}
+          <StatCard
+            id="keepUpFeet"
+            label="KEEP-UP-FEET"
+            displayValue={cumulativeStats.keepUpFeet || formData.keepUpFeet || 0}
+            rawValue={formData.keepUpFeet}
+          />
+          <StatCard
+            id="keepUpHead"
+            label="KEEP-UP-HEAD"
+            displayValue={cumulativeStats.keepUpHead || formData.keepUpHead || 0}
+            rawValue={formData.keepUpHead}
+          />
+
+          {/* Row 6: Total Sessions | Recovery Days */}
           <StatCard
             id="totalSessions"
             label="TOTAL SESSIONS"
-            displayValue={liveSessions || formData.totalSessions || 0}
+            displayValue={cumulativeStats.totalSessions || liveSessions || formData.totalSessions || 0}
             rawValue={formData.totalSessions}
           />
           <StatCard
@@ -620,18 +641,6 @@ export function PlayerStats() {
             label="RECOVERY DAYS"
             displayValue={formData.recoveryDays || 0}
             rawValue={formData.recoveryDays}
-          />
-          <StatCard
-            id="keepUpFeet"
-            label="KEEP-UP-FEET"
-            displayValue={formData.keepUpFeet || 0}
-            rawValue={formData.keepUpFeet}
-          />
-          <StatCard
-            id="keepUpHead"
-            label="KEEP-UP-HEAD"
-            displayValue={formData.keepUpHead || 0}
-            rawValue={formData.keepUpHead}
           />
         </div>
       </div>

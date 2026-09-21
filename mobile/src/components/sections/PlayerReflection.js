@@ -109,7 +109,7 @@ export function PlayerReflection() {
     <View className="space-y-4 pb-6">
       {/* ── Title Header ── */}
       <View className="flex-row items-center justify-between py-1">
-        <Text className="text-xl font-black uppercase text-[#FF4422] tracking-wider">
+        <Text className="text-xl font-black uppercase text-white tracking-wider">
           PLAYER REFLECTION
         </Text>
         <Text className="text-[10px] font-bold text-white/50 tracking-wider">

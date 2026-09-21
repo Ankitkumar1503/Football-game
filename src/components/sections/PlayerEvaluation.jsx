@@ -149,7 +149,7 @@ export function PlayerEvaluation({ isPdf, pdfPart }) {
         <>
           {/* Section Header */}
           <div className="flex items-center justify-between py-1">
-            <h2 className="text-xl font-black uppercase text-[#FF4422] tracking-wider text-glow">
+            <h2 className="text-xl font-black uppercase text-white tracking-wider">
               PLAYER EVALUATION
             </h2>
             <span className="text-[10px] font-bold text-white/50 tracking-wider">

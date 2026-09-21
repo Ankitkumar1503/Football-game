@@ -320,7 +320,7 @@ export function FootballFormation({ isPdf = false }) {
     <div className="space-y-4 pb-4 select-none">
       {/* ── 1. Starting Lineup Header ── */}
       <div className="flex items-center justify-between py-1">
-        <h2 className="text-xl font-black uppercase text-[#FF4422] tracking-wider text-glow">
+        <h2 className="text-xl font-black uppercase text-white tracking-wider">
           STARTING LINEUP
         </h2>
         <span className="text-[10px] font-bold text-white/50 tracking-wider">

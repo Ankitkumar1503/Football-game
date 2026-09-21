@@ -428,13 +428,13 @@ export function PlayerStats() {
             {
               id: 'totalTouches',
               label: 'TOTAL TOUCHES (LIFETIME)',
-              displayValue: liveTouches,
+              displayValue: cumulativeStats.totalTouches ?? liveTouches,
               rawValue: formData.totalTouches,
             },
             {
               id: 'totalGoals',
               label: 'GOALS SCORED',
-              displayValue: liveGoals || formData.totalGoals || 0,
+              displayValue: cumulativeStats.totalGoals || formData.totalGoals || 0,
               rawValue: formData.totalGoals,
             },
           ],
@@ -442,13 +442,13 @@ export function PlayerStats() {
             {
               id: 'totalGames',
               label: 'TOTAL GAMES',
-              displayValue: formData.totalGames || 0,
+              displayValue: cumulativeStats.totalGames || formData.totalGames || 0,
               rawValue: formData.totalGames,
             },
             {
               id: 'shotsOnTarget',
               label: 'SHOTS ON TARGET',
-              displayValue: formData.shotsOnTarget || 0,
+              displayValue: cumulativeStats.shotsOnTarget || formData.shotsOnTarget || 0,
               rawValue: formData.shotsOnTarget,
             },
           ],
@@ -456,13 +456,13 @@ export function PlayerStats() {
             {
               id: 'tacklesMade',
               label: 'TACKLES MADE',
-              displayValue: formData.tacklesMade || 0,
+              displayValue: cumulativeStats.tacklesMade || formData.tacklesMade || 0,
               rawValue: formData.tacklesMade,
             },
             {
               id: 'totalPenalties',
               label: 'PENALTIES TAKEN',
-              displayValue: formData.totalPenalties || 0,
+              displayValue: cumulativeStats.totalPenalties || formData.totalPenalties || 0,
               rawValue: formData.totalPenalties,
             },
           ],
@@ -470,13 +470,13 @@ export function PlayerStats() {
             {
               id: 'totalCornerKicks',
               label: 'CORNER KICKS',
-              displayValue: formData.totalCornerKicks || 0,
+              displayValue: cumulativeStats.totalCornerKicks || formData.totalCornerKicks || 0,
               rawValue: formData.totalCornerKicks,
             },
             {
               id: 'totalThrowIns',
               label: 'THROW-INS',
-              displayValue: formData.totalThrowIns || 0,
+              displayValue: cumulativeStats.totalThrowIns || formData.totalThrowIns || 0,
               rawValue: formData.totalThrowIns,
             },
           ],
@@ -484,59 +484,14 @@ export function PlayerStats() {
             {
               id: 'headers',
               label: 'HEADERS',
-              displayValue: formData.headers || 0,
+              displayValue: cumulativeStats.headers || formData.headers || 0,
               rawValue: formData.headers,
             },
             {
               id: 'freeKicks',
               label: 'FREE KICKS',
-              displayValue: formData.freeKicks || 0,
+              displayValue: cumulativeStats.freeKicks || formData.freeKicks || 0,
               rawValue: formData.freeKicks,
-            },
-          ],
-          [
-            {
-              id: 'yellowCards',
-              label: 'YELLOW CARD',
-              displayValue: formData.yellowCards || 0,
-              rawValue: formData.yellowCards,
-              colorClass: '#FACC15',
-              isYellow: true,
-            },
-            {
-              id: 'redCards',
-              label: 'RED CARD',
-              displayValue: formData.redCards || 0,
-              rawValue: formData.redCards,
-              colorClass: '#EF4444',
-            },
-          ],
-          [
-            {
-              id: 'subIn',
-              label: 'SUB IN',
-              displayValue: formData.subIn || 0,
-              rawValue: formData.subIn,
-            },
-            {
-              id: 'subOut',
-              label: 'SUB OUT',
-              displayValue: formData.subOut || 0,
-              rawValue: formData.subOut,
-            },
-          ],
-          [
-            {
-              id: 'injured',
-              label: 'INJURED',
-              displayValue: formData.injured || 0,
-              rawValue: formData.injured,
-            },
-            {
-              id: 'missedGames',
-              label: 'MISSED GAME',
-              displayValue: formData.missedGames || 0,
-              rawValue: formData.missedGames,
             },
           ],
         ].map((pair, rowIndex) => (
@@ -566,6 +521,55 @@ export function PlayerStats() {
         </Text>
 
         {[
+          // Row 1: Yellow Card | Red Card
+          [
+            {
+              id: 'yellowCards',
+              label: 'YELLOW CARD',
+              displayValue: cumulativeStats.yellowCards || formData.yellowCards || 0,
+              rawValue: formData.yellowCards,
+              colorClass: '#FACC15',
+              isYellow: true,
+            },
+            {
+              id: 'redCards',
+              label: 'RED CARD',
+              displayValue: cumulativeStats.redCards || formData.redCards || 0,
+              rawValue: formData.redCards,
+              colorClass: '#EF4444',
+            },
+          ],
+          // Row 2: Sub In | Sub Out
+          [
+            {
+              id: 'subIn',
+              label: 'SUB IN',
+              displayValue: cumulativeStats.subIn || formData.subIn || 0,
+              rawValue: formData.subIn,
+            },
+            {
+              id: 'subOut',
+              label: 'SUB OUT',
+              displayValue: cumulativeStats.subOut || formData.subOut || 0,
+              rawValue: formData.subOut,
+            },
+          ],
+          // Row 3: Injured | Missed Game
+          [
+            {
+              id: 'injured',
+              label: 'INJURED',
+              displayValue: cumulativeStats.injured || formData.injured || 0,
+              rawValue: formData.injured,
+            },
+            {
+              id: 'missedGames',
+              label: 'MISSED GAME',
+              displayValue: cumulativeStats.missedGames || formData.missedGames || 0,
+              rawValue: formData.missedGames,
+            },
+          ],
+          // Row 4: Years Playing | Hours Trained
           [
             {
               id: 'totalYearsPlaying',
@@ -576,15 +580,31 @@ export function PlayerStats() {
             {
               id: 'totalHoursTrained',
               label: 'HOURS TRAINED',
-              displayValue: liveHours || formData.totalHoursTrained || 0,
+              displayValue: cumulativeStats.totalHoursTrained || liveHours || formData.totalHoursTrained || 0,
               rawValue: formData.totalHoursTrained,
             },
           ],
+          // Row 5: Keep-Up-Feet | Keep-Up-Head
+          [
+            {
+              id: 'keepUpFeet',
+              label: 'KEEP-UP-FEET',
+              displayValue: cumulativeStats.keepUpFeet || formData.keepUpFeet || 0,
+              rawValue: formData.keepUpFeet,
+            },
+            {
+              id: 'keepUpHead',
+              label: 'KEEP-UP-HEAD',
+              displayValue: cumulativeStats.keepUpHead || formData.keepUpHead || 0,
+              rawValue: formData.keepUpHead,
+            },
+          ],
+          // Row 6: Total Sessions | Recovery Days
           [
             {
               id: 'totalSessions',
               label: 'TOTAL SESSIONS',
-              displayValue: liveSessions || formData.totalSessions || 0,
+              displayValue: cumulativeStats.totalSessions || liveSessions || formData.totalSessions || 0,
               rawValue: formData.totalSessions,
             },
             {
@@ -592,20 +612,6 @@ export function PlayerStats() {
               label: 'RECOVERY DAYS',
               displayValue: formData.recoveryDays || 0,
               rawValue: formData.recoveryDays,
-            },
-          ],
-          [
-            {
-              id: 'keepUpFeet',
-              label: 'KEEP-UP-FEET',
-              displayValue: formData.keepUpFeet || 0,
-              rawValue: formData.keepUpFeet,
-            },
-            {
-              id: 'keepUpHead',
-              label: 'KEEP-UP-HEAD',
-              displayValue: formData.keepUpHead || 0,
-              rawValue: formData.keepUpHead,
             },
           ],
         ].map((pair, rowIndex) => (
@@ -617,6 +623,8 @@ export function PlayerStats() {
                 label={item.label}
                 displayValue={item.displayValue}
                 rawValue={item.rawValue}
+                isYellow={item.isYellow}
+                colorClass={item.colorClass || '#FFFFFF'}
               />
             ))}
           </View>

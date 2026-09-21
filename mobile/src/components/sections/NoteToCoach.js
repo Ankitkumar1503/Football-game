@@ -96,7 +96,7 @@ export function NoteToCoach() {
     <View className="space-y-3.5 pb-6">
       {/* ── Title Bar ── */}
       <View className="flex-row items-center justify-between py-1">
-        <Text className="text-xl font-black uppercase text-[#FF4422] tracking-wider">
+        <Text className="text-xl font-black uppercase text-white tracking-wider">
           NOTE TO COACH
         </Text>
         <Text className="text-[10px] font-bold text-white/50 tracking-wider">

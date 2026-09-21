@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useActiveSession } from "../../hooks/useActiveSession";
 import { db } from "../../lib/db";
@@ -25,11 +25,11 @@ const ACTIONS_CONFIG = [
   { id: "Header", label: "HEADER", icon: CircleDot },
   { id: "Tackle", label: "TACKLE", icon: Shield },
   { id: "Free Kick", label: "FREE KICK", icon: RotateCw },
-  { id: "Corner Kick", label: "CORNER", icon: Flag },
+  { id: "Corner Kick", label: "CORNERS", icon: Flag },
   { id: "Throw-In", label: "THROW-IN", icon: ArrowRight },
   { id: "Penalty", label: "PENALTY", icon: Target },
-  { id: "Keep-Up-Feet", label: "KEEP-LEFT", icon: Zap },
-  { id: "Keep-Up-Head", label: "KEEP-HEAD", icon: CircleDot },
+  { id: "Keep-Up-Feet", label: "KEEP-UP-FEET", icon: Zap },
+  { id: "Keep-Up-Head", label: "KEEP-UP-HEAD", icon: CircleDot },
 ];
 
 const POSITIONS = [
@@ -261,6 +261,54 @@ export function ActionWheel() {
     e.stopPropagation();
     if (removeTouch) {
       await removeTouch(eventId);
+    }
+  };
+
+  const lastActionTapRef = useRef({});
+  const actionTimerRef = useRef({});
+
+  const handleActionClick = (actionId) => {
+    const now = Date.now();
+    const lastTap = lastActionTapRef.current[actionId] || 0;
+    if (now - lastTap < 300) {
+      if (actionTimerRef.current[actionId]) {
+        clearTimeout(actionTimerRef.current[actionId]);
+        actionTimerRef.current[actionId] = null;
+      }
+      lastActionTapRef.current[actionId] = 0;
+      if (removeTouch) {
+        removeTouch(actionId);
+      }
+    } else {
+      lastActionTapRef.current[actionId] = now;
+      actionTimerRef.current[actionId] = setTimeout(() => {
+        handleActionTap(actionId);
+        actionTimerRef.current[actionId] = null;
+      }, 220);
+    }
+  };
+
+  const lastEventTapRef = useRef({});
+  const eventTimerRef = useRef({});
+
+  const handleEventClick = (eventId) => {
+    const now = Date.now();
+    const lastTap = lastEventTapRef.current[eventId] || 0;
+    if (now - lastTap < 300) {
+      if (eventTimerRef.current[eventId]) {
+        clearTimeout(eventTimerRef.current[eventId]);
+        eventTimerRef.current[eventId] = null;
+      }
+      lastEventTapRef.current[eventId] = 0;
+      if (removeTouch) {
+        removeTouch(eventId);
+      }
+    } else {
+      lastEventTapRef.current[eventId] = now;
+      eventTimerRef.current[eventId] = setTimeout(() => {
+        handleEventTap(eventId);
+        eventTimerRef.current[eventId] = null;
+      }, 220);
     }
   };
 
@@ -584,59 +632,32 @@ export function ActionWheel() {
         </div>
       </div>
 
-      {/* ── 4. POSITIVE / NEGATIVE SUMMARY TOTALS ── */}
-      <div className="grid grid-cols-2 gap-3">
-        {/* Positive Card */}
-        <div className="p-3 rounded-2xl border border-emerald-500/30 bg-[#0E1A14] space-y-1.5 shadow-lg">
-          <div className="flex items-center justify-between text-emerald-400">
-            <span className="text-[10px] font-black uppercase tracking-wider">POSITIVE</span>
-            <ThumbsUp size={15} />
-          </div>
-          <div className="flex items-baseline justify-between">
-            <span className="text-2xl font-black text-emerald-400">{positiveCount}</span>
-            <span className="text-[10px] font-bold text-emerald-400/80">{positivePercent}%</span>
-          </div>
-          <div className="w-full bg-black/40 h-1.5 rounded-full overflow-hidden">
-            <div
-              className="bg-emerald-400 h-full transition-all duration-300"
-              style={{ width: `${positivePercent}%` }}
-            />
-          </div>
+      {/* ── 4. COMPACT POSITIVE / NEGATIVE SUMMARY ── */}
+      <div className="grid grid-cols-2 gap-2.5">
+        <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-[#14532D] border border-emerald-500/40 shadow-sm">
+          <span className="text-xs font-black uppercase tracking-wider text-white">POSITIVE</span>
+          <span className="text-xl font-black text-white">{positiveCount}</span>
         </div>
-
-        {/* Negative Card */}
-        <div className="p-3 rounded-2xl border border-rose-500/30 bg-[#1F1014] space-y-1.5 shadow-lg">
-          <div className="flex items-center justify-between text-rose-400">
-            <span className="text-[10px] font-black uppercase tracking-wider">NEGATIVE</span>
-            <ThumbsDown size={15} />
-          </div>
-          <div className="flex items-baseline justify-between">
-            <span className="text-2xl font-black text-rose-400">{negativeCount}</span>
-            <span className="text-[10px] font-bold text-rose-400/80">{negativePercent}%</span>
-          </div>
-          <div className="w-full bg-black/40 h-1.5 rounded-full overflow-hidden">
-            <div
-              className="bg-rose-400 h-full transition-all duration-300"
-              style={{ width: `${negativePercent}%` }}
-            />
-          </div>
+        <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-[#14532D] border border-emerald-500/40 shadow-sm">
+          <span className="text-xs font-black uppercase tracking-wider text-white">NEGATIVE</span>
+          <span className="text-xl font-black text-white">{negativeCount}</span>
         </div>
       </div>
 
       {/* ── 5. POSITIVE / NEGATIVE SELECTOR ── */}
-      <div className="space-y-2 pt-1 text-center">
-        <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-white/90">
-          HOW WAS THE PLAYERS FIRST TOUCH?
-        </h3>
+      <div className="space-y-1.5 pt-1">
+        <div className="text-[10px] font-black uppercase tracking-wider text-white/60 px-0.5">
+          HOW WAS THE PLAYER'S FIRST TOUCH?
+        </div>
 
         <div className="grid grid-cols-2 gap-2.5">
           <button
             type="button"
             onClick={() => setSelectedQuality("Positive")}
-            className={`py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+            className={`py-2 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
               selectedQuality === "Positive"
-                ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25 scale-[1.02]"
-                : "bg-[#141720] text-white/60 border border-white/10 hover:bg-white/5"
+                ? "bg-[#10B981] text-white shadow-md shadow-emerald-500/25"
+                : "bg-[#374151] text-white border border-white/10 hover:bg-[#4B5563]"
             }`}
           >
             <ThumbsUp size={15} />
@@ -646,10 +667,10 @@ export function ActionWheel() {
           <button
             type="button"
             onClick={() => setSelectedQuality("Negative")}
-            className={`py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+            className={`py-2 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
               selectedQuality === "Negative"
-                ? "bg-rose-500 text-white shadow-lg shadow-rose-500/25 scale-[1.02]"
-                : "bg-[#141720] text-white/60 border border-white/10 hover:bg-white/5"
+                ? "bg-[#EF4444] text-white shadow-md shadow-rose-500/25"
+                : "bg-[#374151] text-white border border-white/10 hover:bg-[#4B5563]"
             }`}
           >
             <ThumbsDown size={15} />
@@ -661,30 +682,23 @@ export function ActionWheel() {
       {/* ── 6. COMPACT 3-COLUMN TOUCH COUNTER GRID ── */}
       <div className="space-y-1.5 pt-1">
         <div className="text-[10px] font-black uppercase tracking-wider text-white/60 px-0.5">
-          TOUCH ACTIONS
+          TOUCH TYPE - TAP TO LOG, DOUBLE-TAP TO UNDO
         </div>
         <div className="grid grid-cols-3 gap-2">
           {ACTIONS_CONFIG.map((item) => {
-            const Icon = item.icon;
             const count = stats[item.id] || 0;
 
             return (
               <button
                 key={item.id}
                 type="button"
-                onClick={() => handleActionTap(item.id)}
-                className="group p-2.5 rounded-2xl border border-white/10 bg-[#12151D] hover:bg-white/10 active:scale-95 transition-all text-center flex flex-col items-center justify-between h-24 relative overflow-hidden"
+                onClick={() => handleActionClick(item.id)}
+                className="p-2.5 rounded-2xl border border-white/10 bg-[#24272F] hover:bg-[#2E323C] active:scale-95 transition-all text-center flex flex-col items-center justify-center h-20 shadow-sm select-none"
               >
-                <div className="w-8 h-8 rounded-xl bg-white/5 group-hover:bg-[#FF4422]/20 text-white/70 group-hover:text-[#FF4422] flex items-center justify-center transition-colors">
-                  <Icon size={16} />
-                </div>
-
-                <div className="space-y-0.5">
-                  <div className="text-base font-black text-white">{count}</div>
-                  <div className="text-[8px] font-black uppercase tracking-wider text-white/60 group-hover:text-white">
-                    {item.label}
-                  </div>
-                </div>
+                <span className="text-2xl font-black text-white leading-none">{count}</span>
+                <span className="text-[9px] font-black uppercase tracking-wider text-white/70 mt-1 truncate max-w-full">
+                  {item.label}
+                </span>
               </button>
             );
           })}
@@ -693,73 +707,26 @@ export function ActionWheel() {
 
       {/* ── 7. COMPACT 3-COLUMN MATCH EVENTS (STRICTLY INDIVIDUAL EVENTS) ── */}
       <div className="space-y-1.5 pt-1">
-        <div className="flex items-center justify-between px-0.5">
-          <div className="text-[10px] font-black uppercase tracking-wider text-white/60">
-            MATCH EVENTS
-          </div>
-          <span className="text-[9px] text-white/40">Events do not affect touch counters</span>
+        <div className="text-[10px] font-black uppercase tracking-wider text-white/60 px-0.5">
+          MATCH EVENTS
         </div>
 
         <div className="grid grid-cols-3 gap-2">
           {MATCH_EVENTS_CONFIG.map((item) => {
             const count = stats[item.id] || 0;
-            const isYellow = item.type === "yellow-card";
-            const isRed = item.type === "red-card";
 
             return (
-              <div
+              <button
                 key={item.id}
-                onClick={() => handleEventTap(item.id)}
-                className="group p-2.5 rounded-2xl border border-white/10 bg-[#12151D] hover:bg-white/[0.07] hover:border-white/20 active:scale-95 transition-all text-center flex flex-col items-center justify-between h-24 relative cursor-pointer select-none"
+                type="button"
+                onClick={() => handleEventClick(item.id)}
+                className="p-2.5 rounded-2xl border border-white/10 bg-[#24272F] hover:bg-[#2E323C] active:scale-95 transition-all text-center flex flex-col items-center justify-center h-20 shadow-sm select-none"
               >
-                {/* Optional Decrement button when count > 0 */}
-                {count > 0 && (
-                  <button
-                    type="button"
-                    title={`Decrease ${item.label}`}
-                    onClick={(e) => handleEventDecrement(e, item.id)}
-                    className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center text-[10px] font-bold z-10 transition-colors"
-                  >
-                    -
-                  </button>
-                )}
-
-                {/* Minimalist Icon / Badge */}
-                {isYellow ? (
-                  <div className="w-5 h-5 rounded border border-yellow-400/80 bg-yellow-400/20 flex items-center justify-center">
-                    <div className="w-2 h-2.5 bg-yellow-400 rounded-sm" />
-                  </div>
-                ) : isRed ? (
-                  <div className="w-5 h-5 rounded border border-red-500/80 bg-red-500/20 flex items-center justify-center">
-                    <div className="w-2 h-2.5 bg-red-500 rounded-sm" />
-                  </div>
-                ) : (
-                  <div className="w-5 h-5 rounded border border-white/20 bg-white/5 flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 bg-white/60 rounded-sm" />
-                  </div>
-                )}
-
-                <div className="space-y-0.5">
-                  <div
-                    className={`text-base font-black ${
-                      isYellow ? "text-yellow-400" : isRed ? "text-red-400" : "text-white"
-                    }`}
-                  >
-                    {count}
-                  </div>
-                  <div
-                    className={`text-[8px] font-black uppercase tracking-wider ${
-                      isYellow
-                        ? "text-yellow-400/90"
-                        : isRed
-                        ? "text-red-400/90"
-                        : "text-white/60 group-hover:text-white/90"
-                    }`}
-                  >
-                    {item.label}
-                  </div>
-                </div>
-              </div>
+                <span className="text-2xl font-black text-white leading-none">{count}</span>
+                <span className="text-[9px] font-black uppercase tracking-wider text-white/70 mt-1 truncate max-w-full">
+                  {item.label}
+                </span>
+              </button>
             );
           })}
         </div>

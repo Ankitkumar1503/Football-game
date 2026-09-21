@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -52,11 +52,11 @@ const ACTIONS_CONFIG = [
   { id: 'Header', label: 'HEADER', icon: CircleDot },
   { id: 'Tackle', label: 'TACKLE', icon: Shield },
   { id: 'Free Kick', label: 'FREE KICK', icon: RotateCw },
-  { id: 'Corner Kick', label: 'CORNER', icon: Flag },
+  { id: 'Corner Kick', label: 'CORNERS', icon: Flag },
   { id: 'Throw-In', label: 'THROW-IN', icon: ArrowRight },
   { id: 'Penalty', label: 'PENALTY', icon: Target },
-  { id: 'Keep-Up-Feet', label: 'KEEP-LEFT', icon: Zap },
-  { id: 'Keep-Up-Head', label: 'KEEP-HEAD', icon: CircleDot },
+  { id: 'Keep-Up-Feet', label: 'KEEP-UP-FEET', icon: Zap },
+  { id: 'Keep-Up-Head', label: 'KEEP-UP-HEAD', icon: CircleDot },
 ];
 
 const MATCH_EVENTS_CONFIG = [
@@ -285,6 +285,54 @@ export function ActionWheel() {
   const handleEventDecrement = async (eventId) => {
     if (removeTouch) {
       await removeTouch(eventId);
+    }
+  };
+
+  const lastActionTapRef = useRef({});
+  const actionTimerRef = useRef({});
+
+  const handleActionClick = (actionId) => {
+    const now = Date.now();
+    const lastTap = lastActionTapRef.current[actionId] || 0;
+    if (now - lastTap < 300) {
+      if (actionTimerRef.current[actionId]) {
+        clearTimeout(actionTimerRef.current[actionId]);
+        actionTimerRef.current[actionId] = null;
+      }
+      lastActionTapRef.current[actionId] = 0;
+      if (removeTouch) {
+        removeTouch(actionId);
+      }
+    } else {
+      lastActionTapRef.current[actionId] = now;
+      actionTimerRef.current[actionId] = setTimeout(() => {
+        handleActionTap(actionId);
+        actionTimerRef.current[actionId] = null;
+      }, 220);
+    }
+  };
+
+  const lastEventTapRef = useRef({});
+  const eventTimerRef = useRef({});
+
+  const handleEventClick = (eventId) => {
+    const now = Date.now();
+    const lastTap = lastEventTapRef.current[eventId] || 0;
+    if (now - lastTap < 300) {
+      if (eventTimerRef.current[eventId]) {
+        clearTimeout(eventTimerRef.current[eventId]);
+        eventTimerRef.current[eventId] = null;
+      }
+      lastEventTapRef.current[eventId] = 0;
+      if (removeTouch) {
+        removeTouch(eventId);
+      }
+    } else {
+      lastEventTapRef.current[eventId] = now;
+      eventTimerRef.current[eventId] = setTimeout(() => {
+        handleEventTap(eventId);
+        eventTimerRef.current[eventId] = null;
+      }, 220);
     }
   };
 
@@ -571,67 +619,37 @@ export function ActionWheel() {
         </View>
       </View>
 
-      {/* ── 4. POSITIVE vs NEGATIVE SUMMARY CARDS ── */}
+      {/* ── 4. COMPACT POSITIVE / NEGATIVE SUMMARY ── */}
       <View style={{ flexDirection: 'row', gap: 10 }}>
-        {/* Positive Card */}
         <View
           style={{ flex: 1 }}
-          className="p-3 rounded-2xl border border-emerald-500/30 bg-[#0E1A14] space-y-1.5 shadow-sm"
+          className="flex-row items-center justify-between px-3.5 py-2.5 rounded-xl bg-[#14532D] border border-emerald-500/40 shadow-sm"
         >
-          <View className="flex-row items-center justify-between">
-            <Text className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
-              POSITIVE
-            </Text>
-            <ThumbsUp size={14} color="#34D399" />
-          </View>
-          <View className="flex-row items-baseline justify-between">
-            <Text className="text-2xl font-black text-emerald-400">
-              {positiveCount}
-            </Text>
-            <Text className="text-[10px] font-bold text-emerald-400/80">
-              {positivePercent}%
-            </Text>
-          </View>
-          <View className="w-full bg-black/40 h-1.5 rounded-full overflow-hidden">
-            <View
-              className="bg-emerald-400 h-full"
-              style={{ width: `${positivePercent}%` }}
-            />
-          </View>
+          <Text className="text-xs font-black uppercase tracking-wider text-white">
+            POSITIVE
+          </Text>
+          <Text className="text-xl font-black text-white">
+            {positiveCount}
+          </Text>
         </View>
 
-        {/* Negative Card */}
         <View
           style={{ flex: 1 }}
-          className="p-3 rounded-2xl border border-rose-500/30 bg-[#1F1014] space-y-1.5 shadow-sm"
+          className="flex-row items-center justify-between px-3.5 py-2.5 rounded-xl bg-[#14532D] border border-emerald-500/40 shadow-sm"
         >
-          <View className="flex-row items-center justify-between">
-            <Text className="text-[10px] font-black uppercase tracking-wider text-rose-400">
-              NEGATIVE
-            </Text>
-            <ThumbsDown size={14} color="#F87171" />
-          </View>
-          <View className="flex-row items-baseline justify-between">
-            <Text className="text-2xl font-black text-rose-400">
-              {negativeCount}
-            </Text>
-            <Text className="text-[10px] font-bold text-rose-400/80">
-              {negativePercent}%
-            </Text>
-          </View>
-          <View className="w-full bg-black/40 h-1.5 rounded-full overflow-hidden">
-            <View
-              className="bg-rose-400 h-full"
-              style={{ width: `${negativePercent}%` }}
-            />
-          </View>
+          <Text className="text-xs font-black uppercase tracking-wider text-white">
+            NEGATIVE
+          </Text>
+          <Text className="text-xl font-black text-white">
+            {negativeCount}
+          </Text>
         </View>
       </View>
 
       {/* ── 5. QUALITY SELECTOR BANNER ── */}
-      <View className="space-y-2 pt-1">
-        <Text className="text-xs font-black uppercase tracking-wider text-white/90 text-center">
-          HOW WAS THE PLAYERS FIRST TOUCH?
+      <View className="space-y-1.5 pt-1">
+        <Text className="text-[10px] font-black uppercase tracking-wider text-white/60 px-0.5">
+          HOW WAS THE PLAYER'S FIRST TOUCH?
         </Text>
 
         <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -639,14 +657,14 @@ export function ActionWheel() {
             activeOpacity={0.8}
             onPress={() => setSelectedQuality('Positive')}
             style={{ flex: 1 }}
-            className={`py-2.5 px-4 rounded-xl flex-row items-center justify-center gap-2 ${
+            className={`py-2 px-4 rounded-xl flex-row items-center justify-center gap-2 ${
               selectedQuality === 'Positive'
-                ? 'bg-emerald-500 shadow-md shadow-emerald-500/30'
-                : 'bg-[#141720] border border-white/10'
+                ? 'bg-[#10B981] shadow-md shadow-emerald-500/30'
+                : 'bg-[#374151] border border-white/10'
             }`}
           >
             <ThumbsUp size={14} color="white" />
-            <Text className="text-white text-xs font-black uppercase tracking-wider">
+            <Text className="text-white text-xs font-bold">
               Positive
             </Text>
           </TouchableOpacity>
@@ -655,14 +673,14 @@ export function ActionWheel() {
             activeOpacity={0.8}
             onPress={() => setSelectedQuality('Negative')}
             style={{ flex: 1 }}
-            className={`py-2.5 px-4 rounded-xl flex-row items-center justify-center gap-2 ${
+            className={`py-2 px-4 rounded-xl flex-row items-center justify-center gap-2 ${
               selectedQuality === 'Negative'
-                ? 'bg-rose-500 shadow-md shadow-rose-500/30'
-                : 'bg-[#141720] border border-white/10'
+                ? 'bg-[#EF4444] shadow-md shadow-rose-500/30'
+                : 'bg-[#374151] border border-white/10'
             }`}
           >
             <ThumbsDown size={14} color="white" />
-            <Text className="text-white text-xs font-black uppercase tracking-wider">
+            <Text className="text-white text-xs font-bold">
               Negative
             </Text>
           </TouchableOpacity>
@@ -672,7 +690,7 @@ export function ActionWheel() {
       {/* ── 6. COMPACT 3-COLUMN MAIN ACTIONS GRID ── */}
       <View className="space-y-1.5 pt-1">
         <Text className="text-[10px] font-black uppercase tracking-wider text-white/60 px-0.5">
-          TOUCH ACTIONS
+          TOUCH TYPE - TAP TO LOG, DOUBLE-TAP TO UNDO
         </Text>
 
         {[
@@ -683,41 +701,25 @@ export function ActionWheel() {
         ].map((row, rowIndex) => (
           <View key={rowIndex} style={{ flexDirection: 'row', gap: 8 }}>
             {row.map((item) => {
-              const Icon = item.icon;
               const count = stats[item.id] || 0;
 
               return (
                 <TouchableOpacity
                   key={item.id}
-                  onPress={() => handleActionTap(item.id)}
-                  style={{ flex: 1, height: 96 }}
-                  className="p-2 rounded-2xl border border-white/10 bg-[#12151D] items-center justify-between shadow-sm relative"
+                  onPress={() => handleActionClick(item.id)}
+                  style={{ flex: 1, height: 76 }}
+                  className="rounded-2xl border border-white/10 bg-[#24272F] items-center justify-center shadow-sm"
                   activeOpacity={0.7}
                 >
-                  {count > 0 && (
-                    <TouchableOpacity
-                      onPress={() => {
-                        if (removeTouch) removeTouch(item.id);
-                      }}
-                      className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-white/10 items-center justify-center z-10"
-                    >
-                      <Text className="text-white/80 font-black text-[10px]">-</Text>
-                    </TouchableOpacity>
-                  )}
-
-                  <View className="w-8 h-8 rounded-xl bg-white/5 items-center justify-center">
-                    <Icon size={16} color="rgba(255, 255, 255, 0.7)" />
-                  </View>
-
-                  <View className="items-center">
-                    <Text className="text-base font-black text-white">{count}</Text>
-                    <Text
-                      numberOfLines={1}
-                      className="text-[8px] font-black uppercase tracking-wider text-white/60 text-center"
-                    >
-                      {item.label}
-                    </Text>
-                  </View>
+                  <Text className="text-2xl font-black text-white leading-none">
+                    {count}
+                  </Text>
+                  <Text
+                    numberOfLines={1}
+                    className="text-[8.5px] font-black uppercase tracking-wider text-white/70 text-center mt-1"
+                  >
+                    {item.label}
+                  </Text>
                 </TouchableOpacity>
               );
             })}
@@ -727,12 +729,9 @@ export function ActionWheel() {
 
       {/* ── 7. COMPACT 3-COLUMN MATCH EVENTS (STRICTLY INDEPENDENT) ── */}
       <View className="space-y-1.5 pt-1">
-        <View className="flex-row items-center justify-between px-0.5">
-          <Text className="text-[10px] font-black uppercase tracking-wider text-white/60">
-            MATCH EVENTS
-          </Text>
-          <Text className="text-[9px] text-white/40">Events do not affect touches</Text>
-        </View>
+        <Text className="text-[10px] font-black uppercase tracking-wider text-white/60 px-0.5">
+          MATCH EVENTS
+        </Text>
 
         {[
           MATCH_EVENTS_CONFIG.slice(0, 3),
@@ -741,66 +740,24 @@ export function ActionWheel() {
           <View key={rowIndex} style={{ flexDirection: 'row', gap: 8 }}>
             {row.map((item) => {
               const count = stats[item.id] || 0;
-              const isYellow = item.type === 'yellow-card';
-              const isRed = item.type === 'red-card';
 
               return (
                 <TouchableOpacity
                   key={item.id}
-                  onPress={() => handleEventTap(item.id)}
-                  style={{ flex: 1, height: 96 }}
-                  className="p-2 rounded-2xl border border-white/10 bg-[#12151D] items-center justify-between shadow-sm relative"
+                  onPress={() => handleEventClick(item.id)}
+                  style={{ flex: 1, height: 76 }}
+                  className="rounded-2xl border border-white/10 bg-[#24272F] items-center justify-center shadow-sm"
                   activeOpacity={0.7}
                 >
-                  {count > 0 && (
-                    <TouchableOpacity
-                      onPress={() => handleEventDecrement(item.id)}
-                      className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-white/10 items-center justify-center z-10"
-                    >
-                      <Text className="text-white/80 font-black text-[10px]">-</Text>
-                    </TouchableOpacity>
-                  )}
-
-                  {/* Icon Box */}
-                  {isYellow ? (
-                    <View className="w-5 h-5 rounded border border-yellow-400/80 bg-yellow-400/20 items-center justify-center">
-                      <View className="w-2 h-2.5 bg-yellow-400 rounded-sm" />
-                    </View>
-                  ) : isRed ? (
-                    <View className="w-5 h-5 rounded border border-red-500/80 bg-red-500/20 items-center justify-center">
-                      <View className="w-2 h-2.5 bg-red-500 rounded-sm" />
-                    </View>
-                  ) : (
-                    <View className="w-5 h-5 rounded border border-white/20 bg-white/5 items-center justify-center">
-                      <View className="w-1.5 h-1.5 bg-white/60 rounded-sm" />
-                    </View>
-                  )}
-
-                  <View className="items-center">
-                    <Text
-                      className={`text-base font-black ${
-                        isYellow
-                          ? 'text-yellow-400'
-                          : isRed
-                          ? 'text-red-400'
-                          : 'text-white'
-                      }`}
-                    >
-                      {count}
-                    </Text>
-                    <Text
-                      numberOfLines={1}
-                      className={`text-[7.5px] font-black uppercase tracking-wider text-center ${
-                        isYellow
-                          ? 'text-yellow-400/90'
-                          : isRed
-                          ? 'text-red-400/90'
-                          : 'text-white/60'
-                      }`}
-                    >
-                      {item.label}
-                    </Text>
-                  </View>
+                  <Text className="text-2xl font-black text-white leading-none">
+                    {count}
+                  </Text>
+                  <Text
+                    numberOfLines={1}
+                    className="text-[8.5px] font-black uppercase tracking-wider text-white/70 text-center mt-1"
+                  >
+                    {item.label}
+                  </Text>
                 </TouchableOpacity>
               );
             })}
